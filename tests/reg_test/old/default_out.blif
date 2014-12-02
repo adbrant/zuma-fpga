@@ -1,0 +1,36 @@
+.model popcount
+.inputs top^in~0 top^in~1 top^in~2 top^in~3 top^in~4 top^in~5 top^in~6 top^in~7
+.outputs top^out~0 top^out~1
+
+.names gnd
+.names hbpad
+.names vcc
+1
+
+.names top^in~0 top^in~1 top^BITWISE_AND~0^LOGICAL_AND~10
+11 1
+
+.names top^BITWISE_AND~0^LOGICAL_AND~10 top^in~2 top^BITWISE_AND~1^LOGICAL_AND~9
+11 1
+
+.names top^BITWISE_AND~1^LOGICAL_AND~9 top^in~3 top^BITWISE_AND~2^LOGICAL_AND~8
+11 1
+
+.names top^in~0 top^in~1 top^BITWISE_OR~4^LOGICAL_OR~13
+1- 1
+-1 1
+
+.names top^BITWISE_OR~4^LOGICAL_OR~13 top^in~2 top^BITWISE_OR~5^LOGICAL_OR~12
+1- 1
+-1 1
+
+.names top^BITWISE_OR~5^LOGICAL_OR~12 top^in~3 top^BITWISE_OR~6^LOGICAL_OR~11
+1- 1
+-1 1
+
+.names top^BITWISE_AND~2^LOGICAL_AND~8 top^out~0
+1 1
+.names top^BITWISE_OR~6^LOGICAL_OR~11 top^out~1
+1 1
+.end
+

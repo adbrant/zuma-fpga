@@ -1,0 +1,2720 @@
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 0
+off 0 side 1 track 2
+off 0 side 1 track 3
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 36
+off 0 side 1 track 37
+Pin number: 0
+off 0 side 2 track 4
+off 0 side 2 track 5
+off 0 side 2 track 20
+off 0 side 2 track 21
+off 0 side 2 track 38
+off 0 side 2 track 39
+Pin number: 0
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 22
+off 0 side 3 track 23
+off 0 side 3 track 40
+off 0 side 3 track 41
+Pin number: 3
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 3
+off 0 side 1 track 10
+off 0 side 1 track 11
+off 0 side 1 track 28
+off 0 side 1 track 29
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 3
+off 0 side 2 track 12
+off 0 side 2 track 13
+off 0 side 2 track 30
+off 0 side 2 track 31
+off 0 side 2 track 46
+off 0 side 2 track 47
+Pin number: 3
+off 0 side 3 track 14
+off 0 side 3 track 15
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 48
+off 0 side 3 track 49
+Pin number: 0
+Pin number: 0
+off 0 side 0 track 0
+off 0 side 0 track 1
+off 0 side 0 track 16
+off 0 side 0 track 17
+off 0 side 0 track 34
+off 0 side 0 track 35
+Pin number: 1
+off 0 side 1 track 0
+off 0 side 1 track 1
+off 0 side 1 track 18
+off 0 side 1 track 19
+off 0 side 1 track 34
+off 0 side 1 track 35
+Pin number: 2
+off 0 side 2 track 2
+off 0 side 2 track 3
+off 0 side 2 track 18
+off 0 side 2 track 19
+off 0 side 2 track 36
+off 0 side 2 track 37
+Pin number: 3
+off 0 side 3 track 2
+off 0 side 3 track 3
+off 0 side 3 track 20
+off 0 side 3 track 21
+off 0 side 3 track 36
+off 0 side 3 track 37
+Pin number: 4
+off 0 side 0 track 4
+off 0 side 0 track 5
+off 0 side 0 track 20
+off 0 side 0 track 21
+off 0 side 0 track 38
+off 0 side 0 track 39
+Pin number: 5
+off 0 side 1 track 4
+off 0 side 1 track 5
+off 0 side 1 track 22
+off 0 side 1 track 23
+off 0 side 1 track 40
+off 0 side 1 track 41
+Pin number: 6
+off 0 side 2 track 6
+off 0 side 2 track 7
+off 0 side 2 track 22
+off 0 side 2 track 23
+off 0 side 2 track 40
+off 0 side 2 track 41
+Pin number: 7
+off 0 side 3 track 6
+off 0 side 3 track 7
+off 0 side 3 track 24
+off 0 side 3 track 25
+off 0 side 3 track 42
+off 0 side 3 track 43
+Pin number: 8
+off 0 side 0 track 8
+off 0 side 0 track 9
+off 0 side 0 track 26
+off 0 side 0 track 27
+off 0 side 0 track 42
+off 0 side 0 track 43
+Pin number: 9
+off 0 side 1 track 8
+off 0 side 1 track 9
+off 0 side 1 track 26
+off 0 side 1 track 27
+off 0 side 1 track 44
+off 0 side 1 track 45
+Pin number: 10
+off 0 side 2 track 10
+off 0 side 2 track 11
+off 0 side 2 track 28
+off 0 side 2 track 29
+off 0 side 2 track 44
+off 0 side 2 track 45
+Pin number: 11
+off 0 side 3 track 10
+off 0 side 3 track 11
+off 0 side 3 track 28
+off 0 side 3 track 29
+off 0 side 3 track 46
+off 0 side 3 track 47
+Pin number: 12
+off 0 side 0 track 12
+off 0 side 0 track 13
+off 0 side 0 track 30
+off 0 side 0 track 31
+off 0 side 0 track 46
+off 0 side 0 track 47
+Pin number: 13
+off 0 side 1 track 14
+off 0 side 1 track 15
+off 0 side 1 track 30
+off 0 side 1 track 31
+off 0 side 1 track 48
+off 0 side 1 track 49
+Pin number: 14
+off 0 side 2 track 14
+off 0 side 2 track 15
+off 0 side 2 track 32
+off 0 side 2 track 33
+off 0 side 2 track 48
+off 0 side 2 track 49
+Pin number: 15
+off 0 side 3 track 16
+off 0 side 3 track 17
+off 0 side 3 track 32
+off 0 side 3 track 33
+off 0 side 3 track 50
+off 0 side 3 track 51

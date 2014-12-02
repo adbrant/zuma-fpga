@@ -1,0 +1,3 @@
+export ZUMA_DIR=$HOME/google/zuma-fpga-overlay/ZUMA/
+
+export VTR_DIR=$HOME/vtr/vtr_release

@@ -1,0 +1,1 @@
+$VTR_DIR/vpr/vpr netlist.net ARCH.xml place.p route.r -blif_file abc_out.blif -timing_analysis off -nodisp -route_chan_width 52
