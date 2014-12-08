@@ -1,15 +1,16 @@
-from clos import *
+from clos_routing  import *
 
 import os
 import random
 
 
 random.seed(51)
-route_clos([[random.randint(0,35) for i in range(6)] for j in range(8)])
+route_clos([[random.randint(0,35) for i in range(6)] for j in range(8)],28,6,8)
 
 
 
 for i in range(200, 2000):
+	print '******************** New Round ***************************'
 	print 'seed', i
 	random.seed(i)
 	
@@ -25,4 +26,6 @@ for i in range(200, 2000):
 		else:
 			list.append([random.randint(0,35) for i in range(6)])
 	print list
-	route_clos(list)
+	route_clos(list,28,6,8)
+
+	print '******************** End **********************************'

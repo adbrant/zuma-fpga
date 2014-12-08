@@ -25,6 +25,12 @@ A. Running the Example
 Calling the shell file 'compile.sh' will automatically build the ZUMA system verilog, and a bitstream hex file, 
 which can be used to compile a ZUMA system. By replacing test.v with your own file, and modifying the ZUMA 
 configuration file, custom architectures and bitstreams can be generated.
+A constrain of the circuit file is that the head of the model must have the following signature:
+verilog-module-name ([clock],reset, [input-name-1, input-name-2 , ... ])
+The clock and reset signal must have the given names and position.
+The reset is treated as the first input on the fpga.
+The declaration of a clock is optional.
+
 B. Generating the ZUMA system
 To generate the Verilog architecture that can be compiled to an FPGA, configuration files are generated for the VTR tools, 
 which are then run to generate the global routing graph used in the ZUMA architecture.

@@ -1,1 +1,1 @@
-`define ZUMA_LUT_SIZE 5
+`define ZUMA_LUT_SIZE 6

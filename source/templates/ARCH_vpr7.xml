@@ -57,12 +57,10 @@
         </mode>
 
         <!-- VPR 6.0
-        -->
         <fc_in type="ZUMA_FCIN_TYPE">ZUMA_FCIN_VAL</fc_in>
-        <fc_out type="ZUMA_FCOUT_TYPE">ZUMA_FCOUT_VAL</fc_out>
-        <!-- VPR 7.0
+        <fc_out type="ZUMA_FCOUT_TYPE">ZUMA_FCOUT_VAL</fc_out> -->
+        <!-- VPR 7.0-->
         <fc default_in_type="ZUMA_FCIN_TYPE" default_in_val="ZUMA_FCIN_VAL" default_out_type="ZUMA_FCOUT_TYPE" default_out_val="ZUMA_FCOUT_VAL" />
-        -->
 
         <!-- IOs go on the periphery of the FPGA, for consistency, 
           make it physically equivalent on all sides so that only one definition of I/Os is needed.
@@ -122,12 +120,10 @@
           <direct name="direct1" input="ble[ZUMA_N_m_1:0].out" output="clb.O"/>
         </interconnect>
         <!-- VPR 6.0 
-        -->
         <fc_in type="ZUMA_FCIN_TYPE">ZUMA_FCIN_VAL</fc_in>
-        <fc_out type="ZUMA_FCOUT_TYPE">ZUMA_FCOUT_VAL</fc_out>
-        <!-- VPR 7.0
+        <fc_out type="ZUMA_FCOUT_TYPE">ZUMA_FCOUT_VAL</fc_out> -->
+        <!-- VPR 7.0 -->
         <fc default_in_type="ZUMA_FCIN_TYPE" default_in_val="ZUMA_FCIN_VAL" default_out_type="ZUMA_FCOUT_TYPE" default_out_val="ZUMA_FCOUT_VAL" />
-        -->
 
 
         <pinlocations pattern="spread"/>

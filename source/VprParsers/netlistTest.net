@@ -1,0 +1,234 @@
+<block name="netlist.net" instance="FPGA_packed_netlist[0]">
+	<inputs>
+		top^clock top^reset top^in~0 top^in~1 top^in~2 top^in~3 top^in~4 top^in~5 top^in~6 top^in~11 top^in~12 top^in~13 top^in~14 top^in~15 top^in~16 top^in~17 top^in~18 top^in~19 top^in~20 top^in~21 top^in~22 top^in~23 top^in~24 top^in~25 top^in~26 top^in~27 top^in~28 top^in~29 top^in~30 top^in~31 top^in~32 top^in~33 top^in~34 top^in~35 top^in~36 top^in~37 top^in~38 
+	</inputs>
+
+	<outputs>
+		out:top^out 
+	</outputs>
+
+	<globals>
+		top^clock 
+	</globals>
+
+	<block name="n95" instance="clb[0]" mode="clb">
+		<inputs>
+			<port name="I">n142 top^FF_NODE~189 n143 top^reset n129 n134 n145 n130 open n137 top^FF_NODE~188 n110 open n57 n112 n121 </port>
+		</inputs>
+		<outputs>
+			<port name="O">ble[0].out[0]->direct1  open open ble[3].out[0]->direct1  </port>
+		</outputs>
+		<globals>
+			<port name="clk">top^clock </port>
+		</globals>
+		<block name="n95" instance="ble[0]" mode="ble">
+			<inputs>
+				<port name="in">clb.I[0]->complete1  clb.I[4]->complete1  clb.I[7]->complete1  ble[2].out[0]->complete1  clb.I[3]->complete1  ble[1].out[0]->complete1  </port>
+			</inputs>
+			<outputs>
+				<port name="out">ff[0].Q[0]->mux1  </port>
+			</outputs>
+			<globals>
+				<port name="clk">clb.clk[0]->complete2  </port>
+			</globals>
+			<block name="n95" instance="soft_logic[0]" mode="n1_lut6">
+				<inputs>
+					<port name="in">ble.in[0]->direct2  ble.in[1]->direct2  ble.in[2]->direct2  ble.in[3]->direct2  ble.in[4]->direct2  ble.in[5]->direct2  </port>
+				</inputs>
+				<outputs>
+					<port name="out">lut6[0].out[0]->direct2  </port>
+				</outputs>
+				<globals>
+				</globals>
+				<block name="n95" instance="lut6[0]" mode="lut6">
+					<inputs>
+						<port name="in">soft_logic.in[0]->direct1  soft_logic.in[1]->direct1  soft_logic.in[2]->direct1  soft_logic.in[3]->direct1  soft_logic.in[4]->direct1  soft_logic.in[5]->direct1  </port>
+					</inputs>
+					<outputs>
+						<port name="out">lut[0].out[0]->complete2:lut6  </port>
+					</outputs>
+					<globals>
+					</globals>
+					<block name="n95" instance="lut[0]">
+						<inputs>
+							<port name="in">lut6.in[4]->complete:lut6  lut6.in[1]->complete:lut6  lut6.in[2]->complete:lut6  lut6.in[5]->complete:lut6  lut6.in[0]->complete:lut6  lut6.in[3]->complete:lut6  </port>
+						</inputs>
+						<outputs>
+							<port name="out">n95 </port>
+						</outputs>
+						<globals>
+						</globals>
+					</block>
+				</block>
+			</block>
+			<block name="top^FF_NODE~190" instance="ff[0]">
+				<inputs>
+					<port name="D">soft_logic[0].out[0]->direct1  </port>
+				</inputs>
+				<outputs>
+					<port name="Q">top^FF_NODE~190 </port>
+				</outputs>
+				<globals>
+					<port name="clk">ble.clk[0]->direct3  </port>
+				</globals>
+			</block>
+		</block>
+		<block name="n78" instance="ble[2]" mode="ble">
+			<inputs>
+				<port name="in">clb.I[12]->complete1  clb.I[11]->complete1  open clb.I[14]->complete1  clb.I[0]->complete1  clb.I[1]->complete1  </port>
+			</inputs>
+			<outputs>
+				<port name="out">soft_logic[0].out[0]->mux1  </port>
+			</outputs>
+			<globals>
+				<port name="clk">open </port>
+			</globals>
+			<block name="n78" instance="soft_logic[0]" mode="n1_lut6">
+				<inputs>
+					<port name="in">ble.in[0]->direct2  ble.in[1]->direct2  open ble.in[3]->direct2  ble.in[4]->direct2  ble.in[5]->direct2  </port>
+				</inputs>
+				<outputs>
+					<port name="out">lut6[0].out[0]->direct2  </port>
+				</outputs>
+				<globals>
+				</globals>
+				<block name="n78" instance="lut6[0]" mode="lut6">
+					<inputs>
+						<port name="in">soft_logic.in[0]->direct1  soft_logic.in[1]->direct1  open soft_logic.in[3]->direct1  soft_logic.in[4]->direct1  soft_logic.in[5]->direct1  </port>
+					</inputs>
+					<outputs>
+						<port name="out">lut[0].out[0]->complete2:lut6  </port>
+					</outputs>
+					<globals>
+					</globals>
+					<block name="n78" instance="lut[0]">
+						<inputs>
+							<port name="in">lut6.in[0]->complete:lut6  lut6.in[3]->complete:lut6  lut6.in[1]->complete:lut6  lut6.in[4]->complete:lut6  lut6.in[5]->complete:lut6  open </port>
+						</inputs>
+						<outputs>
+							<port name="out">n78 </port>
+						</outputs>
+						<globals>
+						</globals>
+					</block>
+				</block>
+			</block>
+			<block name="open" instance="ff[0]"/>
+		</block>
+	</block>
+	<block name="n125" instance="clb[6]" mode="clb">
+		<inputs>
+			<port name="I">n95_1 open open top^FF_NODE~188 open n90 n91 top^FF_NODE~190 n82 n111 open n103 n113 n96 n56 n81 </port>
+		</inputs>
+		<outputs>
+			<port name="O">open ble[1].out[0]->direct1  ble[2].out[0]->direct1  ble[3].out[0]->direct1  </port>
+		</outputs>
+		<globals>
+			<port name="clk">top^clock </port>
+		</globals>
+		<block name="n125" instance="ble[0]" mode="ble">
+			<inputs>
+				<port name="in">clb.I[0]->complete1  ble[3].out[0]->complete1  clb.I[7]->complete1  ble[2].out[0]->complete1  clb.I[3]->complete1  clb.I[8]->complete1  </port>
+			</inputs>
+			<outputs>
+				<port name="out">soft_logic[0].out[0]->mux1  </port>
+			</outputs>
+			<globals>
+				<port name="clk">open </port>
+			</globals>
+			<block name="n125" instance="soft_logic[0]" mode="n1_lut6">
+				<inputs>
+					<port name="in">ble.in[0]->direct2  ble.in[1]->direct2  ble.in[2]->direct2  ble.in[3]->direct2  ble.in[4]->direct2  ble.in[5]->direct2  </port>
+				</inputs>
+				<outputs>
+					<port name="out">lut6[0].out[0]->direct2  </port>
+				</outputs>
+				<globals>
+				</globals>
+				<block name="n125" instance="lut6[0]" mode="lut6">
+					<inputs>
+						<port name="in">soft_logic.in[0]->direct1  soft_logic.in[1]->direct1  soft_logic.in[2]->direct1  soft_logic.in[3]->direct1  soft_logic.in[4]->direct1  soft_logic.in[5]->direct1  </port>
+					</inputs>
+					<outputs>
+						<port name="out">lut[0].out[0]->complete2:lut6  </port>
+					</outputs>
+					<globals>
+					</globals>
+					<block name="n125" instance="lut[0]">
+						<inputs>
+							<port name="in">lut6.in[4]->complete:lut6  lut6.in[1]->complete:lut6  lut6.in[2]->complete:lut6  lut6.in[0]->complete:lut6  lut6.in[5]->complete:lut6  lut6.in[3]->complete:lut6  </port>
+						</inputs>
+						<outputs>
+							<port name="out">n125 </port>
+						</outputs>
+						<globals>
+						</globals>
+					</block>
+				</block>
+			</block>
+			<block name="open" instance="ff[0]"/>
+		</block>
+		<block name="top^FF_NODE~189" instance="ble[3]" mode="ble">
+			<inputs>
+				<port name="in">open open open open open clb.I[5]->complete1  </port>
+			</inputs>
+			<outputs>
+				<port name="out">ff[0].Q[0]->mux1  </port>
+			</outputs>
+			<globals>
+				<port name="clk">clb.clk[0]->complete2  </port>
+			</globals>
+			<block name="open" instance="soft_logic[0]" mode="n1_lut6">
+				<inputs>
+					<port name="in">open open open open open ble.in[5]->direct2  </port>
+				</inputs>
+				<outputs>
+					<port name="out">lut6[0].out[0]->direct2  </port>
+				</outputs>
+				<globals>
+				</globals>
+				<block name="open" instance="lut6[0]" mode="lut6">
+					<inputs>
+						<port name="in">open open open open open soft_logic.in[5]->direct1  </port>
+					</inputs>
+					<outputs>
+						<port name="out">lut6[0].in[5]->complete:lut6  </port>
+					</outputs>
+					<globals>
+					</globals>
+				</block>
+			</block>
+			<block name="top^FF_NODE~189" instance="ff[0]">
+				<inputs>
+					<port name="D">soft_logic[0].out[0]->direct1  </port>
+				</inputs>
+				<outputs>
+					<port name="Q">top^FF_NODE~189 </port>
+				</outputs>
+				<globals>
+					<port name="clk">ble.clk[0]->direct3  </port>
+				</globals>
+			</block>
+		</block>
+	</block>
+	<block name="top^clock" instance="io[61]" mode="inpad">
+		<inputs>
+			<port name="outpad">open </port>
+		</inputs>
+		<outputs>
+			<port name="inpad">inpad[0].inpad[0]->inpad  </port>
+		</outputs>
+		<globals>
+			<port name="clock">open </port>
+		</globals>
+		<block name="top^clock" instance="inpad[0]">
+			<inputs>
+			</inputs>
+			<outputs>
+				<port name="inpad">top^clock </port>
+			</outputs>
+			<globals>
+			</globals>
+		</block>
+	</block>
+</block>
