@@ -1,0 +1,16 @@
+#!/usr/bin/python2.7
+
+
+import sys
+import  zuma_config
+
+def main():
+    
+    echo = 0
+    if zuma_config.params.vpr7 is True:
+        echo = 1
+    
+    sys.stdout.write(str(echo))
+
+if __name__ == "__main__":
+    main()

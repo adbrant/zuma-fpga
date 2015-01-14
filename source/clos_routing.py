@@ -2,147 +2,197 @@
 #	Alex Brant 
 #	Email: alex.d.brant@gmail.com
 #	2012
-#	Clos Routing and Generation
+#   Clos Routing and Generation
+    
+import math
+import random
+import sys
 
+def route_clos(routing_vector,I,k,N):
+    
+    #In the current tested status, I+N must be divideable by k
+    if (((I+N) % k) != 0):
+        print "\n\n--------------  ERROR -----------------------"
+        print "In the current status, only values for I and N" + \
+              " are supported where I+N is dividable by k"
+        print  "---------------------------------------------"
+        sys.exit(0)
 
+    #set the count of first stage crossbars
+    P = int(math.ceil( (N + I)/ k))
 
-from structs import *
-def build_clos(n_inputs, n_outputs, n,m,r, in_ids, nodelist,location):
-	
-	stage1nodes = []
-	#first stage
-	for i in range(r):#r crossbar
-		for j in range(n): #m outputs
-			clos_node =  node()
-			for k in range(m):
-				clos_node.inputs.append(in_ids[i*m+k])
-			clos_node.id = len(nodelist+1)
-			clos_node.location = location
-			stage1nodes.append(clos_node)
-			nodelist.append(clos_node)
+    #some debuggin output
+    #print 'P: ' , P
+    #print 'N: ', N
+    #print 'k: ', k
+    #print 'I: ', I
+    #print 'RoutingVector ', routing_vector
+    
+    #first stage: r=P crossbars with k=m input pins
+    #this list describe the mapping,between the output pins of this stage
+    #and the interconnection block input pins
+    #so we have P lists in this list with k outputs containing the 
+    #input pin number
+    stage1 = [[-1 for j in range(k)] for i in range(P)]
+    
+    #second stage: m=k crossbars with P=r input pins
+    stage2 = [[-1 for j in range(N)] for i in range(k)]
+    
+    #tracks if the routing algo was sucessfully
+    success = 0
+    #a count to prevent infinite loops.
+    #break up the outer loop and ends the routing trial.
+    supercount = 0
 
-	stage2nodes = []
-	for i in range(m):#m crossbar
-		for j in range(r): #m outputs
-			clos_node =  node()
-			for k in range(r):
-				clos_node.inputs.append(stage2nodes[j*n+i].id)
-			clos_node.id = len(nodelist+1)
-			clos_node.location = location
-			stage1nodes.append(clos_node)
-			nodelist.append(clos_node)
-			
-	return [stage1nodes,stage2nodes] 
-	
-	
-def route_clos(routing_vector,n,r,m):
-	from parse_vpr import *
+    while success is 0 and supercount < 180:
 
-	#only setup for nxn networks right now	
-	P = [[],[]] #permutation connections
-	for lut in routing_vector:
-		for i in lut:
-			P[0].append(len(P[1]))
-			P[1].append(i)
-			
-	#number of connections from first to third stage switch		
-	H = [[0 for j in range(r)] for i in range(r)]		
-	for j in range(r):
-		for pin in routing_vector[j]:
-			#input switch number
-			i = int(pin/n)
-			H[i][j] = H[i][j] + 1 
+        supercount = supercount +1
 
-	#first stage is 8 6-by-6 crossbars (2 will be unused, for 6 6x6)
-	stage1 = [[-1 for j in range(m)] for i in range(r)]
-	#second stage is 6 8-by-8 crossbars (last 2 inputs will be unused for 6 6x8 crossbars(
-	stage2 = [[-1 for j in range(r)] for i in range(m)]
-	#last stage is 8 6x6 crossbars (actually eluts)
-	#go through each pin
-	success = 0
-	supercount = 0
-	import time
-	starttime = time.clock()
-	while success is 0:
-		supercount = supercount +1
-	
-		in_to_out = [[] for i in range(36)]
-		
-		for i in range(len(routing_vector)):
-			for pin in routing_vector[i]:
-				in_to_out[pin].append(i)
-				
-		unrouted = []
-		
-		pins_to_route = [ i for i in range(len(in_to_out))]
-		import random
-		
-		random.shuffle(pins_to_route)
-		count = 0
-		for pin in pins_to_route:
-			random.shuffle(in_to_out[pin])
-		while success is 0 and count < 80:
-			unrouted = []
-			count = count + 1
-			
-			nlist = [ i for i in range(m)]		
-			random.shuffle(nlist)
-			random.shuffle(pins_to_route)
-			for pin in pins_to_route :
-				x1 = int(pin/n)	
-				
-				
-				for dest in in_to_out[pin]:		
-					s1 = -1
-					s2 = -1
+        #just a change of the representation of the routing vector.
+        #make a list for every used pin of the clos network input,
+        #append the ble index for this pin.
+        # give the relation input pin -> ble number
 
-					for i in nlist:
-						if stage1[x1][i] is -1 or stage1[x1][i] is pin: #unused		
-							#see if this will route to desired mux
-							if stage2[i][dest] is -1 or stage2[i][dest] is pin: #unused
-								stage1[x1][i] = pin
-								stage2[i][dest] = pin
-								s1 = i
-								s2 = dest
-								break
-					if s1 is -1:
-						
-						unrouted.append((pin, dest))
-			pins_to_route = []
-			
-			if len(unrouted) is 0:
-				success = 1
-				
-			for pin, dest in unrouted:
-				#rip up other routed pins to make room
-				for i in range(1 + int(count/20)): #unroute more pins as we do more iterations
-					pin_to_unroute = -1
-					x1 = int(pin/n)	
-					list = [ i for i in range(m)]
-					random.shuffle(list)
-					if random.random() < 0.6:
-						for i in list:
-							if stage2[i][dest] is -1:
-								pin_to_unroute = stage1[x1][i]						
-								break
-					if random.random() < 0.06:
-						pin_to_unroute = random.choice(range(36))
-		
-					if pin_to_unroute < 0:
-						pin_to_unroute = stage2[random.randint(0,m-1)][dest]
-					
-					for i in range(r):
-						for j in range(m):
-							if stage1[i][j] is pin_to_unroute:
-								stage1[i][j] = -1
-							if stage2[j][i] is pin_to_unroute:
-								stage2[j][i] = -1
-					
-					pins_to_route.append(pin_to_unroute)
-				
-				pins_to_route.append(pin)
-				
-				
-	return [stage1, stage2]
+        in_to_out = [[] for i in range(I+N)]
+        
+        #len routing vector is N. the number of bles.
+        for bleIndex in range(len(routing_vector)):
+            #the source pin number. 
+            #pin is referred to the clos network input pin number
+            for pin in routing_vector[bleIndex]:
+                #skip unrouted pins
+                if (pin != -1):
+                    in_to_out[pin].append(bleIndex)
+                
+        unrouted = []
+        
+        #made a list 0,1,2,.. to I+N 
+        #describe the input pin numbers in a sequence we try to route them
+        #start with the first number and end with the last.
+        #therefore we will shuffle this index list.
+        pins_to_route = [ i for i in range(len(in_to_out))]
+        
+        #permutate the list
+        random.shuffle(pins_to_route)
+        #a counter to prevent infinite loops
+        count = 0
+        #permutate the target ble numbers of a pin
+        for pin in pins_to_route:
+            random.shuffle(in_to_out[pin])
+        while success is 0 and count < 80:
 
-	
+            #a list of unrouted input pins. 
+            #format : list of tuple (input pin number, target ble index)
+            unrouted = []
+            count = count + 1
+            
+            #a list 0,1,2 ... to k=m
+            #describe the output pin numbers of a crossbar 
+            nlist = [ i for i in range(k)]      
+            random.shuffle(nlist)
+            #the last try to route was not successfull. maybe we try it in an other sequence
+            #therefore we shuffle the index list of pins we want try to route.
+            random.shuffle(pins_to_route)
+            #try to route the input pins step by step
+            for pin in pins_to_route :
+                #get the crossbar number of the first stage for this input pin
+                x1 = int(pin/k)     
+                
+                #get the trageted ble index numbers
+                for dest in in_to_out[pin]:
+                    #index of the output pin of the first stage crossbar, used for the routing
+                    #only set when the complete routing trough both stages was succesfull
+                    s1 = -1
+                    #index of the output pin of the second stage crossbar, used for the routing
+                    s2 = -1
+                    #try to find a free output pin of the first stage crossbar to route the track
+                    for i in nlist:
+                        #remember: x1 is the crossbar number of the first stage.
+                        # i is the output pin of this crossbar
+                        # pin is the input pin number
+                        #dest is the targeted ble number
+                        
+                        #output of the first stage crossbar is free or already used for that pin
+                        if stage1[x1][i] is -1 or stage1[x1][i] is pin: #unused         
+                            #see if this will route to desired mux
+                            #the output pin of the corresponding second stage crossbar is free
+                            # or already used for this pin
+                            if stage2[i][dest] is -1 or stage2[i][dest] is pin: #unused
+                                #this two output pins of both crossbars are used for the
+                                #given input pin. save this input pin number
+                                stage1[x1][i] = pin
+                                stage2[i][dest] = pin
+                                #variable to track if this ble was not routable
+                                s1 = i
+                                s2 = dest
+                                break
+                    #there was no possible output pin in the first or second stage crossbar 
+                    #to route this input pin number
+                    if s1 is -1:
+                        #save this unrouted pin together with the dest ble index
+                        unrouted.append((pin, dest))
+            pins_to_route = []
+            
+            #all pin have been routed
+            if len(unrouted) is 0:
+                success = 1
+
+            #there are unrouted input pins
+            for pin, dest in unrouted:
+                
+                #rip up other routed pins to make room
+                for iterations in range(1 + int(count/20)): #unroute more pins as we do more iterations
+                    pin_to_unroute = -1
+                    #select the first stage crossbar of the unrouted input pin
+                    x1 = int(pin/k)     
+                    # build a list from [ 0,1 to k-1]
+                    #the outputs indexes of the crossbar we want to throw out some tracks
+                    nlist = [ i for i in range(k)]
+                    random.shuffle(nlist)
+                    
+                    #this branch paste -1 in the unroute list. beaks the algo
+                    #if random.random() < 0.6:
+                    #   for i in nlist:
+                    #       #the stage 2 crossbars output pin to the dest ble is not used
+                    #       #so we have an input pin number we want to unroute
+                    #       if stage2[i][dest] is -1:
+                    #           pin_to_unroute = stage1[x1][i]                      
+                    #           break
+                    #just take a random input pin to reroute. should be I+N
+                    
+                    #if random.random() < 0.06:
+                    #   pin_to_unroute = random.choice(range(I+N))
+                    
+                    pin_to_unroute = random.choice(range(I+N))
+
+                    #there are still unrouted pins but no selection of pins to unroute
+                    #take one random crossbar of the second stage
+                    #and select the pin which leads to the dest ble
+                    
+                    #can also break the algo throug -1
+                    #if pin_to_unroute < 0:
+                    #   pin_to_unroute = stage2[random.randint(0,k-1)][dest]
+
+                    #we have selected an input pin to reroute but we must 
+                    #cancel the routings in the crossbars for this pin
+                    for i in range(P):
+                        for j in range(k):
+                            if stage1[i][j] is pin_to_unroute:
+                                stage1[i][j] = -1
+                    for i in range(k):
+                        for j in range(N):
+                            if stage2[i][j] is pin_to_unroute:
+                                stage2[i][j] = -1
+                    #now we can append the unrouted pin in the route todo list
+                    
+                    pins_to_route.append(pin_to_unroute)
+                #also append the still not routed pin
+                pins_to_route.append(pin)
+    
+    if success is 0:
+        print "\n\n--------------  ERROR -----------------------"
+        print 'Routing Algo was not able to route the network'
+        print "---------------------------------------------"
+        sys.exit(0)
+
+    return [stage1, stage2]
