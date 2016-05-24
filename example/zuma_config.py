@@ -27,7 +27,7 @@ params.fc_out = 10
 params.fc_out_type = 'abs'
 
 #use vpr 7
-params.vpr7 = False
+params.vpr7 = True
 #close network support
 params.UseClos = False
 #Should the parser build large permutation around all IO to fix their position in the fpga_input/fpga_output arrays?
@@ -36,7 +36,7 @@ params.orderedIO = True
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.
 #WARNING:graphviz could freeze the build process if the graph is too big.
-params.dumpNodeGraph = True
+params.dumpNodeGraph = False
 params.graphviz = False
 
 

@@ -5,7 +5,7 @@ You can call the script
 
 where the bitstream.mif is the bitstream you want to build your blif from
 output.blif the name of the blif file you want to create 
-and HasClock and HasReset are two booleans which indicate that the circuit use a clock or a reset signal.
+and HasClock and HasReset are two booleans [True/False] which indicate that the circuit use a clock or a reset signal.
 Those two signal properties can not be read out from the bitstream so we have to
 specify them.
 

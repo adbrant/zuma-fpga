@@ -10,7 +10,8 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 
 # include base and VTR directories
-. $DIR/../../ZUMA/toolpaths
+ZUMA_DIR=$(readlink -f $DIR/..)
+. $DIR/../toolpaths
 pwd
 
 #check which file to compile
@@ -58,7 +59,7 @@ rm abccommands \
    route.r \
    user_clocks.clock
 
-if [[ -z "$USE_VPR_7" ]]; then
+if [ $USE_VPR_7 -eq 0 ]; then
     rm clock_fixed.blif \
        ARCH.xml
 #vpr7 is used
@@ -97,7 +98,7 @@ fi
 
 
 #if vpr7 is unset
-if [[ -z "$USE_VPR_7" ]]; then
+if [ $USE_VPR_7 -eq 0 ]; then
     #run the zuma generation scripts
     #python $ZUMA_DIR/source/run_zuma_all.py ./ ../generated/
     python2.7 $ZUMA_DIR/source/zuma_build.py  \
