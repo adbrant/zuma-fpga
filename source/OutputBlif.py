@@ -2,18 +2,29 @@ from structs import *
 from BuildBitstream import build_lut_contents
 import globs
 
-#writes the zuma_out.blif file to make equivalent checks.
-#Therfore we translate the node graph to a blif file.
+def convertReverseLutContent(contentLine):
+    
+    result = []
+
+    for bit in contentLine:
+        if bit == '1':
+            result.append(1)
+        else:
+            result.append(0)
+    return result
+
+##Writes the zuma_out.blif file to make equivalent checks.
+#Therefore we translate the node graph to a blif file.
 #the names of the nodes are the ids combined with brackets,
-#except the output, which have there original blif names
+#except the outputs, which have there original blif names
 def output_blif(filename):
 
-    # a list of node ids where we track the nodes
-    #we wrote to the file
+    # a list of node ids to track the nodes
+    # we wrote to the file.
     writtenList = []
     #a list of node ids to track the inputs of the written nodes
-    #in the writtenList list
-    #needed for blif closure in a later step, where we find nodes,
+    #in the writtenList list.
+    #Needed for blif closure in a later step, where we find nodes,
     #which were not written to the blif file but needed as an input
     referencedList = []
 
@@ -35,7 +46,7 @@ def output_blif(filename):
     string = string + '\n'
     f.write(string)
 
-    #make a connection (by a passthorugh)
+    #make a connection (by a passthrough)
     #between the node id and output/input name.
     #the nodes will be later read again,
     #and at that point the function will build passthrough's
@@ -103,14 +114,9 @@ def output_blif(filename):
         if node.eLUT:
             if node.LUT: #has a configuration
                 cl = globs.clusters[node.location]
-                if node.LUT.useFF:
-                    if node.LUT.output in cl.LUTs:
-                        index = cl.LUTs.index(node.LUT.output)
-                    #TODO: Is reverselatch depricated?
-                    else:
-                        index = cl.LUTs.index(globs.reverselatches[node.LUT.output])
-                else:
-                    index = cl.LUTs.index(node.LUT.output)
+
+                #get the ble index of the elut
+                index = cl.getBleIndexOnId(node.id)
 
                 f.write(' .names ')
                 #go through the input node id list and write these
@@ -120,13 +126,22 @@ def output_blif(filename):
                     f.write('[' + str(i) + '] ')
                     referencedList.append(i)
 
-                #write the output id. the id of this lut
-                #and place its id to the written list
-                f.write('[' + str(cl.LUT_nodes[index]) + ']\n')
-                writtenList.append(cl.LUT_nodes[index])
+                #write the output id which is the id of this lut
+                #and add its id to the written list
 
-                #build and write the configurtation to the blif file
-                bits = build_lut_contents(globs.host_size, node.LUT, cl, index)
+                f.write('[' + str(node.id) + ']\n')
+                writtenList.append(node.id)
+
+
+                #build and write the configuration to the blif file
+                if globs.bit_to_blif:
+                    bits = convertReverseLutContent(node.LUT.bits[0]) #list of bit list
+                    if globs.debug:
+                        print 'reverse lut ', str(node.id) , ' content: ', str(bits)
+                else:
+                    bits = build_lut_contents(globs.host_size, node.LUT, cl, index)
+                    if globs.debug:
+                        print 'normal lut ', str(node.id) , ' content: ' ,  str(bits)
 
                 at_least_one = False
                 for i in range(len(bits)):
@@ -144,10 +159,6 @@ def output_blif(filename):
             else:
                 pass
 
-            #keep track that this node was written?
-            #TODO: depricated?
-            #seems to be a copy paster error of another function?
-            node.config_generated =     True
             continue
 
         #skip unconnected muxes. only muxes have a valid source attribut.
@@ -161,30 +172,40 @@ def output_blif(filename):
             elutnode = globs.nodes[node.source]
             #index of the lut in the clusters LUTs list.
             index = -1
-            if elutnode.LUT: #only include FFs after configured LUTs
-                #The mux has has a config.
-                #That means that this ble uses its flipflop
+            
+            #only include FFs after configured LUTs
+            #This works because the lut can be:
+            # 1) a normal lut with a configuration
+            #    given in the blif file
+            # 2) a passtrough lut for the flipflop,
+            #    if only the flipflop is used on that ble.
+            #    the name of the passtrough lut is than
+            #    the name of the latch
+            if elutnode.LUT:
+
+                #get the ble index of the lut.
+                index = cl.getBleIndexOnId(elutnode.id)
+
+                #The ble uses its flipflop
                 #build a latch with the lut as an input and connect its output
-                if node.LUT:
-                    if elutnode.LUT.output in cl.LUTs:
-                        index = cl.LUTs.index(elutnode.LUT.output)
-                    #TODO: is reverselatch depricated?
-                    else:
-                        index = cl.LUTs.index(globs.reverselatches[elutnode.LUT.output])
+                if elutnode.LUT.useFF:
+
                     f.write('.latch ')
                     f.write('[' + str(node.source) + '] ')
-                    f.write('[' + str(cl.outputs[index].id) + ']'+ \
+                    #f.write('[' + str(cl.outputs[index].id) + ']'+ \
+                    f.write('[' + str(node.id) + ']'+ \
                             '  re top^clock 0\n')
                 #no config.
                 #only the lut is used. build a passtrough for that lut
                 else:
-                    
-                    index = cl.LUTs.index(elutnode.LUT.output)
+
                     f.write(' .names ')
                     f.write('[' + str(node.source) + '] ')
-                    f.write('[' + str(cl.outputs[index].id) + '] \n')
+                    #f.write('[' + str(cl.outputs[index].id) + '] \n')
+                    f.write('[' + str(node.id) + '] \n')
                     f.write('1 1\n')
-                writtenList.append(cl.outputs[index].id)
+                #writtenList.append(cl.outputs[index].id)
+                writtenList.append(node.id)
                 referencedList.append(node.source)
 
             continue
@@ -199,17 +220,18 @@ def output_blif(filename):
         referencedList.append(node.source)
 
 
-    for key in globs.clusters:
-        cl = globs.clusters[key]
-        for n in range(globs.params.N):
-            lut_id = cl.LUT_FFMUX_nodes[n]
-            opin_id = cl.outputs[n].id
-
-            f.write(' .names ')
-            f.write('[' + str(opin_id) + '] ' + '[' + str(lut_id) + '] ' + '\n')
-            f.write('1 1\n')
-            writtenList.append(lut_id)
-            referencedList.append(opin_id)
+    #This should now be automatically fixed by having the correct source on ffmux nodes
+    #for key in globs.clusters:
+    #    cl = globs.clusters[key]
+    #    for n in range(globs.params.N):
+    #        lut_id = cl.LUT_FFMUX_nodes[n]
+    #        opin_id = cl.outputs[n].id
+    #
+    #        f.write(' .names ')
+    #        f.write('[' + str(opin_id) + '] ' + '[' + str(lut_id) + '] ' + '\n')
+    #        f.write('1 1\n')
+    #        writtenList.append(lut_id)
+    #        referencedList.append(opin_id)
 
     #it could be that the same node id can be in the referenced list
     #twice or more, because two different nodes has the same node as input

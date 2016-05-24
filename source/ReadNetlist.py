@@ -9,14 +9,13 @@ if cmd_subfolder not in sys.path:
 import globs
 from structs import *
 from NetlistParser import parseNetlist
-#from clos_routing import build_clos
 from clos_routing import route_clos
 
 
-##find the cluster by its CLB attribute
-##search the clb name in the internal cluster list
-##return the cluster object if found, else None
-##param name The CLB name you want to find
+## Find the cluster by its CLB name attribute.
+# Search the clb name in the internal cluster list.
+# Return the cluster object if found, else None.
+# @param name The CLB name you want to find
 def getClusterByName(name):
 
     for key in globs.clusters:
@@ -25,8 +24,8 @@ def getClusterByName(name):
             return cluster
     return None
 
-##check if the given net is in the input driver list of the cluster
-##return True if the net is in the list otherwise False
+## Check if the given net is in the input driver list of the cluster.
+# return True if the net is in the list otherwise False.
 def isNetInInputDriverList(net,cluster):
     for i in cluster.inputs:
         if i.net == net:
@@ -34,7 +33,7 @@ def isNetInInputDriverList(net,cluster):
     #net was not found
     return False
 
-##Append the inputs of a given ble to the clusters LUT_input_nets array.
+## Append the inputs of a given ble to the clusters LUT_input_nets array.
 def copyBleInputs(netlistBle,cluster):
 
     #the LUT_input_nets list has an entry for each ble.
@@ -43,8 +42,8 @@ def copyBleInputs(netlistBle,cluster):
     for netlistInput in netlistBle.inputs:
         cluster.LUT_input_nets[-1].append(netlistInput )
 
-##copy the input netlist names and check
-##if its in the input driver list of the current cluster
+## Copy the input netlist names and check
+## if its in the input driver list of the current cluster
 def copyClusterInputs(netlistCluster,cluster):
     #copy the input netlist names and check
     #if its in the input driver list of the current cluster
@@ -56,40 +55,46 @@ def copyClusterInputs(netlistCluster,cluster):
             if not (isNetInInputDriverList(netlistInput,cluster)):
                 print 'net not found, cluster', cluster.name, netlistInput
 
-##copy a open keyword to the clusters LUTs list, so the instance numbers
-##of the netlists points to the right ble names. see structure.py
+## copy a open keyword to the clusters LUTs list, so the instance numbers
+## of the netlists points to the right ble names. see structure.py
 def setupEmptyLut(cluster):
-    #apend the lut to the clusters LUTs list
+    #append the lut to the clusters LUTs list
     cluster.LUTs.append('open' )
 
-##copy the Lut to the clusters LUTs list.
-##also update the nodes graph
+## copy the lut to the clusters LUTs list.
+## also update the nodes graph
 def copyLut(netlistBle,cluster,bleIndex):
 
     lutname = netlistBle.lut.name
-    #check if the lut output name is in the global Lut list
+    #check if the lut output name is in the global lut list
     if not (lutname in globs.LUTs):
         print 'Error in read_netlist: cannot find LUT', lutname
         return
 
     #apend the lut to the clusters LUTs list
     cluster.LUTs.append(lutname )
+    
     #update the nodes graph
-    globs.nodes[cluster.LUT_nodes[bleIndex]].eLUT = True
-    globs.nodes[cluster.LUT_nodes[bleIndex]].bits = globs.LUTs[lutname].contents
-    globs.nodes[cluster.LUT_nodes[bleIndex]].LUT = globs.LUTs[lutname]
+    lut = globs.LUTs[lutname]
+    lutNode = globs.nodes[cluster.LUT_nodes[bleIndex]]
+    
+    lutNode.eLUT = True
+    lutNode.bits = lut.contents
+    lutNode.LUT = lut
+    
+    lut.node = lutNode
 
-
-#if this ble uses it flipflop but not its lut
-#we have to build a passtrough lut
-#because the fliflop dont uses the output of the lut of this ble
+## Build a passtrough lut for a ble that only use its flipflop.
+# If a ble uses it flipflop but not its lut
+# we have to build a passtrough lut
+# because the fliflop dont uses the output of the lut of this ble.
 def copyFlipFlopBuildPasstrough(netlistBle,cluster,bleIndex):
 
-    #in the mom we must add this Lut with the fliflop name
+    #in the mom we must add this lut with the fliflop name
     #TODO: Is this with the new read_netlist important?
     #      change this for further versions
     latchName = netlistBle.flipflop.name
-    #check if the lut output name is in the global Lut list
+    #check if the lut output name is in the global lut list
     if not (latchName in globs.latches):
         print 'Error in read_netlist: cannot find FF', latchName
         return
@@ -103,30 +108,40 @@ def copyFlipFlopBuildPasstrough(netlistBle,cluster,bleIndex):
     #In addtion this flipflop is driven by a lut on another ble.
     #we have to switch of the useFF flag for this original lut
 
-    #add the passtrough lut name (same as latchName)
-    #to the clusters lut list
-    cluster.LUTs.append(latchName)
+    #get the node for the passthrough lut
+    passTroughLutNode = globs.nodes[cluster.LUT_nodes[bleIndex]]
 
-    globs.nodes[cluster.LUT_nodes[bleIndex]].eLUT = True
     passThroughLUT = LUT()
     passThroughLUT.contents = []
     passThroughLUT.contents.append(('1',  '1'))
     passThroughLUT.output = latchName
-    #the passtrough lut gets the original lut as an input
-    passThroughLUT.inputs.append(globs.latches[latchName].input)
+    passThroughLUT.node = passTroughLutNode
     passThroughLUT.useFF = True
-    globs.nodes[cluster.LUT_nodes[bleIndex]].bits = passThroughLUT.contents
-    globs.nodes[cluster.LUT_nodes[bleIndex]].LUT = passThroughLUT
+
+    #the passthrough lut gets the original lut as an input
+    originalLutName = globs.latches[latchName].input
+    passThroughLUT.inputs.append(originalLutName)
+    
+    #configure the lut node
+    passTroughLutNode.eLUT = True
+    passTroughLutNode.bits = passThroughLUT.contents
+    passTroughLutNode.LUT = passThroughLUT
+    
+    #add the lut to the lut dict
     globs.LUTs[latchName] = passThroughLUT
-    # As the FF is here with a dummy LUT,
+    #add the passthrough lut name (same as latchName)
+    #to the clusters lut list
+    cluster.LUTs.append(latchName)
+
+    #As the FF is here with a dummy LUT,
     #we have to switch off the FF for the original LUT again
-    globs.LUTs[globs.latches[latchName].input].useFF = False
+    globs.LUTs[originalLutName].useFF = False
 
 
 
-#finish the clos network routing by applying the right source to the mux
-# and build a newPinPositions List for the Lut, because the routing algo
-#switch the vpr lut input pin positions
+## Finish the clos network routing by applying the right source to the mux
+## and build a newPinPositions List for the Lut, because the routing algo
+## switch the vpr lut input pin positions.
 def finishClosNetworkRouting(RoutingVector,cluster):
 
     k = globs.params.K
@@ -202,7 +217,7 @@ def finishClosNetworkRouting(RoutingVector,cluster):
     #save the information in the cluster object
     cluster.newPinPositions = newPinPositions
 
-#apply the right id to the source attributes of the muxes (inodes)
+## apply the right id to the source attributes of the muxes (inodes)
 def finishNormalRouting(RoutingVector,cluster):
 
     #go through the routing vector and set the source attribut
@@ -222,16 +237,17 @@ def finishNormalRouting(RoutingVector,cluster):
                 globs.nodes[cluster.getInodeId(bleIndex,lutPinPosition)].source \
                     = cluster.getFFMuxNodeId(inputPinIndex - globs.params.I)
 
-##finsish the routing by apply the right path for every mux
-##of the internal routing. the muxes are represented by so called inodes
-##and the reference to the inodes is done by the LUT_input_nodes list.
-##to apply the path the source attribut of the inode object is set to
-##the right node id
-##Therefore we provide the RoutingVector list  as an internal
-##representation of the interconnect routing with the format:
-## [ble index][pin position on the lut] = input pin of the interconnect
-##note that the inteconnect input has the first I pins of the cluster and
-##after that the output of the muxes of the N luts.
+## Finsish the routing by apply the right path for every mux
+## of the internal routing. 
+# The muxes are represented by so called inodes
+# and the reference to the inodes is done by the LUT_input_nodes list.
+# To apply the path the source attribute of the inode object is set to
+# the right node id.
+# Therefore we provide the RoutingVector list as an internal
+# representation of the interconnect routing with the format:
+# [ble index][pin position on the lut] = input pin of the interconnect.
+# Note that the interconnect input has the first I pins of the cluster and
+# after that the output of the muxes of the N luts.
 def finishRouting():
 
     for key in globs.clusters:
@@ -260,33 +276,45 @@ def finishRouting():
                     print 'error in read_netlist: unidentified net', name
 
         #finish the close network
-        #print 'Route cluter ', cluster.CLB, 'with Routing Vector ', RoutingVector
-        #print 'Lut_input_nets ' , cluster.LUT_input_nets
-
         if globs.params.UseClos:
             finishClosNetworkRouting(RoutingVector,cluster)
         else:
             finishNormalRouting(RoutingVector,cluster)
 
-#Unify node names for LUTs with FFs
+## Unify node names for LUTs with FFs.
+# change the input of latches, 
+# so this is always the name of the lut on the same ble
 def unifyNames():
 
+    # in our design a flipflop that is used on a ble has
+    # always the lut on the ble as input.
+    # It can be a configured lut or a simple passtrough lut
+    # when the lut on the ble was not used.
+
+    # we now change the input of a lut,
+    # that has a input from a flipflop of another ble.
+    # we exchange the flipflop name with the name of the lut,
+    # which drive this flipflop
     for key in globs.LUTs:
-        #Unify node names for LUTs with FFs
+
         for i, lut in enumerate(globs.LUTs[key].inputs):
             if lut not in globs.LUTs and lut in globs.latches:
+
                 globs.LUTs[key].inputs[i] = globs.latches[lut].input
 
+    #now we exchange the cluster inputs that are driven from flipflop,
+    #with the lut that drives this flipflop.
     for key in globs.clusters:
         cl = globs.clusters[key]
-        #Unify node names for LUTs with FFs
+
         for i, lut in enumerate(cl.input_nets):
             if lut not in globs.LUTs and lut in globs.latches:
+
                 cl.input_nets[i] = globs.latches[lut].input
 
 
-# Parse the netlist file.
-# This file contain the interconnect routing information,
+## Parse the netlist file.
+# The netlist file contain the interconnect routing information,
 # which cluster input or lutfeedback is routed to which lut on a cluster.
 # This file is used to apply this routing
 # to the muxes of the interconnection block.
@@ -339,32 +367,9 @@ def read_netlist(filename):
 
     #now we are finished with the netlist result parsing. build the rest.
 
-    for key in globs.clusters:
-        cl = globs.clusters[key]
-
-        #attach the latches where appropriate
-        ##for luts that uses latches (useFF) configure a passTrough (MUX) Lut
-        for node in cl.LUT_FFMUX_nodes:
-            ##get the elut node before this ffmux
-            elutnode = globs.nodes[globs.nodes[node].inputs[0]]
-            #LUT node drives this node
-            #because we used the regiostered and unregisterd output, the source
-            #of the mux is always the lut.
-            #the routing will be handeled by the useFF flag. when its on its use
-            #channel 2 otherwise channel 1(the lut)
-            #so therfore we can set the final rotuing always to the lut
-            globs.nodes[node].source = elutnode.id
-            elut = elutnode.LUT
-            #only build a mux passtrough lut for used bles
-            #that use its flipflop
-            if elut:
-                if elut.useFF:
-                    passThroughLUT = LUT()
-                    globs.nodes[node].LUT = passThroughLUT
-
-    ##check if a Lut in globs.LUTs have a valid configuration
-    ##append all luts with a configuration to the placed luts
-    ##check if all LUTs are placed now
+    #check if a Lut in globs.LUTs have a valid configuration
+    #append all luts with a configuration to the placed luts
+    #check if all LUTs are placed now
     placed_luts = []
     for key in globs.clusters:
         cl = globs.clusters[key]
@@ -378,7 +383,8 @@ def read_netlist(filename):
                 print 'error in read_netlist: LUT not placed', key
 
             else:
-                print 'read_netlist: empty lut not placed', key, globs.LUTs[key].inputs
+                print 'read_netlist: empty lut not placed',\
+                       key, globs.LUTs[key].inputs
 
     #fix the names
     unifyNames()

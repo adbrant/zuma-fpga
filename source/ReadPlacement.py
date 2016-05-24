@@ -1,14 +1,13 @@
 from structs import *
 import globs
 
-## Parse the placement file and tranfer the information to internal structures.
-## The placement file contains the location of the different cluster
-## and their netlist names.
-## These names are later used in the netlist file,
-## which describe the inner routing of each cluster.
-## So we parse this names for the later parsing of the netlist.
-
-# param filename The filname of the placement file, e.g place.p.
+## Parse the placement file and transfer the information to internal structures.
+# The placement file contains the location of the different cluster
+# and their netlist names.
+# These names are later used in the netlist file,
+# which describe the inner routing of each cluster.
+# So we parse this names for the later parsing of the netlist.
+# @param filename The filename of the placement file, e.g place.p.
 def read_placement(filename):
 
     fh = open(filename,"r")

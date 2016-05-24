@@ -7,18 +7,18 @@ import re
 ## Parse the source blif file, which was generated from the
 ## user logic verliog file by odin + abc,
 ## and transfer the information to internal structures.
-## The blif file contain the the complete logic
-## on a lut and flipflop level, so the file give use the configuration
-## of the luts and the connection of these luts and their flipflops.
-## These elements may be later on different clusters,
-## but the clusters are not represented in this file.
+# The blif file contain the the complete logic
+# on a lut and flipflop level, so the file give use the configuration
+# of the luts and the connection of these luts and their flipflops.
+# These elements may be later on different clusters,
+# but the clusters are not represented in this file.
 
 # Parse the source blif file and transfer the information
 # to internal internal structures:
 # *) get the blif names of the fpga inputs and outputs
 #    and assign them to the nodes (name attribute) in the node graph.
 #    Also append these names to the globs.inputs and globs.outputs list.
-# *) create Lut and Latch representations and append them to the globs.LUTs
+# *) create lut and latch representations and append them to the globs.LUTs
 #    and globs.latches dicts.
 # *) store the configuration of the luts in an internal format.
 def read_BLIF(filename):
@@ -34,10 +34,10 @@ def read_BLIF(filename):
         if line.find(".model") > -1:
             line = fh.readline()
 
-        ##get the blif names of the inputs and assign them to
-        ##nodes(name attribute) in the node graph.
+        #get the blif names of the inputs and assign them to
+        #nodes(name attribute) in the node graph.
         elif line.find(".inputs") > -1:
-            #read items until no more backslashes
+            #read items until no more backslashes appear
             items = line.strip().split(' ')[1:]
 
             while items[-1] == '\\':
@@ -46,7 +46,7 @@ def read_BLIF(filename):
                 items = items + nextline.strip().split(' ')
 
             for item in items:
-                ## append the blif name to the global input list
+                # append the blif name to the global input list
                 globs.inputs.append(item.strip())
                 if item.strip() == 'top^clock':
                     continue
@@ -66,10 +66,10 @@ def read_BLIF(filename):
 
             line = fh.readline()
 
-        ##get the blif names of the outputs and assign them to
-        ##nodes(name attribute) in the node graph
+        #get the blif names of the outputs and assign them to
+        #nodes(name attribute) in the node graph
         elif line.find(".outputs") > -1:
-            #read items until no more backslashes
+            #read items until no more backslashes appear
             items = line.strip().split(' ')[1:]
             while items[-1] == '\\':
                 items = items[:-1]
@@ -77,7 +77,7 @@ def read_BLIF(filename):
                 items = items + nextline.strip().split(' ')
 
             for item in items:
-                ## append the blif name to the global output list
+                # append the blif name to the global output list
                 globs.outputs.append(item.strip())
                 if item.strip() == 'top^out':
                     # just one output
@@ -92,7 +92,7 @@ def read_BLIF(filename):
 
             line = fh.readline()
 
-        ##get the latches and place an new Latch instance in the latches dict.
+        #get the latches and place an new latch instance in the latches dict.
         elif line.find(".latch") > -1:
             #read items until no more backslashes
             items = line.strip().split(' ',1)[1].strip().split(' ')
@@ -111,10 +111,10 @@ def read_BLIF(filename):
 
             line = fh.readline()
 
-        ##got a lut. create a LUT instance and place it in the LUTs dict.
+        #got a lut. create a LUT instance and place it in the LUTs dict.
         elif line.find(".names") > -1:
 
-            #read items until no more backslashes
+            #read items until no more backslashes appear
             items = line.strip().split(' ')[1:]
 
             while items[-1] == '\\':
@@ -132,7 +132,7 @@ def read_BLIF(filename):
             newLUT.output = outnet
             newLUT.inputs = innets
 
-            # The LUT can describe a passtrough from a fpga input
+            # The LUT can describe a passthrough from a fpga input
             # to a fpga output.
             # We save the mapping (input name, list of output names) 
             # to find later in read_routing the corresponding sink node,
@@ -141,7 +141,7 @@ def read_BLIF(filename):
             # is same as the blif fpga input name.
 
             # Important: We assume here that abc build the
-            # passtrough in a increasing order of the output pins
+            # passthrough in a increasing order of the output pins
             # And that Vpr route the output pins in the same order.
             # TODO: is that true?
             if outnet in globs.outputs and len(innets) == 1:
@@ -163,7 +163,7 @@ def read_BLIF(filename):
             #ABC format of the content of a logic gate:
             #1) if the content consist of only a 1 or 0, then we have
             #   a constant 1 or 0 as the output
-            #2) else we have at least one a PLA describtion line
+            #2) else we have at least one a PLA description line
             #   like 0101-1 1 or 01- 0
 
             #internal representation:
@@ -191,5 +191,3 @@ def read_BLIF(filename):
     # Mark which LUTs are using latches
     for key in globs.latches:
         globs.LUTs[globs.latches[key].input].useFF = True
-        #get a mapping: lut output name -> latch output name
-        globs.reverselatches[globs.latches[key].input] = key

@@ -3,6 +3,7 @@ from clos_routing  import *
 import os
 import random
 
+#TODO: is this file deprecated? works it whith the new clos algo? 
 
 random.seed(51)
 route_clos([[random.randint(0,35) for i in range(6)] for j in range(8)],28,6,8)

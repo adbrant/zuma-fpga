@@ -1,0 +1,7 @@
+# Benchmark "Addierer" written by ABC on Wed Feb 18 17:14:27 2015
+.model Addierer
+.inputs top^in~0
+.outputs top^out~0
+.names top^in~0 top^out~0
+1 1
+.end

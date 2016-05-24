@@ -17,6 +17,13 @@ import ReadRouting
 import BuildBitstream
 import InitFpga
 import OutputBlif
+import Dump
+import UCFConstraints
+import BuildConectionMatrix
+import TimingAnalysisSDF
+import TimingAnalysis
+import ReadSDF
+
 
 import os
 
@@ -76,5 +83,33 @@ if build_bit:
     #Build the bitstream
     BuildBitstream.build_bitstream(bit_file)
 
+    #dump the node graph. textual and graphical
+    if globs.params.dumpNodeGraph:
+        Dump.dumpGraph('originGraph')
+
+    if globs.params.dumpNodeGraph:
+        Dump.dumpTechnologyGraph('mappedGraph')
+    
     #output a BLIF of the design
     OutputBlif.output_blif('zuma_out.blif')
+
+    if globs.params.TimingConstraints:
+        #output the ucf timing stuff
+        UCFConstraints.CreateUCFConstraints()
+        
+        #dump the node graph. textual and graphical
+        if globs.params.dumpNodeGraph:
+            Dump.dumpGraph('constrainGraph')
+
+        #if we want to build the connection matrix
+        if globs.params.buildConnectionMatrix:
+            BuildConectionMatrix.BuildConnectionMatrix(globs.params.TimingFilename)
+            TimingAnalysis.performTimingAnalysis()
+
+    #if we want to parse the sdf file
+    if globs.params.sdf:
+        ReadSDF.ReadSDF()
+        TimingAnalysisSDF.performTimingAnalysis()
+        if globs.params.dumpNodeGraph:
+            Dump.dumpTechnologyGraph('mappedTimedGraph')
+

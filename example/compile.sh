@@ -1,5 +1,16 @@
+#find the folder of this file and place the path in dir
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+
 # include base and VTR directories
-. ../toolpaths
+. $DIR/../../ZUMA/toolpaths
 pwd
 
 #check which file to compile
@@ -13,13 +24,18 @@ echo "Synthesizing '$filename' to ZUMA"
 #move configuration files to python source folder
 cp zuma_config.py $ZUMA_DIR/source/
 
-#after coping the configuration we can check if vpr7 or vpr6 is used
-#use stdout/stdin communication
-export USE_VPR_7="$(../source/ReadVprVersion)"
-if [[ -z "$USE_VPR_7" ]]; then
-    echo "VPR7 is not used!"
-else
+#we can check if vpr7 or vpr6 is used
+#by checking the exit status
+$ZUMA_DIR/source/ReadVprVersion
+STATUS=$?
+#echo "output of vpr status was"
+#echo $STATUS
+if [ $STATUS -ne 0 ]; then
     echo "VPR7 is used!"
+    export USE_VPR_7=1
+else
+    echo "VPR7 is not used!"
+    export USE_VPR_7=0
 fi
 
 #move to build folder to collect build related files
@@ -112,7 +128,7 @@ if [[ -z "$USE_VPR_7" ]]; then
         echo
 
         cd ..
-        sh hex2mif.sh output.hex > output.hex.mif
+        sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
 
         lutrams=$(grep -c "lut_custom" ZUMA_custom_generated.v)
         eluts=$(grep -c "elut_custom" ZUMA_custom_generated.v)
@@ -124,7 +140,7 @@ if [[ -z "$USE_VPR_7" ]]; then
 
 #vpr7 is used
 else
-
+    echo "Take branch VPR used"
     #run the zuma generation scripts
     #python $ZUMA_DIR/source/run_zuma_all.py ./ ../generated/
     python2.7 $ZUMA_DIR/source/zuma_build.py \
@@ -155,7 +171,7 @@ else
         echo
 
         cd ..
-        sh hex2mif.sh output.hex > output.hex.mif
+        sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
 
         lutrams=$(grep -c "lut_custom" ZUMA_custom_generated.v)
         eluts=$(grep -c "elut_custom" ZUMA_custom_generated.v)
