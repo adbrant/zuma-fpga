@@ -10,27 +10,20 @@ import sys
 
 def route_clos(routing_vector,I,k,N):
     
-    #In the current tested status, I+N must be divideable by k
+    #In the current tested state, I+N must be divisible by k
     if (((I+N) % k) != 0):
         print "\n\n--------------  ERROR -----------------------"
-        print "In the current status, only values for I and N" + \
+        print "In the current state, only values for I and N" + \
               " are supported where I+N is dividable by k"
         print  "---------------------------------------------"
         sys.exit(0)
 
     #set the count of first stage crossbars
     P = int(math.ceil( (N + I)/ k))
-
-    #some debuggin output
-    #print 'P: ' , P
-    #print 'N: ', N
-    #print 'k: ', k
-    #print 'I: ', I
-    #print 'RoutingVector ', routing_vector
     
     #first stage: r=P crossbars with k=m input pins
-    #this list describe the mapping,between the output pins of this stage
-    #and the interconnection block input pins
+    #this list describe the mapping, between the output pins of this stage
+    #and the interconnection block input pins.
     #so we have P lists in this list with k outputs containing the 
     #input pin number
     stage1 = [[-1 for j in range(k)] for i in range(P)]
@@ -42,6 +35,7 @@ def route_clos(routing_vector,I,k,N):
     success = 0
     #a count to prevent infinite loops.
     #break up the outer loop and ends the routing trial.
+    #TODO: implement a configurable globs.params variable for this supercount.
     supercount = 0
 
     while success is 0 and supercount < 180:
@@ -51,7 +45,7 @@ def route_clos(routing_vector,I,k,N):
         #just a change of the representation of the routing vector.
         #make a list for every used pin of the clos network input,
         #append the ble index for this pin.
-        # give the relation input pin -> ble number
+        # give the relation: input pin -> ble number
 
         in_to_out = [[] for i in range(I+N)]
         
@@ -72,11 +66,11 @@ def route_clos(routing_vector,I,k,N):
         #therefore we will shuffle this index list.
         pins_to_route = [ i for i in range(len(in_to_out))]
         
-        #permutate the list
+        #permute the list
         random.shuffle(pins_to_route)
         #a counter to prevent infinite loops
         count = 0
-        #permutate the target ble numbers of a pin
+        #permute the target ble numbers of a pin
         for pin in pins_to_route:
             random.shuffle(in_to_out[pin])
         while success is 0 and count < 80:
@@ -98,10 +92,10 @@ def route_clos(routing_vector,I,k,N):
                 #get the crossbar number of the first stage for this input pin
                 x1 = int(pin/k)     
                 
-                #get the trageted ble index numbers
+                #get the targeted ble index numbers
                 for dest in in_to_out[pin]:
                     #index of the output pin of the first stage crossbar, used for the routing
-                    #only set when the complete routing trough both stages was succesfull
+                    #only set when the complete routing trough both stages was successful
                     s1 = -1
                     #index of the output pin of the second stage crossbar, used for the routing
                     s2 = -1
@@ -169,7 +163,7 @@ def route_clos(routing_vector,I,k,N):
                     #take one random crossbar of the second stage
                     #and select the pin which leads to the dest ble
                     
-                    #can also break the algo throug -1
+                    #can also break the algo through -1
                     #if pin_to_unroute < 0:
                     #   pin_to_unroute = stage2[random.randint(0,k-1)][dest]
 

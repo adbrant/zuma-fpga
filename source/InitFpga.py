@@ -6,12 +6,12 @@ import const
 import closNetwork
 
 ## build the simple network.
-## in the simple network, every pin of an ble get
-## its own inode, which can route from every input
-## of the IIB. This can be a cluster input or a lut feedback
+# In the simple network, every pin of a ble get
+# its own inode, which can route from every input
+# of the IIB. This can be a cluster input or a lut feedback.
 def buildSimpleNetwork(cluster,key):
 
-    ## make inodes for internal cluster connection
+    # make inodes for internal cluster connection
     for lut in range(globs.params.N):
         cluster.LUT_input_nodes.append([])
         for pin in range(globs.params.K):#input nodes
@@ -19,28 +19,28 @@ def buildSimpleNetwork(cluster,key):
             inode = Node()
             inode.type = 7
 
-            ## append all cluster inputs as an input
+            # append all cluster inputs as an input
             for clusterInput in cluster.inputs:
                 inode.inputs.append(clusterInput.id)
-            ##apend all ffmuxes as an input
+            #apend all ffmuxes as an input
             for ffmux in cluster.LUT_FFMUX_nodes:
                 inode.inputs.append(ffmux)
 
             inode.location = key
-            ## append the node dict
+            # append the node dict
             globs.addNode(inode)
-            ##append the input node to the cluster.
+            #append the input node to the cluster.
             cluster.LUT_input_nodes[lut].append(inode.id)
-            ##connect the inode with the elut node
+            #connect the inode with the elut node
             elut = globs.nodes[cluster.LUT_nodes[lut]]
             elut.inputs.append(inode.id)
 
 
 
 
-#builds for each cluster the inner structure (ble's+ IIB)
+##builds for each cluster the inner structure (ble's+ IIB).
 #The interconnection block can be implemented
-#by a simple network or a clos network
+#by a simple network or a clos network.
 def build_inner_structure():
 
     count = len(globs.nodes)
@@ -56,9 +56,9 @@ def build_inner_structure():
             elut.type = 8
             elut.location = key
             elut.eLUT = True
-            ## append to the node dict
+            # append to the node dict
             globs.addNode(elut)
-            ## write its id to the LUT_nodes list
+            # write its id to the LUT_nodes list
             cluster.LUT_nodes.append(elut.id)
 
             ffmux = Node()
@@ -66,10 +66,26 @@ def build_inner_structure():
             ffmux.ffmux = True
             ffmux.inputs.append(elut.id)
             ffmux.location = key
-            ##append the ffmux node to the node graph
+
+            #LUT node drives this node.
+            #Because we used the registered and unregisterd output, the source
+            #of the mux is always the lut.
+            #the routing will be handled by the useFF flag. when its on its use
+            #channel 2 otherwise channel 1(the lut)
+            #so therefore we can set the final routing always to the lut
+            ffmux.source = elut.id
+
+            #append the ffmux node to the node graph
             globs.addNode(ffmux)
-            ##append it to the cluster list
+            #append it to the cluster list
             cluster.LUT_FFMUX_nodes.append(ffmux.id)
+
+            # Reconnect the corresponding cluster output opin in the node graph:
+            # Disconnect it from the source node
+            # Connect it to the ffmux
+            opin_id = cluster.outputs[lut].id
+            globs.nodes[opin_id].inputs = [ffmux.id]
+            globs.nodes[opin_id].source = ffmux.id
 
         # we can use the clos or simple network
         if globs.params.UseClos:
@@ -81,12 +97,13 @@ def build_inner_structure():
             buildSimpleNetwork(cluster,key)
 
 
-#This function builds up the virtual fpga.
-#First read the graph.echo file and build up the outer structure of the
-#virtual fpga, consisting of the clusters, I/O Pins, and switchboxes.
-#Also build up the node graph and init the connections to the
-#outer structure through the driver objects.
-#Second build the inner structure (IIB + ble's) for each cluster.
+## This function builds up the virtual fpga.
+# First it reads the graph.echo file and build up the outer structure of the
+# virtual fpga, consisting of the clusters, I/O Pins, and switchboxes.
+# It also builds up the node graph and inits the connections to the
+# outer structure through the driver objects.
+# Second it builds the inner structure (IIB + ble's) for each cluster.
+# @param filename the path to the graph.echo file
 def load_graph(filename):
 
     #parse the lines of the following format:
@@ -94,6 +111,7 @@ def load_graph(filename):
     #      id  type   location   index       direction        driver
     #Node: 0   SINK   (0, 1)     Ptc_num: 0  Direction: OPEN  Drivers: OPEN
 
+    #open the graph.echo file
     fh = open(filename,"r")
 
     #counter for tracking the current id node.
@@ -132,7 +150,7 @@ def load_graph(filename):
         #get the location and the index.
         #The index is the pad position, pin position or track number
         #depending its a pin on an I/O block, cluster or a channel.
-        #Also depending on this type: The values are on diff. positions
+        #Depending on this node type the values are on different positions
         #in the file.
         if n.type < 5 or len(nums) < 5:
             n.location = (nums[1],nums[2])
@@ -165,7 +183,7 @@ def load_graph(filename):
 
         #skip the rest of the information
         line = fh.readline() # skip switch types
-        line = fh.readline() # skip occ(upancy?) and capacity
+        line = fh.readline() # skip (occupancy?) and capacity
         line = fh.readline() # skip R and C
         line = fh.readline() # skip cost index
         line = fh.readline() # skip newline dividing records
@@ -197,7 +215,7 @@ def load_graph(filename):
         for y in range(1, globs.clustery):
             globs.clusters[(x,y)] = Cluster()
 
-    ##every location get a switch box
+    #every location get a switch box
     for x in range(0, globs.clusterx):
         for y in range(0, globs.clustery):
             globs.switchbox[(x,y)] = SBox()
@@ -219,7 +237,7 @@ def load_graph(filename):
             globs.IOs[(x,y)] = IO()
 
 
-    ## set the input ids for every node in the graph
+    # set the input ids for every node in the graph
     for n in globs.nodes:
         for e in n.edges:
             globs.nodes[e].inputs.append(n.id)
@@ -239,15 +257,15 @@ def load_graph(filename):
         elif n.type is 2: #SOURCE
             pass
 
-        ## for OPINs and IPINs an notable assumption was made
-        ## that they are listed in incresing order in the file,
-        ## while the SOURCEs and SINKs can be spread over
-        ## this file. 
-        ##TODO: Is that always true?
+        # for OPINs and IPINs a notable assumption was made
+        # that they are listed in increasing order in the file,
+        # while the SOURCEs and SINKs can be spread over
+        # this file. 
+        # TODO: Is that always true?
 
-        ## This is important because the orderedInput and orderedOutput lists
-        ## are append the corresponding source and sink nodes
-        ## for that OPINs and IPINs in their order.
+        # This is important because the orderedInput and orderedOutput lists
+        # are append the corresponding source and sink nodes
+        # for that OPINs and IPINs in their order.
 
 
         # The inputs for OPINs are SOURCE Nodes,
@@ -264,10 +282,10 @@ def load_graph(filename):
                 #init a corresponding driver for this node.
                 globs.IOs[n.location].inputs.append(Driver(n.id, n.index))
 
-                ## add the SOURCE node id to the orderedInputs list
-                ## The SOURCE node id is only inputs[0],
-                ## because an fpga input pin have only
-                ## one SOURCE node (one input).
+                # add the SOURCE node id to the orderedInputs list
+                # The SOURCE node id is only inputs[0],
+                # because an fpga input pin have only
+                # one SOURCE node (one input).
                 globs.orderedInputs.append(n.inputs[0])
                 global_inputs += 1
 
@@ -294,9 +312,9 @@ def load_graph(filename):
                     #init a corresponding driver for this node.
                     globs.IOs[n.location].outputs.append(Driver(n.id,n.index))
                     
-                    ##TODO: why only edge[0]. okay there can be only one.
-                    ##when not you have multiple drivers for that output pin
-                    ##or this pin have them as an input?
+                    #TODO: why only edge[0]. okay there can be only one.
+                    #when not you have multiple drivers for that output pin
+                    #or this pin have them as an input?
 
                     #add the SINK node id to the orderedOutputs list
                     globs.orderedOutputs.append(n.edges[0])
@@ -337,9 +355,11 @@ def load_graph(filename):
             allInputNodes.append(i.id)
 
     # create global I/O permutation muxes for the fpga inputs.
+    # Therefore transform the source and sink nodes to I/O permutation muxes
+
     # go through all OPINs nodes step by step.
     # grab their corresponding SOURCE node and add the other
-    # availible OPINs as an edge to that source
+    # available OPINs as an edge to that source
     for i,node in enumerate(allInputNodes):
         # get the corresponding SOURCE node of that OPIN
         # it is the same id as the input of the OPIN
@@ -349,7 +369,7 @@ def load_graph(filename):
         # the permutation MUXes and their configuration...
         if globs.params.orderedIO:
             source.type = 10
-            #change the loaction of that source
+            #change the location of that source
             source.location = (0, 0)
             # add the other OPINS as an edge for that source
             for input in allInputNodes:
@@ -361,10 +381,10 @@ def load_graph(filename):
                     # also set the source node as an input to that OPIN
                     globs.nodes[input].inputs.append(source.id)
 
-    ## create global I/O permutation muxes for the fpga outputs.
+    # create global I/O permutation muxes for the fpga outputs.
     # go through all IPINs nodes step by step.
     # grab their corresponding SINK node and add the other
-    # availible IPINs as an input to that sink
+    # available IPINs as an input to that sink
     for i,node in enumerate(allOutputNodes):
         # get the corresponding SINK node of that IPIN
         # it is the same id as the edge of the IPIN
@@ -374,7 +394,7 @@ def load_graph(filename):
         # the permutation MUXes and their configuration...
         if globs.params.orderedIO:
             sink.type = 10
-            #cahnge the location of that sink
+            #change the location of that sink
             sink.location = (globs.clusterx, globs.clustery)
             for output in allOutputNodes:
                 # if its not the initial input (the initial IPIN),

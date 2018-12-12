@@ -17,6 +17,10 @@ import ReadRouting
 import BuildBitstream
 import InitFpga
 import OutputBlif
+import Dump
+import TimingAnalysisSDF
+import ReadSDF
+
 
 import os
 
@@ -76,5 +80,20 @@ if build_bit:
     #Build the bitstream
     BuildBitstream.build_bitstream(bit_file)
 
+    #dump the node graph. textual and graphical
+    if globs.params.dumpNodeGraph:
+        Dump.dumpGraph('originGraph')
+
+    if globs.params.dumpNodeGraph:
+        Dump.dumpTechnologyGraph('mappedGraph')
+    
     #output a BLIF of the design
     OutputBlif.output_blif('zuma_out.blif')
+
+    #if we want to parse the sdf file
+    if globs.params.sdf:
+        ReadSDF.ReadSDF()
+        TimingAnalysisSDF.performTimingAnalysis()
+        if globs.params.dumpNodeGraph:
+            Dump.dumpTechnologyGraph('mappedTimedGraph')
+

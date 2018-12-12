@@ -7,17 +7,17 @@ def splitnums(string):
     string = string.replace(')','')
     return string.split(',')
 
-# get the track number in the routing file in a CHANX/Y line
+## get the track number in the routing file in a CHANX/Y line
 def getchan(line):
 
     about = line.split()
     return int(about[-1])
 
 
-#Parse the routing file.
-#The routing file contains the global routing of the fpga,
-#so we apply this routing by setting the right input id
-#to the muxes of the global routing.
+## Parse the routing file.
+# The routing file contains the global routing of the fpga,
+# so we apply this routing by setting the right input id
+# to the source attribute of the muxes of the global routing.
 def read_routing(filename ):
     fh = open(filename,"r")
     igot = fh.readlines()
@@ -45,7 +45,7 @@ def read_routing(filename ):
     in_net = False
     chanx = [[[[] for i in range(channels)] for col in range(width)] for row in range(width)]
     chany = [[[[] for i in range(channels)] for col in range(width)] for row in range(width)]
-    #TODO: opin/ipin ist still 0?
+    #TODO: opin/ipin is still 0?
     opin = [[[[] for i in range(opins)] for col in range(width)] for row in range(width)]
     ipin = [[[[] for i in range(ipins)] for col in range(width)] for row in range(width)]
 
@@ -58,14 +58,16 @@ def read_routing(filename ):
     #we will build a net for each traced signal
     #global nets
     routing_net = 0
-    #in vpr7 there are two items node and node number at the start of every line
+    #in vpr7 there are two items: node and node number at the start of every line
     if globs.params.vpr7:
         offset = 2
     else:
         offset = 0
 
     #now let us parse the routing file and add the read nets
-    #to the global net dictonary.
+    #to the global net dictionary.
+    #NOTE: we skip the sources and sink nodes 
+    #and use the opins and ipin nodes instead as a start and a endpoint of the net
     for i,line in enumerate(igot):
         if line.find("Net") > -1:
             #get the name of the net. same name as in the netlist file
@@ -107,7 +109,7 @@ def read_routing(filename ):
             pin = int(nums[0])
 
             #assign the location and pad number
-            routing_net.sinks = [x1,y1,pin]     # TW: Test if this is relevant
+            routing_net.sinks = [x1,y1,pin] # TODO:TW: Test if this is relevant
             #append it to the trace list
             routing_net.add_sink(x1,y1,pin)
 
@@ -266,7 +268,7 @@ def read_routing(filename ):
                             #found the driver
                             #set the source and net attribute of the driver
                             #and then set the source attribute
-                            #of the corresponing node
+                            #of the corresponding node
                             #TODO: is the source and net attribute of the driver
                             #used anywhere?
                             output.source = last_node
@@ -301,6 +303,7 @@ def read_routing(filename ):
                             #get the corresponding SINK node.
                             #Assign the current IPIN node as a source for that sink.
                             else:
+
                                 if globs.params.orderedIO:
                                     for orderedoutput_id in globs.orderedOutputs:
                                         orderedoutput = globs.nodes[orderedoutput_id]
@@ -364,13 +367,38 @@ def read_routing(filename ):
                             #change id of the last processed node.
                             last_node = input.id
 
-                            if globs.params.orderedIO:
-                                for orderedinput_id in globs.orderedInputs:
-                                    orderedinput = globs.nodes[orderedinput_id]
-                                    if orderedinput.name == input.net:
+                            #set the the source attribute of the frist opin to the
+                            #right iomux when orderIO is activate
+
+                            #TODO: i dont see why this is only valid 
+                            #for ordered id. The list orderedInputs also 
+                            #contains all sources when the option is disabled
+
+                            #but it seems to produce some errors 
+                            #in the outputBlif routine when this is done always
+
+                            #if globs.params.orderedIO:
+                            for orderedinput_id in globs.orderedInputs:
+                                orderedinput = globs.nodes[orderedinput_id]
+                                if orderedinput.name == input.net:
+                                    if globs.params.orderedIO:
                                         globs.nodes[last_node].source = orderedinput_id
-                                        found = True
-                                        break
+                                    else:
+                                        #WORKAROUND: use a flag to indicate 
+                                        #primary io pin
+                                        #fixes like looking for the name 
+                                        #of the source dont work.
+
+                                        #note: the opin has no edges to the found source
+                                        #because the names are not set to the right sources
+                                        #its only important that there is a source 
+                                        #with that netname. then the viewed node
+                                        #(lastnode) is the right opin.
+
+                                        globs.nodes[last_node].primaryOpin = True;
+                                    found = True
+                                    break
+
                             break
 
                     #did not found the driver
@@ -402,7 +430,7 @@ def read_routing(filename ):
             #now we have the driver
             #set the source and net attribute of the driver
             #and then set the source attribute
-            #of the corresponing node
+            #of the corresponding node
             #TODO: is the source and net attribute
             #of the driver used anywhere?
             else:
@@ -420,6 +448,6 @@ def read_routing(filename ):
                 #append the node to the nodelist
                 nodelist.append(driver.id)
 
-            #a new trace will be processsed,
+            #a new trace will be processed,
             #change id of the last processed node.
             last_node = driver.id

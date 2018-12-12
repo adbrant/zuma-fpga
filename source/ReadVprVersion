@@ -1,16 +1,17 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python2.7
 
+#report zuma version per exit status
 
 import sys
 import  zuma_config
 
 def main():
     
-    echo = 0
+
     if zuma_config.params.vpr7 is True:
-        echo = 1
+        sys.exit(1)
     
-    sys.stdout.write(str(echo))
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
