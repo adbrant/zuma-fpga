@@ -4,6 +4,7 @@ import time
 import re
 import const
 import closNetwork
+import Dump
 
 ## build the simple network.
 # In the simple network, every pin of a ble get
@@ -222,14 +223,14 @@ def load_graph(filename):
 
     #build the I/O blocks
 
-    #build blocks from (0,1) - (0,clustery-1), 
+    #build blocks from (0,1) - (0,clustery-1),
     #and (clusterx,1) - (clusterx,clusterx-1)
     for x in [0, globs.clusterx]:
         #TODO: TW: Removed unnecessary range extension
         for y in range(1, globs.clustery):
             globs.IOs[(x,y)] = IO()
 
-    #build blocks from (1,0) - (clusterx-1,0), 
+    #build blocks from (1,0) - (clusterx-1,0),
     #and (1,clustery) - (clusterx-1,clustery)
     for y in [0, globs.clustery]:
         #TODO: TW: Removed unnecessary range douplication
@@ -246,6 +247,10 @@ def load_graph(filename):
     global_outputs = 0
     global_inputs  = 0
 
+    #dump the loaded graph, allows to compare it with later versions
+    if globs.params.dumpNodeGraph:
+        Dump.dumpGraph('loadedGraph')
+
     #append the source and sink nodes to the orderedInput
     #and orderedOutput list
     #init the drivers for the I/O blocks and switchboxes.
@@ -260,7 +265,7 @@ def load_graph(filename):
         # for OPINs and IPINs a notable assumption was made
         # that they are listed in increasing order in the file,
         # while the SOURCEs and SINKs can be spread over
-        # this file. 
+        # this file.
         # TODO: Is that always true?
 
         # This is important because the orderedInput and orderedOutput lists
@@ -274,7 +279,7 @@ def load_graph(filename):
         #node is an OPIN
         elif n.type is 3:
             # OPIN of a global IO pad is an FPGA input
-            
+
             # check if this is a input pin on a I/O block,
             # by checking if the location is on the edge of the fpga
             if n.location[0] in [0, globs.clusterx] \
@@ -302,7 +307,7 @@ def load_graph(filename):
             # global output without predecessor can be ignored
             if len(n.inputs) == 0: #dont get input from dangling node
                 print 'dropping node', n.id, 'from', n.location
-            
+
             else:
                 # check if this is a ouput pin on a I/O block,
                 # by checking if the location is on the edge of the fpga
@@ -311,7 +316,7 @@ def load_graph(filename):
 
                     #init a corresponding driver for this node.
                     globs.IOs[n.location].outputs.append(Driver(n.id,n.index))
-                    
+
                     #TODO: why only edge[0]. okay there can be only one.
                     #when not you have multiple drivers for that output pin
                     #or this pin have them as an input?
@@ -319,12 +324,12 @@ def load_graph(filename):
                     #add the SINK node id to the orderedOutputs list
                     globs.orderedOutputs.append(n.edges[0])
                     global_outputs += 1
-                
+
                 #this is a clusters output pin
                 #append it to the ouput list
                 else:
                     globs.clusters[n.location].inputs.append(Driver(n.id, n.index))
-        
+
         #node is a CHANNEL
         elif n.type is 5 or n.type is 6:
             #get the corresponding switchbox for that node

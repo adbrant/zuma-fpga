@@ -68,13 +68,18 @@ InitFpga.load_graph(graph_file)
 
 #Build ZUMA verilog global routing
 BuildVerilog.build_global_routing_verilog(verilog_file)
+
+#dump the node graph. textual and graphical
+if globs.params.dumpNodeGraph:
+        Dump.dumpGraph('unconfiguredGraph')
+
 if build_bit:
     #Read all VPR output files
     ReadBlif.read_BLIF(blif_file)
     ReadPlacement.read_placement(place_file)
-    
+
     ReadRouting.read_routing(route_file)
-    
+
     ReadNetlist.read_netlist(net_file)
 
     #Build the bitstream
@@ -86,7 +91,7 @@ if build_bit:
 
     if globs.params.dumpNodeGraph:
         Dump.dumpTechnologyGraph('mappedGraph')
-    
+
     #output a BLIF of the design
     OutputBlif.output_blif('zuma_out.blif')
 
@@ -96,4 +101,3 @@ if build_bit:
         TimingAnalysisSDF.performTimingAnalysis()
         if globs.params.dumpNodeGraph:
             Dump.dumpTechnologyGraph('mappedTimedGraph')
-

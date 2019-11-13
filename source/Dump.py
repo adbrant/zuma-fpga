@@ -6,16 +6,16 @@ import globs
 def dumpGraph(filename):
 
     f = open(filename, 'w')
-    
+
     #init stuff for graphviz plotting.
-    
-    #we tried to group the nodes by clusters and tried to highlight 
+
+    #we tried to group the nodes by clusters and tried to highlight
     #the used wires by setting the rest transparent, but in the end it works
     #not so well ... It seems that graphviz is not the right tool for this task
     #but it's ok for now.
 
     if globs.params.graphviz:
-        
+
         #to prevent to many dependencies, we just load it when we must
         import graphviz as gv
         graph= gv.Digraph(format='svg')
@@ -40,7 +40,7 @@ def dumpGraph(filename):
                 pos += 1
 
                 clusterxList.append(cluster)
-            
+
             clusters.append(clusterxList)
 
         #graph.attr('node', style='filled')
@@ -88,8 +88,8 @@ def dumpGraph(filename):
 
 
             #skip these nodes
-            if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
-                continue
+            #if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
+            #    continue
 
 
             currentGraph = None
@@ -138,7 +138,7 @@ def dumpGraph(filename):
 def dumpTechnologyGraph(filename):
 
     f = open(filename, 'w')
-    
+
     if globs.params.graphviz:
 
         #to prevent to many dependencies, we just load it when we must
@@ -166,7 +166,7 @@ def dumpTechnologyGraph(filename):
                 pos += 1
 
                 clusterxList.append(cluster)
-            
+
             clusters.append(clusterxList)
 
     for node in globs.technologyMappedNodes.getNodes():
@@ -249,5 +249,4 @@ def dumpTechnologyGraph(filename):
 def dumpBitPattern(bitpattern):
     for (i,row) in enumerate(bitpattern):
         for (j,entry) in enumerate(row):
-            print( 'Pos: ' + str(i) +',' + str(j) + ' content: ' + str(entry))  
-  
+            print( 'Pos: ' + str(i) +',' + str(j) + ' content: ' + str(entry))
