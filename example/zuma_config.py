@@ -28,6 +28,9 @@ params.fc_out_type = 'abs'
 
 #use vpr 7
 params.vpr7 = True
+#use vpr8
+params.vpr8 = True
+
 #close network support
 params.UseClos = False
 #Should the parser build large permutation around all IO to fix their position in the fpga_input/fpga_output arrays?
@@ -50,7 +53,7 @@ params.timeScale = 1.0/1000000000000
 params.timeFormat = "ps"
 
 #used for the timing analysis.
-#The prefix of the components which is the path of your zuma instance 
-#in the sdf file. 
+#The prefix of the components which is the path of your zuma instance
+#in the sdf file.
 #E.g the component zuma_top/zuma_i is translated to zuma_top_zuma_i_ in the sdf file.
 params.instancePrefix = "zuma_top_zuma_i_"

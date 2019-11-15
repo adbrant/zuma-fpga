@@ -15,7 +15,7 @@ class Node():
     #then remove the attribute elut,ffmux, etc.
 
     def __init__(self):
-        
+
         ##the id of the node.
         self.id = -1
 
@@ -71,9 +71,9 @@ class Node():
         self.index = -1
 
         #TODO: missing attributes: dir
-        
+
         ##The blif name of the global input/output, e.g. top^out~0
-        ##This attribute is only set for SINK/SOURCE nodes 
+        ##This attribute is only set for SINK/SOURCE nodes
         ##which represent the global permutation muxes.
         ##assigned in read_blif
         ##TODO: is that true? wasn't it for the opin and ipin nodes?
@@ -91,7 +91,7 @@ class Node():
 class TechnologyMappedNode():
 
     def __init__(self,parentNode,name,inputs):
-        
+
         ##the name of the node in the verilog file
         self.name = name
 
@@ -110,9 +110,9 @@ class TechnologyMappedNode():
         ## this node get its inputs from.
         self.inputs = inputs
 
-        ##list of node names which have this node as input. 
+        ##list of node names which have this node as input.
         self.edges = []
-        
+
         ## this is the final node id, where
         ## to get its input from.
         ## This set the final routing.
@@ -205,7 +205,7 @@ class latch:
         self.output = ''
         ##blif names of the input.
         ##usually this is the output name of the corresponding lut
-        ##but this lut can be on another ble than the flipflop before 
+        ##but this lut can be on another ble than the flipflop before
         ##the call of ReadNetlist
         ##After the call ReadNetlist.unifyNames it is always the name of the lut
         ##on the same ble
@@ -270,14 +270,14 @@ class Cluster:
         ## first dimension M: ble index.
         ## second dimension: K, pin position on this ble.
         ## input tuples have the structure : (mode, number)
-        ## mode can be: 
+        ## mode can be:
         ## 1) input, for a input of the cluster.
         ## number then describe the input pin number
         ## 2) ble, for the input of a other ble of this cluster
         ## number than describe the instance number of the ble.
         ## 3) open if its open. number is -1
         ##
-        ## tuples have the same structure as 
+        ## tuples have the same structure as
         ## NetlistParser.NetlistBle.inputs .
         ## see read_netlist and NetlistParser
         self.LUT_input_nets = []
@@ -336,7 +336,7 @@ class Cluster:
             traceback.print_stack(file=sys.stdout)
             sys.exit(0)
         return bleIndex
-    
+
 
     def getBleIndexOnId(self,nodeId):
         try:
@@ -487,13 +487,27 @@ class SBox:
 
 ## a node graph class. currently not used.
 # TODO:implement and use this in the whole zuma program
+# currently only used by the RRGraphParsers
 class NodeGraph:
     def __init__(self):
-        nodes = []
+        self.nodes = []
 
-    def add(self,node):
-        node.id = len(nodes)
-        nodes.append(node)
+    ##add a node
+    def add(self,node, id = -1):
+
+        #in the current version we use nodes[id] for referencing.
+        # therefore we have to check if the add id is the current
+        # length of the list
+
+        #when the node id was not given skip this check:
+        if id == -1:
+            self.nodes.append(node)
+        else:
+            if node.id == len(self.nodes):
+                self.nodes.append(node)
+            else:
+                print 'NodeGraph: skipped a node id by adding it to the nodegraph' + \
+                      len(self.nodes) + ',' + node.id
 
     def getNodeById(self,id):
         try:
@@ -555,7 +569,7 @@ class TechnologyNodeGraph:
     ## Get the first mapped input node of a node.
     # All mapped nodes implement a node in the node graph.
     # This node get its input from other nodes.
-    # search backward to get the first mapped 
+    # search backward to get the first mapped
     # node the connect to an outer mapped node.
     # Therefore it uses the source attribute.
     # WARNING: only useful after the sources are set.
@@ -594,7 +608,7 @@ class TechnologyNodeGraph:
 
 
     ##get the first lvl nodes
-    #take the nodes which connect to the outer world 
+    #take the nodes which connect to the outer world
     #(mapped nodes of another node in the graph)
     #return a list of mapped node references
     def searchFirstLvl(self,mappedNode,parentId):

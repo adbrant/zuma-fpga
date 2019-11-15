@@ -1,10 +1,17 @@
-from structs import *
+# use this if you want to include modules from a subforder
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+import structs
 import globs
 import time
-import re
-import const
 import closNetwork
 import Dump
+import RRGraphParser
+import copy
 
 ## build the simple network.
 # In the simple network, every pin of a ble get
@@ -17,7 +24,7 @@ def buildSimpleNetwork(cluster,key):
         cluster.LUT_input_nodes.append([])
         for pin in range(globs.params.K):#input nodes
 
-            inode = Node()
+            inode = structs.Node()
             inode.type = 7
 
             # append all cluster inputs as an input
@@ -53,7 +60,7 @@ def build_inner_structure():
 
         for lut in range(globs.params.N):
             #actual eLUT
-            elut = Node()
+            elut = structs.Node()
             elut.type = 8
             elut.location = key
             elut.eLUT = True
@@ -62,7 +69,7 @@ def build_inner_structure():
             # write its id to the LUT_nodes list
             cluster.LUT_nodes.append(elut.id)
 
-            ffmux = Node()
+            ffmux = structs.Node()
             ffmux.type = 9
             ffmux.ffmux = True
             ffmux.inputs.append(elut.id)
@@ -107,103 +114,18 @@ def build_inner_structure():
 # @param filename the path to the graph.echo file
 def load_graph(filename):
 
-    #parse the lines of the following format:
+    #parse the routing ressource graph file
+    if params.vpr8
+        (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraphXml(filename)
+    else:
+        (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraph(filename)
 
-    #      id  type   location   index       direction        driver
-    #Node: 0   SINK   (0, 1)     Ptc_num: 0  Direction: OPEN  Drivers: OPEN
-
-    #open the graph.echo file
-    fh = open(filename,"r")
-
-    #counter for tracking the current id node.
-    id = 0
-
-    #parse the file and build up the node graph
-    while 1:
-        line = fh.readline() # read node type, location, ...
-        if not line:
-            break
-        str = line.split()
-        #print id, int(str[1])
-        #assert(id is int(str[1]))
-        n = Node()
-        #set the id.
-        n.id = int(str[1])
-        if (str[2] == 'SINK'):
-            n.type = 1
-        elif (str[2] == 'SOURCE'):
-            n.type = 2
-        elif (str[2] == 'OPIN'):
-            n.type = 3
-        elif (str[2] == 'IPIN'):
-            n.type = 4
-        elif (str[2] == 'CHANX'):
-            n.type = 5
-        elif (str[2] == 'CHANY'):
-            n.type = 6
-        else:
-            assert(0)
-
-
-        nums = re.findall(r'\d+', line)
-        nums = [int(i) for i in nums ]
-
-        #get the location and the index.
-        #The index is the pad position, pin position or track number
-        #depending its a pin on an I/O block, cluster or a channel.
-        #Depending on this node type the values are on different positions
-        #in the file.
-        if n.type < 5 or len(nums) < 5:
-            n.location = (nums[1],nums[2])
-            n.index = nums[3]
-        else:
-            n.location = (nums[1],nums[2],nums[3],nums[4])
-            n.index = nums[5]
-
-        #set the direction of the node.
-        if n.type > 4:
-            dir = line.split(' ')[-3]
-            if dir == 'INC_DIRECTION':
-                #north or east
-                if n.type is 5:
-                    n.dir = const.E
-                else:
-                    n.dir = const.N
-            else:
-                if n.type is 5:
-                    n.dir = const.W
-                else:
-                    n.dir = const.S
-
-        #read the edge ids and append them to
-        #the edge list of the  node
-        line = fh.readline() # read edges
-        nums = re.findall(r'\d+', line)
-        #assign the ids
-        n.edges = [int(i) for i in nums[1:]]
-
-        #skip the rest of the information
-        line = fh.readline() # skip switch types
-        line = fh.readline() # skip (occupancy?) and capacity
-        line = fh.readline() # skip R and C
-        line = fh.readline() # skip cost index
-        line = fh.readline() # skip newline dividing records
-
-        #clusterx,clustery are the maximal value of location coords.
-        #find these maximal location coords
-        globs.clusterx = max(globs.clusterx,n.location[0])
-        globs.clustery = max(globs.clustery,n.location[1])
-
-        #append the node to the global node graph
-        globs.nodes.append(n)
-
-        #check if the node was append in a previous loop.
-        #current node should be the last node in the list.
-        if globs.nodes[n.id] is not n:
-            print 'graph error', len(globs.nodes), n.id
-
-        #increase the current node id
-        id = id + 1
+    #TODO: WORKAROUND for now we copy the nodes node by node. later we will
+    #use also a global NodeGraph instance
+    #TODO: replace clusterx with params
+    globs.nodes = copy.deepcopy(nodeGraph.nodes)
+    globs.clusterx = clusterx
+    globs.clustery = clustery
 
     #end up parsing.
     #now build the outer structure.
@@ -214,12 +136,12 @@ def load_graph(filename):
     #clusters are on all locations except (0,x) , (y,0) which are IOs
     for x in range(1, globs.clusterx):
         for y in range(1, globs.clustery):
-            globs.clusters[(x,y)] = Cluster()
+            globs.clusters[(x,y)] = structs.Cluster()
 
     #every location get a switch box
     for x in range(0, globs.clusterx):
         for y in range(0, globs.clustery):
-            globs.switchbox[(x,y)] = SBox()
+            globs.switchbox[(x,y)] = structs.SBox()
 
     #build the I/O blocks
 
@@ -228,14 +150,14 @@ def load_graph(filename):
     for x in [0, globs.clusterx]:
         #TODO: TW: Removed unnecessary range extension
         for y in range(1, globs.clustery):
-            globs.IOs[(x,y)] = IO()
+            globs.IOs[(x,y)] = structs.IO()
 
     #build blocks from (1,0) - (clusterx-1,0),
     #and (1,clustery) - (clusterx-1,clustery)
     for y in [0, globs.clustery]:
         #TODO: TW: Removed unnecessary range douplication
         for x in range(1, globs.clusterx):
-            globs.IOs[(x,y)] = IO()
+            globs.IOs[(x,y)] = structs.IO()
 
 
     # set the input ids for every node in the graph
@@ -285,7 +207,7 @@ def load_graph(filename):
             if n.location[0] in [0, globs.clusterx] \
             or n.location[1] in [0, globs.clustery]:
                 #init a corresponding driver for this node.
-                globs.IOs[n.location].inputs.append(Driver(n.id, n.index))
+                globs.IOs[n.location].inputs.append(structs.Driver(n.id, n.index))
 
                 # add the SOURCE node id to the orderedInputs list
                 # The SOURCE node id is only inputs[0],
@@ -297,7 +219,7 @@ def load_graph(filename):
             #this is a clusters output pin
             #append it to the ouput list
             else:
-                globs.clusters[n.location].outputs.append(Driver(n.id,n.index))
+                globs.clusters[n.location].outputs.append(structs.Driver(n.id,n.index))
                 #print 'clust output', n.location, n.id
 
         #node is an IPIN
@@ -315,7 +237,7 @@ def load_graph(filename):
                 or n.location[1] in [0, globs.clustery]:
 
                     #init a corresponding driver for this node.
-                    globs.IOs[n.location].outputs.append(Driver(n.id,n.index))
+                    globs.IOs[n.location].outputs.append(structs.Driver(n.id,n.index))
 
                     #TODO: why only edge[0]. okay there can be only one.
                     #when not you have multiple drivers for that output pin
@@ -328,7 +250,7 @@ def load_graph(filename):
                 #this is a clusters output pin
                 #append it to the ouput list
                 else:
-                    globs.clusters[n.location].inputs.append(Driver(n.id, n.index))
+                    globs.clusters[n.location].inputs.append(structs.Driver(n.id, n.index))
 
         #node is a CHANNEL
         elif n.type is 5 or n.type is 6:
@@ -337,9 +259,9 @@ def load_graph(filename):
             sbox = globs.switchbox[source]
             #append the driver to this node to the switchbox
             if n.type is 5:
-                sbox.driversx.append(Driver(n.id, n.index, n.dir))
+                sbox.driversx.append(structs.Driver(n.id, n.index, n.dir))
             else:
-                sbox.driversy.append(Driver(n.id, n.index, n.dir))
+                sbox.driversy.append(structs.Driver(n.id, n.index, n.dir))
 
     print "Global IO: out", global_outputs, "and in", global_inputs
 
