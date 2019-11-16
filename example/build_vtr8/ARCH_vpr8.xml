@@ -121,53 +121,58 @@
         <input name="I" num_pins="28"/>
         <output name="O" num_pins="8"/>
         <clock name="clk" num_pins="1"/>
-        <pb_type name="ble" num_pb="8">
-          <input name="in" num_pins="6"/>
-          <output name="out" num_pins="1"/>
-          <clock name="clk" num_pins="1"/>
-          <pb_type name="soft_logic" num_pb="1">
+        <!-- allow an easier parsing of the netlist -->
+        <mode name="clb">
+          <pb_type name="ble" num_pb="8">
             <input name="in" num_pins="6"/>
             <output name="out" num_pins="1"/>
-            <mode name="n1_lut6">
-              <pb_type name="lut6" blif_model=".names" num_pb="1" class="lut">
-                <input name="in" num_pins="6" port_class="lut_in"/>
-                <output name="out" num_pins="1" port_class="lut_out"/>
+            <clock name="clk" num_pins="1"/>
+            <mode name="ble">
+              <pb_type name="soft_logic" num_pb="1">
+                <input name="in" num_pins="6"/>
+                <output name="out" num_pins="1"/>
+                <mode name="n1_lut6">
+                  <pb_type name="lut6" blif_model=".names" num_pb="1" class="lut">
+                    <input name="in" num_pins="6" port_class="lut_in"/>
+                    <output name="out" num_pins="1" port_class="lut_out"/>
+                  </pb_type>
+                  <interconnect>
+                    <direct name="direct1" input="soft_logic.in[5:0]" output="lut6[0:0].in[5:0]"/>
+                    <direct name="direct2" input="lut6[0:0].out" output="soft_logic.out[0:0]"/>
+                  </interconnect>
+                </mode>
+              </pb_type>
+              <pb_type name="ff" blif_model=".latch" num_pb="1" class="flipflop">
+                <input name="D" num_pins="1" port_class="D"/>
+                <output name="Q" num_pins="1" port_class="Q"/>
+                <clock name="clk" num_pins="1" port_class="clock"/>
               </pb_type>
               <interconnect>
-                <direct name="direct1" input="soft_logic.in[5:0]" output="lut6[0:0].in[5:0]"/>
-                <direct name="direct2" input="lut6[0:0].out" output="soft_logic.out[0:0]"/>
-              </interconnect>
+                <direct name="direct1" input="soft_logic.out[0:0]" output="ff.D"/>
+                <direct name="direct2" input="ble.in" output="soft_logic.in"/>
+                <direct name="direct3" input="ble.clk" output="ff.clk"/>
+                <mux name="mux1" input="ff.Q soft_logic.out[0:0]" output="ble.out[0:0]"/>
+               </interconnect>
             </mode>
           </pb_type>
-          <pb_type name="ff" blif_model=".latch" num_pb="1" class="flipflop">
-            <input name="D" num_pins="1" port_class="D"/>
-            <output name="Q" num_pins="1" port_class="Q"/>
-            <clock name="clk" num_pins="1" port_class="clock"/>
-          </pb_type>
+
           <interconnect>
-            <direct name="direct1" input="soft_logic.out[0:0]" output="ff.D"/>
-            <direct name="direct2" input="ble.in" output="soft_logic.in"/>
-            <direct name="direct3" input="ble.clk" output="ff.clk"/>
-            <mux name="mux1" input="ff.Q soft_logic.out[0:0]" output="ble.out[0:0]"/>
-           </interconnect>
-        </pb_type>
-
-        <interconnect>
-          <complete name="complete1" input="clb.I ble[7:0].out" output="ble[7:0].in"/>
-          <complete name="complete2" input="clb.clk" output="ble[7:0].clk"/>
-          <direct name="direct1" input="ble[7:0].out" output="clb.O"/>
-        </interconnect>
-        <!-- VPR 6.0
-        <fc_in type="abs">6</fc_in>
-        <fc_out type="abs">10</fc_out> -->
-        <!-- VPR 7.0 -->
-        <!--fc default_in_type="abs" default_in_val="6" default_out_type="abs" default_out_val="10" / -->
+            <complete name="complete1" input="clb.I ble[7:0].out" output="ble[7:0].in"/>
+            <complete name="complete2" input="clb.clk" output="ble[7:0].clk"/>
+            <direct name="direct1" input="ble[7:0].out" output="clb.O"/>
+          </interconnect>
+          <!-- VPR 6.0
+          <fc_in type="abs">6</fc_in>
+          <fc_out type="abs">10</fc_out> -->
+          <!-- VPR 7.0 -->
+          <!--fc default_in_type="abs" default_in_val="6" default_out_type="abs" default_out_val="10" / -->
 
 
-        <!-- pinlocations pattern="spread"/ -->
-        <!--gridlocations -->
-          <!-- loc type="fill" priority="1"/ -->
-        <!-- /gridlocations -->
+          <!-- pinlocations pattern="spread"/ -->
+          <!--gridlocations -->
+            <!-- loc type="fill" priority="1"/ -->
+          <!-- /gridlocations -->
+        </mode>
       </pb_type>
 
 

@@ -175,6 +175,7 @@ def parseGraphXml(filename):
             n.location = (xStart,yStart,xEnd,yEnd)
 
         #set the direction of the node.
+        #TODO: there is no bidirectional support implemented yet
         if n.type > 4:
             dir = node.get('direction')
             if dir == 'INC_DIR':
