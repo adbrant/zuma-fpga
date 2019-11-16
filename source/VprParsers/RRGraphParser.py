@@ -1,6 +1,38 @@
+# use this if you want to include modules from a subforder.
+# used for the unit tests to import the struct module
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"../")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
 import structs
 import re
 import const
+import xml.etree.ElementTree as ET
+
+
+#parse the type string and return the proper int value
+def getNodeType(typeString):
+
+    type = -1
+
+    if (typeString == 'SINK'):
+        type = 1
+    elif (typeString == 'SOURCE'):
+        type = 2
+    elif (typeString == 'OPIN'):
+        type = 3
+    elif (typeString == 'IPIN'):
+        type = 4
+    elif (typeString == 'CHANX'):
+        type = 5
+    elif (typeString == 'CHANY'):
+        type = 6
+    else:
+        assert(0)
+
+    return type
 
 ##parse the rr_graph.echo file
 #param filename the path to the rr_graph file.
@@ -34,20 +66,9 @@ def parseGraph(filename):
         n = structs.Node()
         #set the id.
         n.id = int(str[1])
-        if (str[2] == 'SINK'):
-            n.type = 1
-        elif (str[2] == 'SOURCE'):
-            n.type = 2
-        elif (str[2] == 'OPIN'):
-            n.type = 3
-        elif (str[2] == 'IPIN'):
-            n.type = 4
-        elif (str[2] == 'CHANX'):
-            n.type = 5
-        elif (str[2] == 'CHANY'):
-            n.type = 6
-        else:
-            assert(0)
+
+        #set the type
+        n.type = getNodeType(str[2])
 
         nums = re.findall(r'\d+', line)
         nums = [int(i) for i in nums ]
@@ -110,4 +131,92 @@ def parseGraph(filename):
 #   clusterx,clustery are the maximal x and y local coordinates and nodegraph
 #   is a NodeGraph object
 def parseGraphXml(filename):
-    pass
+
+    #init the return stuff
+    clusterx = 0
+    clustery = 0
+
+    nodeGraph = structs.NodeGraph()
+
+    #now parse the xml file
+    tree = ET.parse(filename)
+    root = tree.getroot()
+    nodes = root.findall('./rr_nodes/node')
+
+    for node in nodes:
+
+        #create a node for the NodeGraph and copy the attributes:
+        n = structs.Node()
+
+        #set the id
+        n.id = int(node.get('id'))
+
+        #get the type
+        n.type = getNodeType(node.get('type'))
+
+        #get the location and the index.
+        #The index is the pad position, pin position or track number
+        #depending its a pin on an I/O block, cluster or a channel.
+        #for channels with length greater one
+        #we have different start and end locations
+        location = node.find('loc')
+        n.index = int(location.get('ptc'))
+
+        if n.type < 5:
+            xCoord = int(location.get('xlow'))
+            yCoord = int(location.get('ylow'))
+            n.location = (xCoord,yCoord)
+        #we have a channel get start and end location
+        else:
+            xStart = int(location.get('xlow'))
+            yStart = int(location.get('ylow'))
+            xEnd = int(location.get('xhigh'))
+            yEnd = int(location.get('yhigh'))
+            n.location = (xStart,yStart,xEnd,yEnd)
+
+        #set the direction of the node.
+        if n.type > 4:
+            dir = node.get('direction')
+            if dir == 'INC_DIR':
+                #north or east
+                if n.type is 5:
+                    n.dir = const.E
+                else:
+                    n.dir = const.N
+            else:
+                if n.type is 5:
+                    n.dir = const.W
+                else:
+                    n.dir = const.S
+
+        #set the edges
+        #therefore we have to search all edges with this id as a source
+        edges = root.findall('./rr_edges/edge[@src_node=\'' + str(n.id) + '\']')
+        for edge in edges:
+            #append it to the node edge list
+            edgeId = int(edge.get('sink_node'))
+            n.edges.append(edgeId)
+
+        #clusterx,clustery are the maximal value of location coords.
+        #find these maximal location coords
+        clusterx = max(clusterx,n.location[0])
+        clustery = max(clustery,n.location[1])
+
+        #append the node to the node graph
+        #provide an id to check if this id was add before
+        nodeGraph.add(n,n.id)
+
+
+    return (clusterx,clustery,nodeGraph)
+
+def simpleTest():
+    (clusterx,clustery,nodeGraph) = parseGraphXml('rr_graph.echo')
+    for node in nodeGraph.nodes:
+        print node.id
+
+#some simple unit Test
+def main():
+    simpleTest()
+
+if __name__ == '__main__':
+    main()

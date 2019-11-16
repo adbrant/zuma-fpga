@@ -115,7 +115,7 @@ def build_inner_structure():
 def load_graph(filename):
 
     #parse the routing ressource graph file
-    if params.vpr8
+    if globs.params.vpr8:
         (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraphXml(filename)
     else:
         (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraph(filename)
