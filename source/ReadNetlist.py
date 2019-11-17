@@ -1,6 +1,5 @@
-import os, sys, inspect
-
 # use this if you want to include modules from a subforder
+import os, sys, inspect
 cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
 (inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
 if cmd_subfolder not in sys.path:
@@ -73,15 +72,15 @@ def copyLut(netlistBle,cluster,bleIndex):
 
     #apend the lut to the clusters LUTs list
     cluster.LUTs.append(lutname )
-    
+
     #update the nodes graph
     lut = globs.LUTs[lutname]
     lutNode = globs.nodes[cluster.LUT_nodes[bleIndex]]
-    
+
     lutNode.eLUT = True
     lutNode.bits = lut.contents
     lutNode.LUT = lut
-    
+
     lut.node = lutNode
 
 ## Build a passtrough lut for a ble that only use its flipflop.
@@ -121,12 +120,12 @@ def copyFlipFlopBuildPasstrough(netlistBle,cluster,bleIndex):
     #the passthrough lut gets the original lut as an input
     originalLutName = globs.latches[latchName].input
     passThroughLUT.inputs.append(originalLutName)
-    
+
     #configure the lut node
     passTroughLutNode.eLUT = True
     passTroughLutNode.bits = passThroughLUT.contents
     passTroughLutNode.LUT = passThroughLUT
-    
+
     #add the lut to the lut dict
     globs.LUTs[latchName] = passThroughLUT
     #add the passthrough lut name (same as latchName)
@@ -238,7 +237,7 @@ def finishNormalRouting(RoutingVector,cluster):
                     = cluster.getFFMuxNodeId(inputPinIndex - globs.params.I)
 
 ## Finsish the routing by apply the right path for every mux
-## of the internal routing. 
+## of the internal routing.
 # The muxes are represented by so called inodes
 # and the reference to the inodes is done by the LUT_input_nodes list.
 # To apply the path the source attribute of the inode object is set to
@@ -282,7 +281,7 @@ def finishRouting():
             finishNormalRouting(RoutingVector,cluster)
 
 ## Unify node names for LUTs with FFs.
-# change the input of latches, 
+# change the input of latches,
 # so this is always the name of the lut on the same ble
 def unifyNames():
 
