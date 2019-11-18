@@ -39,20 +39,6 @@ def parseRouting(filename ):
     x = int(lines[0].split(' ')[2])+1
     y = int(lines[0].split(' ')[4])+1
 
-    #maximum track number
-    channels = 0
-
-    #find the maximum track number
-    for line in lines:
-
-        if line.find("CHAN") > -1:
-            about = line.split()
-            #get the track number
-            c1 = getchan(line)
-            #get the max tack number
-            if c1 + 1 > channels:
-                channels = c1 + 1
-
     #current parsed net
     routing_net = None
 

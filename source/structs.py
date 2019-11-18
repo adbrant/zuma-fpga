@@ -26,6 +26,7 @@ class Node():
         #TODO: change the name ffmux to blemux
 
         ## A node can have one of the following types (attribute type):
+        ##  0 - empty node (for removed nodes)
         ##  1 - 'SINK'
         ##  2 - 'SOURCE'
         ##  3 - 'OPIN'

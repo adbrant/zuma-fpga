@@ -10,15 +10,22 @@ def make_files(directory, template_directory):
     print directory
 
     #use vpr6
-    if (zuma_config.params.vpr7 is False):
-        filelist = ['ARCH.xml', 'abccommands', 'vpr.sh']
+    if (zuma_config.params.vpr8):
+        filelist = ['ARCH_vpr8.xml', 'abccommands', 'vpr8.sh']
     #seems we want to use vpr7
-    else:
+    elif (zuma_config.params.vpr7):
         filelist = ['ARCH_vpr7.xml', 'abccommands', 'vpr.sh']
+    else:
+        filelist = ['ARCH.xml', 'abccommands', 'vpr.sh']
 
     rep = []
-    rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X)])
-    rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y)])
+    if (zuma_config.params.vpr8):
+        rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X+2)])
+        rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y+2)])
+    else:
+        rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X)])
+        rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y)])
+
     rep.append(['ZUMA_FCIN_TYPE',str(zuma_config.params.fc_in_type)])
     rep.append(['ZUMA_FCOUT_TYPE',str(zuma_config.params.fc_out_type)])
     rep.append(['ZUMA_FCIN_VAL',str(zuma_config.params.fc_in)])

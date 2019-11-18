@@ -63,6 +63,7 @@ def read_BLIF(filename):
                     i = nums[-1] + inputoffset
                 # assign the name to the nodes in the node graph
                 globs.nodes[globs.orderedInputs[i]].name = item.strip()
+                print 'found input ',globs.nodes[globs.orderedInputs[i]].name ,'in blif file, assign to node id:',globs.orderedInputs[i]
 
             line = fh.readline()
 
@@ -134,7 +135,7 @@ def read_BLIF(filename):
 
             # The LUT can describe a passthrough from a fpga input
             # to a fpga output.
-            # We save the mapping (input name, list of output names) 
+            # We save the mapping (input name, list of output names)
             # to find later in read_routing the corresponding sink node,
             # which has the output name in the name attribute
             # This is possible because the net name to this sink
@@ -145,7 +146,7 @@ def read_BLIF(filename):
             # And that Vpr route the output pins in the same order.
             # TODO: is that true?
             if outnet in globs.outputs and len(innets) == 1:
-                
+
                 inputName = innets[0]
                 outputName = outnet
                 #There is no entry for the fpga input yet

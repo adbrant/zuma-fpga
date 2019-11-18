@@ -13,6 +13,94 @@ import Dump
 import RRGraphParser
 import copy
 
+#clean the graph
+#vpr7 and especially vpr8 produces sinks/source with only one ipin/opin
+#connected and this opins/ipins are undriven. Also there exists undriven ipin/opin
+#with a connection to an active sink/source.
+#These nodes are completly useless and will be removed from the graph.
+def removeUndrivenNodes():
+
+    #in a first round kill undriven ipins.
+    #then we could kill the now undriven sources and sinks in a second run
+
+    #find the undriven nodes and kill them
+    for n in globs.nodes:
+
+        if n.type is 3: #OPIN.
+
+            #check if he's undriven
+            if len(n.edges) == 0:
+
+                #dismount him from his source. there should be only one source edge
+
+                #sanity check. only one sink edge
+                if len(n.inputs) != 1:
+                    print 'error multiply edges for an input'
+                    sys.exit(0)
+
+                #dismount him
+                sourceId = n.inputs[0]
+                source = globs.nodes[sourceId]
+                source.edges.remove(n.id)
+
+                #now kill the node
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+
+        if n.type is 4: #IPIN
+            #check if he's undriven
+            if len(n.inputs) == 0:
+
+                #dismount him from his sink. there should be only one sink edge
+
+                #sanity check. only one sink edge
+                if len(n.edges) != 1:
+                    print 'error multiply edges for an input'
+                    sys.exit(0)
+
+                #dismount him
+                sinkId = n.edges[0]
+                sink = globs.nodes[sinkId]
+                sink.inputs.remove(n.id)
+
+                #now kill the node
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+
+    #now kill the undriven sources and sinks
+
+    for n in globs.nodes:
+
+        if n.type is 1: #SINK
+            #test if the sink node is undriven or has only one
+            #undriven child
+
+            #if it is undriven remove it from the graph
+            if len(n.inputs) == 0:
+                #type null signals an removed nodes
+                #TODO: change the node graph to a dictionary
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+        elif n.type is 2: #SOURCE
+
+            #test if the source node is undriven or has only one
+            #undriven child
+
+            #if it is undriven remove it from the graph
+            if len(n.edges) == 0:
+                #type null signals an removed nodes
+                #TODO: change the node graph to a dictionary
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+
 ## build the simple network.
 # In the simple network, every pin of a ble get
 # its own inode, which can route from every input
@@ -173,6 +261,10 @@ def load_graph(filename):
     if globs.params.dumpNodeGraph:
         Dump.dumpGraph('loadedGraph')
 
+    #remove undriven sources and sinks as well as their ipins/opins
+    #these are not used nodes generate by vpr for some reasons i dont know
+    removeUndrivenNodes()
+
     #append the source and sink nodes to the orderedInput
     #and orderedOutput list
     #init the drivers for the I/O blocks and switchboxes.
@@ -180,9 +272,9 @@ def load_graph(filename):
 
         # reuse SINKs and SOURCEs for ordered global IO
         if n.type is 1: #SINK
-            pass
+            continue
         elif n.type is 2: #SOURCE
-            pass
+            continue
 
         # for OPINs and IPINs a notable assumption was made
         # that they are listed in increasing order in the file,

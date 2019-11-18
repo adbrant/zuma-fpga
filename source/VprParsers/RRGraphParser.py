@@ -212,6 +212,9 @@ def parseGraphXml(filename):
 
 def simpleTest():
     (clusterx,clustery,nodeGraph) = parseGraphXml('rr_graph.echo')
+    print clusterx
+    print clustery
+
     for node in nodeGraph.nodes:
         print node.id
 
