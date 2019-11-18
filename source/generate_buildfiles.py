@@ -11,7 +11,7 @@ def make_files(directory, template_directory):
 
     #use vpr6
     if (zuma_config.params.vpr8):
-        filelist = ['ARCH_vpr8.xml', 'abccommands', 'vpr8.sh']
+        filelist = ['ARCH_vpr8.xml', 'abccommands.vpr8', 'vpr8.sh']
     #seems we want to use vpr7
     elif (zuma_config.params.vpr7):
         filelist = ['ARCH_vpr7.xml', 'abccommands', 'vpr.sh']

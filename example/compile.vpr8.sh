@@ -61,8 +61,8 @@ python2.7 $ZUMA_DIR/source/generate_buildfiles.py ./ $ZUMA_DIR/source/templates
 failed=0
 
 #run odin, abc and vpr
-$VTR_DIR/ODIN_II/odin_II.exe -V $filename &&\
-$VTR_DIR/abc_with_bb_support/abc < abccommands &&\
+$VTR_DIR/ODIN_II/odin_II -V $filename &&\
+$VTR_DIR/abc/abc -F abccommands.vpr8 &&\
 sh vpr8.sh || failed=1
 
 echo
@@ -103,12 +103,12 @@ python2.7 $ZUMA_DIR/source/zuma_build.py \
         echo "Found no latches in input circuit: Circuit is combinational"
         echo
         echo "Checking for combinational equivalence with ODINs result:"
-        echo -e 'cec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc_with_bb_support/abc
+        echo -e 'cec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc/abc
     else
         echo "Found latches in input circuit: Circuit is sequential"
         echo
         echo "Checking for sequential equivalence with ODINs result:"
-        echo -e 'sec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc_with_bb_support/abc
+        echo -e 'sec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc/abc
     fi
     echo
 

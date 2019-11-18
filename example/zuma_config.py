@@ -29,7 +29,7 @@ params.fc_out_type = 'abs'
 #use vpr 7
 params.vpr7 = True
 #use vpr8
-params.vpr8 = False
+params.vpr8 = True
 
 #close network support
 params.UseClos = False
