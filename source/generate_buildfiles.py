@@ -46,5 +46,5 @@ def make_files(directory, template_directory):
 
 import sys
 
-
-make_files(sys.argv[1], sys.argv[2])
+if __name__ == '__main__':
+    make_files(sys.argv[1], sys.argv[2])

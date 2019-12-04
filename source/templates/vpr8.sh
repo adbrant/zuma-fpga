@@ -1,11 +1,13 @@
+#!/usr/bin/bash
+
 #uses a clock file see: http://code.google.com/p/vtr-verilog-to-routing/wiki/ClocksFile
 if [ ! -f user_clocks.clock ]; then
-        echo "# [bench_name] [top-level clk name]" > user_clocks.clock
-        echo "abc_out				clock" >> user_clocks.clock
+       echo "# [bench_name] [top-level clk name]" > user_clocks.clock
+       echo "abc_out				clock" >> user_clocks.clock
 fi
 
 #vpr 7 is set so copy the clock file
-
+echo $VTR_DIR
 cp user_clocks.clock  $VTR_DIR/vtr_flow/misc/user_clocks.clock
 
   # --echo_file on ## echo_file is for VPR 7 only
@@ -16,7 +18,7 @@ $VTR_DIR/vpr/vpr ARCH_vpr8.xml zuma \
 --route_file route.r \
 --circuit_file abc_out.blif \
 --timing_analysis off \
---disp off \
+--disp on \
 --route_chan_width ZUMA_CHAN_W \
 --echo_file on \
 --write_rr_graph rr_graph.echo
