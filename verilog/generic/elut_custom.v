@@ -1,13 +1,18 @@
 /*
 #	ZUMA Open FPGA Overlay
-#	Alex Brant 
+#	Alex Brant
 #	Email: alex.d.brant@gmail.com
 #	2012
 #	LUTRAM wrapper
 */
 `include "define.v"
 `include "def_generated.v"
-module elut_custom(
+module elut_custom #(
+
+	parameter used = 0,
+	parameter LUT_MASK={2**K{1'b0}}
+
+) (
 	a,
 	d,
 	dpra,
@@ -32,7 +37,35 @@ output qdpo;
 wire lut_output;
 wire lut_registered_output;
 
-`ifdef PLATFORM_XILINX      
+//no plattform. just for a verificational build.
+`ifdef ZUMA_VERIFICATION
+
+	generate
+		if( used == 0)
+			//nothing will be generated and connected
+		else
+			//we generate a lut and a latch
+			LUT_K #(
+				.K(ZUMA_LUT_SIZE),
+				.LUT_MASK(LUT_MASK)
+				) verification_lut  (
+				.in(dpra),
+				.out(lut_output)
+				);
+
+			DFF #(
+	        .INITIAL_VALUE(1'b0)
+	    ) verification_latch  (
+	        .D(lut_output),
+	        .Q(lut_registered_output),
+	        .clock(qdpo_clk)
+	    );
+
+
+	endgenerate
+
+`elsif PLATFORM_XILINX
+
 //uses distributed dual-port RAM
 //uses two luts, which can have two different read busses, sharing a common write logic.
 elut_xilinx LUT (
@@ -48,14 +81,14 @@ elut_xilinx LUT (
   .we(we),
   //second input clock
   .qdpo_clk(qdpo_clk),
-  // input qdpo_rst 
+  // input qdpo_rst
   .qdpo_rst(qdpo_rst),
   //first unregistered output [0 : 0]
   .dpo(lut_output),
   //second registered output [0 : 0]
   .qdpo(lut_registered_output)
 );
-  
+
 `elsif PLATFORM_ALTERA
 
 	 SDPR LUT(
@@ -74,7 +107,7 @@ assign qdpo = (lut_registered_output === 1'bx) ? 0 : lut_registered_output ;
 `else
 assign dpo  = lut_output;
 assign qdpo = lut_registered_output;
-`endif  
+`endif
 
 
 endmodule

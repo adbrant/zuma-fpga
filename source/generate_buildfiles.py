@@ -1,9 +1,4 @@
-#	ZUMA Open FPGA Overlay
-#	Alex Brant
-#	Email: alex.d.brant@gmail.com
-#	2012
 #	Preparation of input files for VTR tools
-
 
 import zuma_config
 def make_files(directory, template_directory):

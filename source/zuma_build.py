@@ -1,10 +1,4 @@
 #!/usr/bin/env python
-#	ZUMA Open FPGA Overlay
-#	Alex Brant
-#	Email: alex.d.brant@gmail.com
-#	2012
-#	Command line interface
-
 
 import globs
 
