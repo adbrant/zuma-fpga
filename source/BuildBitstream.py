@@ -3,11 +3,11 @@ import globs
 import math
 import Dump
 
-## build a bitstream for a passthrough mux. see ZUMA paper.
+## build a bitstream for a mux. see ZUMA paper.
 # @param width The input width of the mux.
 # @param offset The fix input selector of the mux.
 # @return The configuration bits
-def build_passthrough(width, offset):
+def buildMuxBitstreamConfig(width, offset):
     length = int(math.pow(2,width))
     bits = []
     offset2 = width - 1 - offset #reverse order
@@ -32,7 +32,7 @@ def build_lut_contents(width, LUT, cluster,bleIndex):
     #first we need to map our blif names in LUT.inputs to their used pin position
 
     #this list describe the input mapping e.g. for a 6er lut: [3,2,6,1,0,5,4],
-    #where the position is given by the position of the blif/netlist name 
+    #where the position is given by the position of the blif/netlist name
     #in the list LUT.inputs and the value is the used pin position on the lut.
     pins = []
 
@@ -178,7 +178,7 @@ def build_bitstream(filename):
     #this function has two parts: first it adds
     #the LUTRAM config bits for eLuts and muxes
     #in an array called bit_pattern.
-    #Uses build_passthrough for generating the config bits of the muxes.
+    #Uses buildMuxBitstreamConfig for generating the config bits of the muxes.
     #Uses build_lut_contents for generating the config bits of the eLuts.
     #In the second part the function write this config bits in a hex file
     #with a bit protocol stuff wrapped around.
@@ -189,9 +189,9 @@ def build_bitstream(filename):
     last_node = -1
     #number of config bits of the LUTRAM.
     lut_len = int(math.pow(2, globs.host_size))
-    
+
     # a 2 dimensional list of configurations for each lutram.
-    # each row is a stage, consist of at most params.config_width 
+    # each row is a stage, consist of at most params.config_width
     # configurations for LUTRAMS that are configured in parallel.
     # every column is the 2^host_size bit configuration of a LUTRAM.
     # for a unconfigured LUTRAM the column entry is a empty list
@@ -241,7 +241,7 @@ def build_bitstream(filename):
                     #and append it to the configuration array
                     bits = build_lut_contents(globs.host_size, node.LUT, cl, index)
                     bit_row.append(bits)
-                    
+
                     if globs.debug:
                         print "ELUT id: " + str(node.id) +  "," + str(bits)
 
@@ -256,17 +256,20 @@ def build_bitstream(filename):
                 continue
 
             if node.ffmux:
+                #the source attribute for mappped nodes was already done
+                #in the updateMappedFFMuxSource() function
+
                 #get the lut that drive the mux
                 elutnode = globs.nodes[node.source]
-                
+
                 #check if the mux/ble is used
                 if elutnode.LUT:
                     if elutnode.LUT.useFF: #flipflop is used
-                        bit_row.append(build_passthrough(globs.host_size,0 )) # registered / with FF
-                        bits = build_passthrough(globs.host_size,0 )
+                        bit_row.append(buildMuxBitstreamConfig(globs.host_size,0 )) # registered / with FF
+                        bits = buildMuxBitstreamConfig(globs.host_size,0 )
                     else:
-                        bit_row.append(build_passthrough(globs.host_size,1 )) # unregistered / without FF
-                        bits = build_passthrough(globs.host_size,1 )
+                        bit_row.append(buildMuxBitstreamConfig(globs.host_size,1 )) # unregistered / without FF
+                        bits = buildMuxBitstreamConfig(globs.host_size,1 )
                 #the mux/ble isn't used
                 else:
                     bit_row.append([])
@@ -276,7 +279,7 @@ def build_bitstream(filename):
                     print "FFMUX id: " + str(node.id) +  "," + str(bits)
                 continue
 
-                
+
             num_luts =  int(math.ceil((len(node.inputs)-globs.host_size)/(globs.host_size-1.0)) + 1)
 
             #sometimes we have to calc num_lut again for large muxes.
@@ -293,26 +296,26 @@ def build_bitstream(filename):
                 for i in range(num_luts):
                     bit_row.append([])
                     bits.append([])
-                
+
                 if globs.debug:
                     print "ROUTING MUX id: " + str(node.id) +  "," + str(bits)
-                    
+
                 node.config_generated = True
                 continue
-                
+
             if node.source not in node.inputs:
                 print 'error at node' , node.id, node.source, node.inputs
                 break
-                    
-            #if the mux fit in one host lut, build the configuration with build_passthrough()
+
+            #if the mux fit in one host lut, build the configuration with buildMuxBitstreamConfig()
             if num_luts is 1:
-                offset = node.inputs.index(node.source) 
-                bit_row.append(build_passthrough(globs.host_size,offset ))
-                bits = build_passthrough(globs.host_size,offset )
+                offset = node.inputs.index(node.source)
+                bit_row.append(buildMuxBitstreamConfig(globs.host_size,offset ))
+                bits = buildMuxBitstreamConfig(globs.host_size,offset )
                 if globs.debug:
                     print "ROUTING MUX id: " + str(node.id) +  "," + str(bits)
-                    print "Source: " + str(node.source) + " selector " + str(node.inputs.index(node.source)) + " list: " + str(node.inputs) 
-                
+                    print "Source: " + str(node.source) + " selector " + str(node.inputs.index(node.source)) + " list: " + str(node.inputs)
+
                 #append the offset to the mappedNode
                 #has only one mapped Node
                 mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[0])
@@ -324,7 +327,7 @@ def build_bitstream(filename):
             else:
                 #build multilutram mux
                 index = node.inputs.index(node.source)
-                
+
                 bits = []
 
                 # two levels of LUTRAMs.
@@ -335,19 +338,19 @@ def build_bitstream(filename):
                 if num_luts <= globs.host_size + 1:
                     # mux_size <= globs.host_size * globs.host_size => tighly packed
                     last_index = -1
-                    
+
                     #try to get the first level LUTRAM that handles the source.
                     #configure this lut as the right passthrough
                     #the rest will be unconfigured
                     for n in range(num_luts - 1):
-                        
+
                         #This is the right first level lutram
                         if index in range(n*globs.host_size, (n+1)*globs.host_size):
-                            
+
                             offset = index - n*globs.host_size
 
-                            bit_row.append(build_passthrough(globs.host_size, offset ))
-                            bits.append(build_passthrough(globs.host_size,offset ))
+                            bit_row.append(buildMuxBitstreamConfig(globs.host_size, offset ))
+                            bits.append(buildMuxBitstreamConfig(globs.host_size,offset ))
                             last_index = n
 
                             #append the offset to the mappedNode
@@ -364,7 +367,7 @@ def build_bitstream(filename):
                     #configure the secon level lutram
                     if last_index  is -1:
                         offset = index-(num_luts-1)*globs.host_size+(num_luts-1)
-                        config = build_passthrough(globs.host_size,offset)
+                        config = buildMuxBitstreamConfig(globs.host_size,offset)
 
                         #append the offset to the mappedNode
                         mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[num_luts-1])
@@ -376,8 +379,8 @@ def build_bitstream(filename):
                     else:
                         offset = last_index
 
-                        bit_row.append(build_passthrough(globs.host_size,offset))
-                        bits.append(build_passthrough(globs.host_size,offset))
+                        bit_row.append(buildMuxBitstreamConfig(globs.host_size,offset))
+                        bits.append(buildMuxBitstreamConfig(globs.host_size,offset))
 
                         #append the offset to the mappedNode
                         mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[num_luts-1])
@@ -386,12 +389,12 @@ def build_bitstream(filename):
 
                     if globs.debug:
                         print "ROUTING MUX id: " + str(node.id) + "," + str(bits)
-                        print "Source: " + str(node.source) + " selector " + str(node.inputs.index(node.source)) + " list: " + str(node.inputs) 
+                        print "Source: " + str(node.source) + " selector " + str(node.inputs.index(node.source)) + " list: " + str(node.inputs)
 
                 else:
-                    
+
                     bits = []
-                    
+
                     # mux_size > globs.host_size * globs.host_size => strictly layered
                     level_size = len(node.inputs)
                     level_size = int(math.ceil((level_size*1.0) / globs.host_size))
@@ -408,8 +411,8 @@ def build_bitstream(filename):
                             if index in range(n*globs.host_size, (n+1)*globs.host_size):
                                 offset = index - n*globs.host_size
 
-                                bit_row.append(build_passthrough(globs.host_size,offset ))
-                                bits.append(build_passthrough(globs.host_size,offset ))
+                                bit_row.append(buildMuxBitstreamConfig(globs.host_size,offset ))
+                                bits.append(buildMuxBitstreamConfig(globs.host_size,offset ))
 
                                 #append the offset to the mappedNode
                                 mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[mappedNodeIndex])
@@ -428,26 +431,26 @@ def build_bitstream(filename):
                             assert(0)
 
                         level_size = int(math.ceil((level_size*1.0) / globs.host_size))
-                        
+
                     # Last level (Combination node)
                     #TODO: Check n here
                     offset = last_index
 
-                    bit_row.append(build_passthrough(globs.host_size, offset))
-                    bits.append(build_passthrough(globs.host_size, offset))
+                    bit_row.append(buildMuxBitstreamConfig(globs.host_size, offset))
+                    bits.append(buildMuxBitstreamConfig(globs.host_size, offset))
 
                     #append the offset to the mappedNode
                     mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[mappedNodeIndex])
                     source = mappedNode.inputs[offset]
                     mappedNode.source = source
-                    
+
                     if globs.debug:
                         print "ROUTING MUX id: " + str(node.id) + "," + str(bits)
-                        print "Source: " + str(node.source) + " selector " + str(node.inputs.index(node.source)) + " list: " + str(node.inputs) 
+                        print "Source: " + str(node.source) + " selector " + str(node.inputs.index(node.source)) + " list: " + str(node.inputs)
 
             node.config_generated = True
         bit_pattern.append(bit_row)
-    
+
     #check we've done all configuration
     unconfiged = []
     for node in globs.nodes:
@@ -456,22 +459,22 @@ def build_bitstream(filename):
             for row in globs.config_pattern:
                 if node.id in row:
                     pass
-            
-            
-    if len(unconfiged) > 0:         
+
+
+    if len(unconfiged) > 0:
         print 'Nodes skipped in bitstream' ,  unconfiged
 
     #global LUTs
     for key in globs.LUTs:
         if key not in placed_luts:
             if len(globs.LUTs[key].inputs) > 1:
-                print 'error LUT not cofigured' , key   
-                
+                print 'error LUT not cofigured' , key
+
             else:
                 print key, globs.LUTs[key].inputs
-    
+
     import struct
-    
+
     if globs.debug:
         Dump.dumpBitPattern(bit_pattern)
     # second section. write bit_pattern to file.

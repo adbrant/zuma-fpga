@@ -20,13 +20,13 @@ def getNumLuts(node):
 
         # calc the number of used luts for this mux.
         num_luts = int(math.ceil((mux_size-globs.host_size)/(globs.host_size-1.0)) + 1)
-    
+
     #complex
     else:
-        
+
         #the input width
         mux_size = len(node.inputs)
-        
+
         level_size = mux_size
         num_luts = 0
         while level_size > 1:
@@ -56,7 +56,7 @@ def getPackingType(node):
         packing = 'tightly'
 
     #mux_size <= globs.host_size*globs.host_size or greater
-    else: 
+    else:
         packing = 'complex'
 
     return packing
@@ -76,7 +76,7 @@ def list_to_vector(names):
 # The LUTRAM can be a lutram of a routing mux, a ffmux or a eLUT
 # @param name the name of the LUTRAM
 # @param input_names a list of the input wires names
-# @param output_name The name of the output wire 
+# @param output_name The name of the output wire
 #       without the unregistered and registered appendix.
 #       NOTE: there will be an unregistered an register output with that name
 # @param config_offset the lut id of that stage
@@ -257,7 +257,7 @@ def addSimpleNode(node):
     #add the node to the node graph
     globs.technologyMappedNodes.add(mappedNode)
 
-## Translate a mux node which fit in a single LUTRAM. 
+## Translate a mux node which fit in a single LUTRAM.
 # write it to the file and append the node id to the current config row
 def writeSimpleLut(node,config_row,f):
 
@@ -277,7 +277,7 @@ def writeSimpleLut(node,config_row,f):
                  config_offset, \
                  config_stage, \
                  node.eLUT, node.ffmux )
-    
+
     config_row.append( node.id)
 
 
@@ -288,7 +288,7 @@ def addTightlyNodes(node):
 
     # calc the number of used luts for this mux.
     num_luts = getNumLuts(node)
-    
+
     count = 0
 
     #node names of the first lvl
@@ -296,7 +296,7 @@ def addTightlyNodes(node):
 
     #write first level
     for n in range(num_luts - 1):
-        
+
         name = str(node.id) + '_' + str(count)
 
         #append the node name for input of the second level
@@ -304,14 +304,14 @@ def addTightlyNodes(node):
 
         inputNodesIDs = node.inputs[count:count+globs.host_size]
         input_names = [(str(i)) for i in inputNodesIDs]
-        
+
         mappedNode = TechnologyMappedNode(node,name,input_names)
 
         #add it to the node graph
         globs.technologyMappedNodes.add(mappedNode)
 
         count = count + globs.host_size
-    
+
     #now write the second level
 
     #the second lvl is a single mux with input from the first lvl
@@ -330,7 +330,7 @@ def addTightlyNodes(node):
 
     #add it to the node graph
     globs.technologyMappedNodes.add(mappedNode)
-    
+
 
 
 ## Tranlate a mux node which fits into two levels of LUTRAMs.
@@ -405,7 +405,7 @@ def addComplexNode(node):
 
     count = 0
     level_size = int(math.ceil((mux_size*1.0)/globs.host_size))
-    
+
     #node names of the current lvl
     mux_nodes = []
 
@@ -416,7 +416,7 @@ def addComplexNode(node):
         mux_nodes.append(name)
 
         input_names = [(str(i)) for i in node.inputs[count:count+globs.host_size]]
-          
+
         mappedNode = TechnologyMappedNode(node,name,input_names)
         #add it to the node graph
         globs.technologyMappedNodes.add(mappedNode)
@@ -428,7 +428,7 @@ def addComplexNode(node):
     mux_nodes.append(name)
 
     input_names = [(str(i)) for i in node.inputs[count:]]
-          
+
     mappedNode = TechnologyMappedNode(node,name,input_names)
     #add it to the node graph
     globs.technologyMappedNodes.add(mappedNode)
@@ -448,7 +448,7 @@ def addComplexNode(node):
             next_level_mux_nodes.append(name)
 
             input_names = [str(i) for i in mux_nodes[count:count+globs.host_size]]
-            
+
             mappedNode = TechnologyMappedNode(node,name,input_names)
             #add it to the node graph
             globs.technologyMappedNodes.add(mappedNode)
@@ -474,7 +474,7 @@ def addComplexNode(node):
 
     name = str(node.id)
     input_names = mux_nodes
-          
+
     mappedNode = TechnologyMappedNode(node,name,input_names)
     #add it to the node graph
     globs.technologyMappedNodes.add(mappedNode)
@@ -508,7 +508,7 @@ def writeComplexLut(node,config_row,f):
         name = mux_prefix + str(node.id) + '_' + str(count)
         input_names = [(node_prefix + str(i)) for i in node.inputs[count:count+globs.host_size]]
         output_name = node_name
-          
+
         config_offset = len(config_row)
         config_stage = len(globs.config_pattern)
 
@@ -531,7 +531,7 @@ def writeComplexLut(node,config_row,f):
     name = mux_prefix + str(node.id) + '_' + str(count)
     input_names = [(node_prefix + str(i)) for i in node.inputs[count:]]
     output_name = node_name
-          
+
     config_offset = len(config_row)
     config_stage = len(globs.config_pattern)
 
@@ -559,13 +559,13 @@ def writeComplexLut(node,config_row,f):
                         str(count) + '_' + \
                         str(level)
             f.write( '\t\t\twire ' + node_name + ';\n')
-            
+
             next_level_mux_nodes.append(node_name)
-            
+
             name = mux_prefix + str(node.id) + '_' + str(count) + '_' + str(level)
             input_names = [str(i) for i in mux_nodes[count:count+globs.host_size]]
             output_name = node_name
-          
+
             config_offset = len(config_row)
             config_stage = len(globs.config_pattern)
 
@@ -588,7 +588,7 @@ def writeComplexLut(node,config_row,f):
         name = mux_prefix + str(node.id) + '_' + str(count) + '_' + str(level)
         input_names = [str(i) for i in mux_nodes[count:]]
         output_name = node_name
-          
+
         config_offset = len(config_row)
         config_stage = len(globs.config_pattern)
 
@@ -609,7 +609,7 @@ def writeComplexLut(node,config_row,f):
     name =  mux_prefix + str(node.id)
     input_names = mux_nodes
     output_name = node_prefix + str(node.id)
-          
+
     config_offset = len(config_row)
     config_stage = len(globs.config_pattern)
 
@@ -622,7 +622,7 @@ def writeComplexLut(node,config_row,f):
 
     config_row.append( node.id )
 
-## print debug information for every node into the given file. 
+## print debug information for every node into the given file.
 # Print node type and location
 # @param n the node
 # @param f the filehandle
@@ -664,7 +664,7 @@ def printNodeInformation(n,f):
         f.write('//size: ' + str(len(n.inputs)) + '\n//inputs: ' + str(n.inputs) + '\n')
 
 ## fix the edge attribute of every node of the mapped graph.
-# TODO: This is just a workaround. Normally there shouldn't be nodes 
+# TODO: This is just a workaround. Normally there shouldn't be nodes
 # that need this fix
 # TODO: it seems that the normal node graph has the same problem, that there
 # exist nodes with missing nodes in the edge list.
@@ -681,13 +681,13 @@ def fixEdges():
 ## Set the source attribute for mapped opins and ffmuxes nodes.
 # These mapped nodes need this fix because they have a single fix input.
 def updateMappedFFMuxSource():
-    
+
     #set the source of the ble muxes
     for node in globs.technologyMappedNodes.getNodes():
 
         if node.parentNode.ffmux :
             node.source = node.inputs[0]
-        
+
     #set the source of the mapped opins
     for key in globs.clusters:
         cl = globs.clusters[key]
@@ -697,22 +697,31 @@ def updateMappedFFMuxSource():
             #this opin has just on input
             mappedNodeName = opin.mappedNodes[0]
             mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
-            
+
             mappedNode.source = mappedNode.inputs[0]
 
 ## Mark several mapped nodes a passthrough node.
-# A passthrough node is a node which can be optimized away 
-# and will be implemented as a fix wiring. 
-# This is done by using the assign statement 
+# A passthrough node is a node which can be optimized away
+# and will be implemented as a fix wiring.
+# This is done by using the assign statement
 # in the verilog ouput file for two nodes.
 def markPassTroughNodes():
 
     for node in globs.technologyMappedNodes.getNodes():
+
         #source sinks ipins iomuxes eLUT ffmuxes are leaved untouched.
         #the rest can be optimized
+
+        #TODO: ipins with only one input should now be marked as passTrough
+        #as well because they could be optimized by a wire assigment.
+        #WORKAROUND: would break the sdf analysis for now. So we keep it.
         if len(node.inputs) == 1:
 
-            if (node.type < 3 or node.type == 4 or node.type > 7):
+            if (node.type == 4):
+                print "BuildVerilog: Found an ipins with onyly one input, node id" + str(node.id)
+                node.passTrough = False
+
+            elif (node.type < 3 or node.type > 7):
                 node.passTrough = False
             else:
                 node.passTrough = True
@@ -721,6 +730,25 @@ def markPassTroughNodes():
                 node.source = node.inputs[0]
         else:
             node.passTrough = False
+
+#write a wire in the verilog file for every node output
+def writeWires(file):
+
+    #write connections. one wire for every node output.
+    #Also sink and sources.
+    #TODO: are there unconnected sources through the cluster reassignment
+    #of opins?
+    for node in globs.nodes:
+
+        # an eLut have two outputs.
+        # one registered and one unregistered output
+        if node.eLUT:
+            string = 'wire node_' + str(node.id) + '_reg;\n'
+            string += 'wire node_' + str(node.id) + '_unreg;\n'
+        # the rest have only one output
+        else:
+            string = 'wire node_' + str(node.id) + ';\n'
+        file.write(string)
 
 
 ## This function creates a verilog file,
@@ -748,8 +776,8 @@ def build_global_routing_verilog(filename):
 
 #We also use a technology mapped node graph, where the nodes represent a lutram
 #on the fpga. At the moment this node graph is only used for the timing analysis.
-#TODO: change the building of the verilog and blif file by using 
-#the information of this graph and simplify the 
+#TODO: change the building of the verilog and blif file by using
+#the information of this graph and simplify the
 #writeComplexLut,writeTightlyLut,writeSimpleLut function.
 
     #start with the header
@@ -765,21 +793,10 @@ def build_global_routing_verilog(filename):
 
     registers = []
 
-    #write connections. one wire for every node output.
-    for node in globs.nodes:
+    writeWires(f)
 
-        # an eLut have two outputs.
-        # one registered and one unregistered output
-        if node.eLUT:
-            string = 'wire node_' + str(node.id) + '_reg;\n'
-            string += 'wire node_' + str(node.id) + '_unreg;\n'
-        # the rest have only one output
-        else:
-            string = 'wire node_' + str(node.id) + ';\n'
-        f.write(string)
-
-    #connect the mux output wires with the cluster's output wires.
     #the opins have just one input, so use a assign optimization
+    #cluster's outputs are only connected to mux outputs.
     for key in globs.clusters:
         cl = globs.clusters[key]
         for n in range(globs.params.N):
@@ -802,8 +819,8 @@ def build_global_routing_verilog(filename):
 
             input_names = []
             for inputId in node.inputs:
-                input_names.append(str(inputId)) 
-          
+                input_names.append(str(inputId))
+
             mappedNode = TechnologyMappedNode(node,name,input_names)
             globs.technologyMappedNodes.add(mappedNode)
 
@@ -814,15 +831,22 @@ def build_global_routing_verilog(filename):
         if len(node.inputs) < 1:
 
             #add the iomuxes and ipins to the technology mapped node graph
+            #TODO DEPRECATED: ipins with no driver should been killed now by
+            #InitFPGA.removeUndrivenNodes()
             if node.type == 10 or node.type == 4:
+
+                if (node.type == 4):
+                    print "Error a ipin with no driver shouldn't exist"
+                    sys.exit(1)
+
                 #build a passthrough node for the technology mapped node graph
                 name = str(node.id)
                 input_names = []
-          
+
                 mappedNode = TechnologyMappedNode(node,name,input_names)
                 globs.technologyMappedNodes.add(mappedNode)
             else:
-                #there should be no node with no inputs except iomuxes, 
+                #there should be no node with no inputs except iomuxes,
                 #sink and sources
 
                 print 'ERROR: Node ' + str(node.id) + ' has no input.'
@@ -838,21 +862,26 @@ def build_global_routing_verilog(filename):
         #create muxes
         n = node
 
-        #if we use the reverse build(a build of the blif from the bitstream), 
-        #this node is not in the bitstream, and the build out of the bitstream 
+        #if we use the reverse build(a build of the blif from the bitstream),
+        #this node is not in the bitstream, and the build out of the bitstream
         #would fail when we don't apply this connection also in
         #the reverse build, see fix_reduced_channels.
-        
+
         if len(node.inputs) == 1 and not node.ffmux:
 
             #build a passthrough node for the technology mapped node graph
             name = str(node.id)
             input_names = [str(node.inputs[0])]
-          
+
             mappedNode = TechnologyMappedNode(node,name,input_names)
             globs.technologyMappedNodes.add(mappedNode)
 
-            #now build the verilog file assignment
+            #now use the assign statement to optimize this connection
+            #Note that opins on a cluster were handled before
+
+            #seems that io ipins and opins are excluded here
+            #TODO: why? make no sense to give them a lutram
+            #the io muxes are former sink and source nodes.
 
             if node.type >= 5 and node.type <= 7:
                 #other cases (IOs) are already dealt with
@@ -870,7 +899,7 @@ def build_global_routing_verilog(filename):
 
         # print debug information for every node: node type and location
         printNodeInformation(node,f)
-  
+
         # now we have to write the LUTRAM construct to the verilog file.
         # first we have to check if we must split the node into several lutrams
         # because it has too much input edges.
@@ -884,7 +913,7 @@ def build_global_routing_verilog(filename):
         #determine the package type
         packingType = getPackingType(node)
 
-        #if a node with its LUTRAMS can't fit in a row 
+        #if a node with its LUTRAMS can't fit in a row
         #we finished that row and use the next.
         #TODO: is this acceptable?
 
@@ -911,7 +940,7 @@ def build_global_routing_verilog(filename):
             writeComplexLut(node,config_row,f)
             addComplexNode(node)
 
-    #now all nodes are created. 
+    #now all nodes are created.
 
     #mark the passtroughs
     markPassTroughNodes()

@@ -319,6 +319,9 @@ def load_graph(filename):
             # IPIN of a global IO pad is an FPGA output
 
             # global output without predecessor can be ignored
+
+            #TODO: THIS should be DEPRECATED because of the function call
+            #removeUndrivenNodes()
             if len(n.inputs) == 0: #dont get input from dangling node
                 print 'dropping node', n.id, 'from', n.location
 
