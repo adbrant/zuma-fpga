@@ -34,12 +34,12 @@ def writeLUTRAMHeader(f, node):
             #build the configuration bits
             bitsStr = ''.join(map(str,node.bits))
 
-            f.write('elut_custom ' + 'LUT_' + node.name + \
-                    ' #( ' + ".used(1),\n .LUT_MASK(64'b" +  bitsStr + '\n) (' )
+            f.write('elut_custom ' + \
+                    ' #( ' + ".used(1),\n .LUT_MASK(64'b" +  bitsStr + ')\n) ' + 'LUT_' + node.name +  ' ( ' )
 
         #if not the default parameter values are used
         else:
-            f.write('elut_custom ' + 'LUT_' + node.name + ' (' )
+            f.write('elut_custom ' + 'LUT_' + node.name + ' ( ' )
 
     #it is a routing mux
     else:
@@ -48,10 +48,10 @@ def writeLUTRAMHeader(f, node):
         #TODO: implement glob.host_size for different mux sizes
         if (node.bits != None):
             bitsStr = ''.join(map(str,node.bits))
-            f.write('lut_custom ' + 'MUX_' + node.name + \
-                        ' #( ' + ".used(1),\n .LUT_MASK(64'b" +  bitsStr + '\n) (' )
+            f.write('lut_custom ' + \
+                        ' #( ' + ".used(1),\n .LUT_MASK(64'b" +  bitsStr + ')\n) '  + 'MUX_' + node.name + ' ( ' )
         else:
-            f.write('lut_custom ' + 'MUX_' + node.name + ' (' )
+            f.write('lut_custom ' + 'MUX_' + node.name + ' ( ' )
 
 
 
@@ -80,8 +80,8 @@ def writeLUTRAMInputs(f, node):
     if node.ffmux:
         #the lut mux have only one input
         lutName = node.inputs[0]
-        inputNames.append('node_' + lutName + '_unreg')
         inputNames.append('node_' + lutName + '_reg')
+        inputNames.append('node_' + lutName + '_unreg')
 
     #when not just use the provided names
     else:
@@ -93,7 +93,7 @@ def writeLUTRAMInputs(f, node):
 
     #connect the name of the input wires
     f.write('.dpra(' + list_to_vector(inputNames) + \
-             '), // input [5 : 0] dpra')
+             '), // input [5 : 0] dpra\n')
 
     f.write('''
     .a(wr_addr), // input [5 : 0] a
@@ -118,7 +118,7 @@ def writeLUTRAMOutputs(f, node):
     #if its an elut than we have two output wires instead of one
     if node.eLUT:
         f.write( '.dpo(' + 'node_'+ node.name + \
-             '_unreg), // unregistered output')
+             '_unreg), // unregistered output\n\n')
 
         f.write( '.qdpo(' + 'node_' + node.name + \
              '_reg)); // registered output\n\n')
@@ -197,6 +197,8 @@ def writeConfiguration(node):
         #a ffmux has a special configuration
         if node.ffmux:
 
+            print 'found ffmux'
+
             #get the lut that drive the mux in the nodegraph
             parentNode = node.parentNode
             elutnode = globs.nodes[parentNode.source]
@@ -214,6 +216,9 @@ def writeConfiguration(node):
 
                 #assign it to the node
                 node.bits = bits
+
+            print globs.host_size
+            print str(node.bits)
 
         #a regular routing mux
         else:
