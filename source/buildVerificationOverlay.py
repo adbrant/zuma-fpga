@@ -1,4 +1,5 @@
 import BuildVerilog
+import BuildBitstream
 import globs
 
 #write a wire in the verilog file for a node output.
@@ -9,17 +10,48 @@ def writeWire(file,node):
     # an eLut have two outputs.
     # one registered and one unregistered output
     if node.eLUT:
-        string = 'wire ' + node.name + '_reg;\n'
-        string += 'wire ' + node.name + '_unreg;\n'
+        string = 'wire ' + 'node_' + node.name + '_reg;\n'
+        string += 'wire ' + 'node_' + node.name + '_unreg;\n'
     # the rest have only one output
     else:
-        string = 'wire ' + node.name + ';\n'
+        string = 'wire ' + 'node_' + node.name + ';\n'
 
     file.write(string)
 
 
 def writePassTroughNode(file,node):
-    file.write('assign ' + node.name + ' = ' node.inputs[0] + ';\n');
+    file.write('assign ' + 'node_' + node.name + ' = ' + 'node_' + node.inputs[0] + ';\n');
+
+
+def writeLUTRAMHeader(f, node):
+
+    #is it an eLUT or just a mux?
+    if node.eLUT:
+
+        #has a configuration, is used
+        if node.bits is not None:
+
+            #build the configuration bits
+            bitsStr = ''.join(map(str,node.bits))
+
+            f.write('elut_custom ' + 'LUT_' + node.name + \
+                    ' #( ' + ".used(1),\n .LUT_MASK(64'b" +  bitsStr + '\n) (' )
+
+        #if not the default parameter values are used
+        else:
+            f.write('elut_custom ' + 'LUT_' + node.name + ' (' )
+
+    #it is a routing mux
+    else:
+
+        #now write the header + configuration
+        #TODO: implement glob.host_size for different mux sizes
+        if (node.bits != None):
+            bitsStr = ''.join(map(str,node.bits))
+            f.write('lut_custom ' + 'MUX_' + node.name + \
+                        ' #( ' + ".used(1),\n .LUT_MASK(64'b" +  bitsStr + '\n) (' )
+        else:
+            f.write('lut_custom ' + 'MUX_' + node.name + ' (' )
 
 
 
@@ -32,69 +64,75 @@ def list_to_vector(names):
     string = string[0:-1] + '}'
     return string
 
-## write the verilog code for the LUTRAM.
-# The LUTRAM can be a lutram of a routing mux, a ffmux or a eLUT or Ipin
-def write_LUTRAM(f, node):
 
+def writeLUTRAMInputs(f, node):
+
+    #list of input wire names
     inputNames = []
 
     #for the verification overlay we dont use the staging configuration
     config_stage = 0
     config_offset = 0
 
-    #is it a regular mux or a mux on a ble?
-    #the first input is the name of the LUTRAM wire of the lut.
-    #remember that this LUTRAM have two outputs
+    #is it a regular routing mux or a mux on a ble behind a lut(ffmux)?
+    #the input of a ffmux is the name of the conncected lut.
+    #remember that the corresponding LUTRAM of this lut have two outputs
     if node.ffmux:
         #the lut mux have only one input
         lutName = node.inputs[0]
-        inputNames.append(lutName + '_unreg')
-        inputNames.append(lutName + '_reg')
+        inputNames.append('node_' + lutName + '_unreg')
+        inputNames.append('node_' + lutName + '_reg')
 
     #when not just use the provided names
     else:
-        inputNames = node.inputs
+        inputNames = ['node_' + name for name in node.inputs]
 
     ## assign an 0 driver to every unconnected input
     while len(inputNames) < globs.host_size:
         inputNames.append("1'b0")
 
-    #is it an eLUT or just a mux?
-    if node.eLUT:
-        string ='elut_custom ' + 'LUT_' + node.name + ' ('
-    else:
-        string ='lut_custom ' + 'MUX_' + node.name + ' ('
+    #connect the name of the input wires
+    f.write('.dpra(' + list_to_vector(inputNames) + \
+             '), // input [5 : 0] dpra')
 
-    string +='''
+    f.write('''
     .a(wr_addr), // input [5 : 0] a
     .d(wr_data[''' + str(config_offset) + ''']), // input [0 : 0]
-    '''
-    f.write(string)
-
-    #connect the name of the input wires
-    string = '.dpra(' + list_to_vector(inputNames) + \
-         '), // input [5 : 0] dpra'
-    f.write(string)
+    ''')
 
     f.write('''
     .clk(clk), // input clk
     .we(wren[''' + str(config_stage) + ''']), // input we
     ''')
-    #connect the name of the output wires.
-    #if its an elut than we have two output wires instead of one
-    if node.eLUT:
-        f.write( '.dpo(' + node.name + \
-             '_unreg), // unregistered output')
 
+    if node.eLUT:
         f.write('''
         .qdpo_clk(clk2), // run clk
         .qdpo_rst(ffrst), // input flip flop reset
         ''')
-        f.write( '.qdpo(' + node.name + \
+
+def writeLUTRAMOutputs(f, node):
+
+
+    #connect the name of the output wires.
+    #if its an elut than we have two output wires instead of one
+    if node.eLUT:
+        f.write( '.dpo(' + 'node_'+ node.name + \
+             '_unreg), // unregistered output')
+
+        f.write( '.qdpo(' + 'node_' + node.name + \
              '_reg)); // registered output\n\n')
     else:
-        f.write( '.dpo(' + node.name + '));\n\n')
+        f.write( '.dpo(' + 'node_' + node.name + '));\n\n')
 
+
+## write the verilog code for the LUTRAM.
+# The LUTRAM can be a lutram of a routing mux, a ffmux or a eLUT or Ipin
+def writeLUTRAM(f, node):
+
+    writeLUTRAMHeader(f, node)
+    writeLUTRAMInputs(f, node)
+    writeLUTRAMOutputs(f, node)
 
 
 def ConnectIO(f):
@@ -106,37 +144,119 @@ def ConnectIO(f):
 
     if globs.params.orderedIO:
         #connect the iomux node wires with the fpga outputs
-        for iomuxId,index in enumerate(globs.orderedOutputs):
+        for index,iomuxId in enumerate(globs.orderedOutputs):
             f.write('assign fpga_outputs[' + str(index) + \
-                '] = ' + str(iomuxId) + ';\n')
+                '] = ' + 'node_' + str(iomuxId) + ';\n')
     else:
         #connect the ipin node wires with the fpga outputs
         for key in globs.IOs:
             IO = globs.IOs[key]
-            for ipin,index in enumerate(IO.outputs):
-                f.write('assign fpga_outputs[' + str(index) + '] = ' + str(ipin.id) + ';\n')
+            for index,ipin in enumerate(IO.outputs):
+                f.write('assign fpga_outputs[' + str(index) + '] = ' + 'node_' + str(ipin.id) + ';\n')
 
     if globs.params.orderedIO:
         #connect the iomux node wires with the fpga inputs
-        for iomuxId,index in enumerate(globs.orderedInputs):
-            f.write('assign ' + str(iomuxId) + \
+        for index,iomuxId in enumerate(globs.orderedInputs):
+            f.write('assign ' + 'node_' + str(iomuxId) + \
                 ' = fpga_inputs[' + str(index) + '];\n')
     else:
         #connect the opin node wires with the fpga inouts
         for key in globs.IOs:
             IO = globs.IOs[key]
-            for opin,index in enumerate(IO.inputs):
-                f.write('assign ' + str(opin.id) + ' = fpga_inputs[' + str(index) + '];\n')
+            for index,opin in enumerate(IO.inputs):
+                f.write('assign ' + 'node_' + str(opin.id) + ' = fpga_inputs[' + str(index) + '];\n')
+
+
+
+def writeConfiguration(node):
+
+    #is it an eLUT or just a mux?
+    if node.eLUT:
+
+        #get the parent node in the nodegraph of this mapped node
+        parentNode = node.parentNode
+
+        #is it used, i.e is there a config availible?
+        #When it is used pass the config as a verilog paramter
+        if parentNode.LUT:
+
+            # get the ble index of this lut
+            cl = globs.clusters[parentNode.location]
+            index = cl.getBleIndex(parentNode.LUT.output)
+
+            #build the configuration bits
+            bits = BuildBitstream.build_lut_contents(globs.host_size, parentNode.LUT, cl, index)
+            #assign it to the node
+            node.bits = bits
+
+    #it is a routing mux
+    #is it used, has it a set source attibute
+    elif node.source > -1:
+
+        #build the configuration bits
+        #a ffmux has a special configuration
+        if node.ffmux:
+
+            #get the lut that drive the mux in the nodegraph
+            parentNode = node.parentNode
+            elutnode = globs.nodes[parentNode.source]
+
+            #check if the mux/ble is used
+            #if the lut is not used we also dont use this ffmux
+            if elutnode.LUT:
+
+                #which input should the ffmux route?
+                #when only the lut is used then 0 else the filpflop input
+                if elutnode.LUT.useFF: #flipflop is used
+                    bits = BuildBitstream.buildMuxBitstreamConfig(globs.host_size,0 )# registered / with FF
+                else:
+                    bits = BuildBitstream.buildMuxBitstreamConfig(globs.host_size,1 )# unregistered / without FF
+
+                #assign it to the node
+                node.bits = bits
+
+        #a regular routing mux
+        else:
+            offset = node.inputs.index(node.source)
+            bits = BuildBitstream.buildMuxBitstreamConfig(globs.host_size,offset )
+            #assign it to the node
+            node.bits = bits
+
+
+#check if they mapped nodes are used and write their configuration
+#as well signale trough a flag that they are configured
+def generateMappedNodesConfiguration():
+
+    for node in globs.technologyMappedNodes.getNodes():
+
+        #source and sinks were skipped. They are not used on clusters or IOs yet.
+        if node.type < 3:
+            continue
+
+        #if the node is a passtrough node we use the assign optimization.
+        #these are nodes with only one input except an lut,ffmux or ipin which
+        #are a special case
+        #they don't need a configuration
+        if node.passTrough:
+            continue
+
+        #this node is a part of a mux,lut,ffmux or ipin -> write a lutram
+        else:
+            #write the configuration for this node
+            writeConfiguration(node)
 
 
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
 def buildVerificationOverlay(fileName):
 
+    #write a configuration to the mapped nodes
+    generateMappedNodesConfiguration()
+
+    #write the verilog file
     #start with the header
     file = open(fileName, 'w')
     BuildVerilog.writeHeader(file)
-
 
     for node in globs.technologyMappedNodes.getNodes():
 
@@ -164,3 +284,5 @@ def buildVerificationOverlay(fileName):
 
     #finish the verilog file
     BuildVerilog.writeFooter(file)
+
+    file.close()

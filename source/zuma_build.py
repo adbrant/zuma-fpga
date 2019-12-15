@@ -13,7 +13,7 @@ import OutputBlif
 import Dump
 import TimingAnalysisSDF
 import ReadSDF
-
+import buildVerificationOverlay
 
 import os
 import sys
@@ -108,6 +108,9 @@ def Zuma(verilog_file,
 
         #output a BLIF of the design
         OutputBlif.output_blif(blif_out_file)
+
+        #output a verification verilog file
+        buildVerificationOverlay.buildVerificationOverlay("verificationOverlay.v")
 
         #if we want to parse the sdf file
         if globs.params.sdf:

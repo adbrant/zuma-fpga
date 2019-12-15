@@ -103,7 +103,7 @@ class TechnologyMappedNode():
 
         ## index in the clusters array
         self.location =  parentNode.location
-        ## list of parent node names, which
+        ## list of parent node names in the TechnologyNodeGraph, which
         ## this node get its inputs from.
         self.inputs = inputs
 
@@ -141,6 +141,9 @@ class TechnologyMappedNode():
         ##append the node to the parents mapped node list
         parentNode.mappedNodes.append(name)
 
+        #the configuration of this node.
+        #an array where each bit is an element
+        self.bits = None
 
     ##check if the mapped node is a mux on a ble
     #return True of False
