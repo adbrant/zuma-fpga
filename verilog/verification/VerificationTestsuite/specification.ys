@@ -1,0 +1,12 @@
+# Synthesis script for yosys
+
+read -sv *.v
+hierarchy -top top_module
+proc -global_arst reset
+flatten
+techmap -autoproc -map +/xilinx/cells_sim.v
+techmap -map +/adff2dff.v
+synth
+abc -script +strash;,scorr;,ifraig;,retime;,strash;
+clean
+write_blif test.blif

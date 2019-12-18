@@ -2,6 +2,23 @@ import BuildVerilog
 import BuildBitstream
 import globs
 
+## write the footer of the verilog file
+#  @param f the file handle
+def writeFooter(f):
+
+    # write the config controller
+    f.write('parameter NUM_CONFIG_STAGES = ' + \
+        str(len(globs.config_pattern)) + ';')
+
+    f.write('\nendmodule')
+
+#to make things easier in the testsuite
+def writeTestsuitePatch(f):
+
+    f.write("assign wren = {4096{1'b0}};\n")
+    f.write("assign wr_addr = 6'b000000;\n")
+
+
 #write a wire in the verilog file for a node output.
 #Therefore we use the name attribute which is unique identifier in the
 #TechnologyNodeGraph
@@ -268,7 +285,10 @@ def buildVerificationOverlay(fileName):
     #write the verilog file
     #start with the header
     file = open(fileName, 'w')
+
     BuildVerilog.writeHeader(file)
+    #to make things easier in the testsuite
+    writeTestsuitePatch(file)
 
     for node in globs.technologyMappedNodes.getNodes():
 
@@ -300,6 +320,6 @@ def buildVerificationOverlay(fileName):
     ConnectIO(file)
 
     #finish the verilog file
-    BuildVerilog.writeFooter(file)
+    writeFooter(file)
 
     file.close()
