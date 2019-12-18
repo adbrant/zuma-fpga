@@ -108,7 +108,7 @@ python2.7 $ZUMA_DIR/source/zuma_build.py \
         echo "Found latches in input circuit: Circuit is sequential"
         echo
         echo "Checking for sequential equivalence with ODINs result:"
-        echo -e 'sec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc/abc
+        echo -e 'dsec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc/abc
     fi
     echo
 
@@ -122,3 +122,9 @@ python2.7 $ZUMA_DIR/source/zuma_build.py \
     echo
     echo "Overlay uses $eluts embedded LUTs and $muxluts routing/MUX LUTs, so $lutrams LUTRAMs in total."
 }
+
+#copy the verification files
+cp build/abc_out_v.blif $ZUMA_DIR/verilog/verification/VerificationTestsuite
+cp build/verificationOverlay.v $ZUMA_DIR/verilog/verification/VerificationTestsuite
+cp build/top_module.v $ZUMA_DIR/verilog/verification/VerificationTestsuite
+. $ZUMA_DIR/verilog/verification/VerificationTestsuite/check_equivalence.sh

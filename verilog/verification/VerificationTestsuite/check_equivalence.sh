@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 #find the folder of this file and place the path in dir
 
 SOURCE="${BASH_SOURCE[0]}"
@@ -8,6 +9,9 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+echo "---------verification Overlay tests----------------"
+
+cd $DIR
 
 # include base and VTR directories
 ZUMA_DIR=$(readlink -f $DIR/../../..)
@@ -20,4 +24,18 @@ YOSYS_DIR=/home/xoar/Projects/yosys
 #run yosis and abc
 $YOSYS_DIR/yosys -s specification.ys
 $YOSYS_DIR/yosys -s removeports.ys
-$VTR_DIR/abc/abc -c "cec abc_out_v.blif test.blif"
+
+sequential=$(grep -c -m 1 "^.latch" abc_out_v.blif)
+
+if [ $sequential -eq 0 ]; then
+        echo "Found no latches in input circuit: Circuit is combinational"
+        echo
+        echo "Checking for combinational equivalence with ODINs result:"
+        echo -e 'cec abc_out_v.blif test.blif\nquit' | $VTR_DIR/abc/abc
+    else
+        echo "Found latches in input circuit: Circuit is sequential"
+        echo
+        echo "Checking for sequential equivalence with ODINs result:"
+        echo -e 'dsec abc_out_v.blif test.blif\nquit' | $VTR_DIR/abc/abc
+    fi
+    echo
