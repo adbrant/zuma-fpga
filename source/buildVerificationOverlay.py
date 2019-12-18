@@ -217,8 +217,8 @@ def writeConfiguration(node):
                 #assign it to the node
                 node.bits = bits
 
-            print globs.host_size
-            print str(node.bits)
+            #print globs.host_size
+            #print str(node.bits)
 
         #a regular routing mux
         else:
@@ -242,7 +242,14 @@ def generateMappedNodesConfiguration():
         #these are nodes with only one input except an lut,ffmux or ipin which
         #are a special case
         #they don't need a configuration
-        if node.passTrough:
+        elif node.passTrough:
+            continue
+
+        #get the iomuxes connect to the fpga inputs.
+        #The output of these muxes are connected to every opin of the fpga input opins.
+        #the output wire generate of these luts are then conneected to the fpga input wires.
+        #So we only use it output wires for now but not the node.
+        elif (node.type == 10) and (len(node.inputs) == 0):
             continue
 
         #this node is a part of a mux,lut,ffmux or ipin -> write a lutram
@@ -272,6 +279,11 @@ def buildVerificationOverlay(fileName):
         #write a wire for the node output.
         #because every node has only one unique output
         writeWire(file,node)
+
+        #for an iomux of the fpga inputs we only generate the output wire
+        #but not a configuration.
+        if (node.type == 10) and (len(node.inputs) == 0):
+            continue
 
         #if the node is a passtrough node just use the assign optimization
         #these are nodes with only one input except an lut,ffmux or ipin which
