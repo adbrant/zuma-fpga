@@ -40,8 +40,9 @@ wire lut_registered_output;
 
 //no plattform. just for a verificational build.
 
-//	generate
-//		if( used == 1)
+	generate
+		if( used == 1)
+		begin
 			//we generate a lut and a latch
 			LUT_K #(
 				.K(6),
@@ -58,9 +59,13 @@ wire lut_registered_output;
 	        .Q(lut_registered_output),
 	        .clock(qdpo_clk)
 	    );
-
-
-//	endgenerate
+		end
+		else
+		begin
+			assign lut_output = 1'b0;
+			assign lut_registered_output = 1'b0;
+		end
+	endgenerate
 
 
 assign dpo  = lut_output;
