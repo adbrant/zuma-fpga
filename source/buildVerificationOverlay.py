@@ -14,10 +14,10 @@ def writeCircuitVerificationBlif():
     #add in reverse order so long names would win over short.
     #important when an name is a prefix of another
     for index,inputName in enumerate(globs.inputs):
-        replaceList.insert([inputName,'fpga_inputs[' + str(index) +  ']'])
+        replaceList.insert(0,[inputName,'fpga_inputs[' + str(index) +  ']'])
 
     for index,outputName in enumerate(globs.outputs):
-        replaceList.insert([outputName,'fpga_outputs[' + str(index) +  ']'])
+        replaceList.insert(0,[outputName,'fpga_outputs[' + str(index) +  ']'])
 
     inputFile = open('abc_out.blif','r')
     outputFile = open('abc_out_v.blif','w')
