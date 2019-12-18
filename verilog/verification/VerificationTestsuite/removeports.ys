@@ -1,0 +1,4 @@
+read_blif test.blif
+opt_clean -purge
+rmports
+write_blif test.blif

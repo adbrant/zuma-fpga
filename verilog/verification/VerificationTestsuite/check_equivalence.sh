@@ -19,4 +19,5 @@ YOSYS_DIR=/home/xoar/Projects/yosys
 
 #run yosis and abc
 $YOSYS_DIR/yosys -s specification.ys
-$VTR_DIR/abc/abc -c "cec abc_out.blif test.blif"
+$YOSYS_DIR/yosys -s removeports.ys
+$VTR_DIR/abc/abc -c "cec abc_out_v.blif test.blif"

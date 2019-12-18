@@ -2,6 +2,32 @@ import BuildVerilog
 import BuildBitstream
 import globs
 
+#replace the input/ouput names with fpga_input[]/fpga_output in abc_out.blif
+#and write it to a new file
+def writeCircuitVerificationBlif():
+
+    #replace the fpga input and output names for an equivalence check with abc
+
+    #build a list of
+    replaceList = []
+
+    for index,inputName in enumerate(globs.inputs):
+        replaceList.append([inputName,'fpga_inputs[' + str(index) +  ']'])
+
+    for index,outputName in enumerate(globs.outputs):
+        replaceList.append([outputName,'fpga_outputs[' + str(index) +  ']'])
+
+    inputFile = open('abc_out.blif','r')
+    outputFile = open('abc_out_v.blif','w')
+
+    for line in inputFile:
+        for pair in replaceList:
+            line = line.replace(pair[0],pair[1])
+        outputFile.write(line)
+
+    inputFile.close()
+    outputFile.close()
+
 #generate the topmodule for the verification testsuite
 def generateTopModule():
 
@@ -372,3 +398,6 @@ def buildVerificationOverlay(fileName):
     writeFooter(file)
 
     file.close()
+
+    #rewrite the abc output file for equivalnce checks
+    writeCircuitVerificationBlif()
