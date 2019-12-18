@@ -1,15 +1,12 @@
-module top_module
-  (
-  fpga_inputs,
-  fpga_outputs
-  );
 
-  input [8-1:0] fpga_inputs;
-  output [ 8-1:0] fpga_outputs;
-
-  //config width = 32
-
-  ZUMA_custom_generated #() zuma
+    module top_module
+    (
+        fpga_inputs,
+        fpga_outputs
+    );
+    input [8-1:0] fpga_inputs;
+output [8-1:0] fpga_outputs;
+    ZUMA_custom_generated #() zuma
     (
     .clk(1'b0),
     .fpga_inputs(fpga_inputs),
@@ -22,4 +19,5 @@ module top_module
     .ffrst(1'b0)
     );
 
-endmodule
+    endmodule
+    

@@ -2,6 +2,52 @@ import BuildVerilog
 import BuildBitstream
 import globs
 
+#generate the topmodule for the verification testsuite
+def generateTopModule():
+
+    #calc the number of input and ouputs.
+    #TODO: find a cleaner way for this
+    numinputs = 0
+    numoutputs = 0
+    for key in globs.IOs:
+
+        numinputs = numinputs + len(globs.IOs[key].inputs)
+        numoutputs = numoutputs + len(globs.IOs[key].outputs)
+
+
+    #now write the topmodule
+    topFile = open('top_module.v', 'w')
+
+    topFile.write('''
+    module top_module
+    (
+        fpga_inputs,
+        fpga_outputs
+    );
+    ''')
+
+    topFile.write("input [" + str(numinputs) + "-1:0] fpga_inputs;\n")
+    topFile.write("output [" + str(numoutputs) + "-1:0] fpga_outputs;")
+
+    topFile.write('''
+    ZUMA_custom_generated #() zuma
+    (
+    .clk(1'b0),
+    .fpga_inputs(fpga_inputs),
+    .fpga_outputs(fpga_outputs),
+    .config_data({''' + str(globs.params.config_width) + '''{1'b0}}),
+    .config_en(1'b0),
+    //.progress(),
+    .config_addr({''' + str(globs.params.config_width) + '''{1'b0}}),
+    .clk2(1'b0),
+    .ffrst(1'b0)
+    );
+
+    endmodule
+    ''')
+
+    topFile.close()
+
 ## write the footer of the verilog file
 #  @param f the file handle
 def writeFooter(f):
@@ -281,6 +327,9 @@ def buildVerificationOverlay(fileName):
 
     #write a configuration to the mapped nodes
     generateMappedNodesConfiguration()
+
+    #generate a topmodule file for this verification overlay
+    generateTopModule()
 
     #write the verilog file
     #start with the header
