@@ -11,11 +11,13 @@ def writeCircuitVerificationBlif():
     #build a list of
     replaceList = []
 
+    #add in reverse order so long names would win over short.
+    #important when an name is a prefix of another
     for index,inputName in enumerate(globs.inputs):
-        replaceList.append([inputName,'fpga_inputs[' + str(index) +  ']'])
+        replaceList.insert([inputName,'fpga_inputs[' + str(index) +  ']'])
 
     for index,outputName in enumerate(globs.outputs):
-        replaceList.append([outputName,'fpga_outputs[' + str(index) +  ']'])
+        replaceList.insert([outputName,'fpga_outputs[' + str(index) +  ']'])
 
     inputFile = open('abc_out.blif','r')
     outputFile = open('abc_out_v.blif','w')

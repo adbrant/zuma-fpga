@@ -24,6 +24,7 @@ YOSYS_DIR=/home/xoar/Projects/yosys
 #run yosis and abc
 $YOSYS_DIR/yosys -s specification.ys
 $YOSYS_DIR/yosys -s removeports.ys
+$YOSYS_DIR/yosys -s removeports_abc.ys
 
 sequential=$(grep -c -m 1 "^.latch" abc_out_v.blif)
 
