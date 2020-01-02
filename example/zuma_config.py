@@ -14,12 +14,12 @@ params.N = 8
 #LUT Size
 params.K = 6
 #Routing Channel Length
-params.L = 2
+params.L = 4
 #Routing Channel Width
-params.W = 104
+params.W = 112
 #ArrayDimensions
-params.X = 2
-params.Y = 2
+params.X = 3
+params.Y = 3
 #Cluster input and output flexibilities
 params.fc_in = 6
 params.fc_in_type = 'abs'
@@ -31,10 +31,18 @@ params.vpr7 = True
 #use vpr8
 params.vpr8 = True
 
+#choose a vpr version. 6,7,8 is supported
+params.vprVersion = 8
+
 #close network support
 params.UseClos = False
 #Should the parser build large permutation around all IO to fix their position in the fpga_input/fpga_output arrays?
 params.orderedIO = True
+
+#check the equivalence of the generated overlay with the user circuit
+#need a path to yosys in the toolpath.py
+#WARNING: is only supported for vpr version 8
+params.verifyOverlay = True
 
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.

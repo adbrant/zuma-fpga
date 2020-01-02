@@ -1,20 +1,24 @@
 #	Preparation of input files for VTR tools
-
+import sys
 import zuma_config
-def make_files(directory, template_directory):
-    print directory
 
-    #use vpr6
-    if (zuma_config.params.vpr8):
+def make_files(directory, template_directory):
+    print "MAKEFILE:" + str(directory)
+
+    #which vpr version
+    if (zuma_config.params.vprVersion == 8):
         filelist = ['ARCH_vpr8.xml', 'abccommands.vpr8', 'vpr8.sh']
-    #seems we want to use vpr7
-    elif (zuma_config.params.vpr7):
-        filelist = ['ARCH_vpr7.xml', 'abccommands', 'vpr.sh']
+    elif (zuma_config.params.vprVersion == 7):
+        filelist = ['ARCH_vpr7.xml', 'abccommands', 'vpr7.sh']
+    elif (zuma_config.params.vprVersion == 6):
+        filelist = ['ARCH_vpr6.xml', 'abccommands', 'vpr6.sh']
     else:
-        filelist = ['ARCH.xml', 'abccommands', 'vpr.sh']
+        print "ERROR: Unsupported vpr version: " + str(zuma_config.params.vprVersion)
+        sys.exit(1)
 
     rep = []
-    if (zuma_config.params.vpr8):
+    #tiling pattern changed in vpr8
+    if (zuma_config.params.vprVersion == 8):
         rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X+2)])
         rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y+2)])
     else:
@@ -31,6 +35,7 @@ def make_files(directory, template_directory):
     rep.append(['ZUMA_N',str(zuma_config.params.N)])
     rep.append(['ZUMA_K',str(zuma_config.params.K)])
     rep.append(['ZUMA_CHAN_W',str(zuma_config.params.W)])
+
     for file in filelist:
         o = open(directory  + '//' + file,"w") #open for write
         for line in open(template_directory + '//' + file):
@@ -38,8 +43,6 @@ def make_files(directory, template_directory):
                 line = line.replace(pair[0],pair[1])
             o.write(line)
         o.close()
-
-import sys
 
 if __name__ == '__main__':
     make_files(sys.argv[1], sys.argv[2])

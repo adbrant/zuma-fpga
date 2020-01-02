@@ -6,8 +6,7 @@ if [ ! -f user_clocks.clock ]; then
        echo "abc_out				clock" >> user_clocks.clock
 fi
 
-#vpr 7 is set so copy the clock file
-echo $VTR_DIR
+
 cp user_clocks.clock  $VTR_DIR/vtr_flow/misc/user_clocks.clock
 
   # --echo_file on ## echo_file is for VPR 7 only
