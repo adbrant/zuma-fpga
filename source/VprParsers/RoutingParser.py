@@ -14,10 +14,13 @@ import re
 def getchan(line):
 
     about = line.split()
-    if globs.params.vpr8:
+    if globs.params.vprVersion == 8:
         return int(about[-3])
-    else:
+    elif globs.params.vprVersion < 8:
         return int(about[-1])
+    else:
+        print "ERROR: Unsupported Vpr Version: " + str(globs.params.vprVersion)
+        sys.exit(1)
 
 
 ##parse the routing file
@@ -27,7 +30,7 @@ def parseRouting(filename ):
     fh = open(filename,"r")
 
     #for vpr8 we have to skip the first line
-    if globs.params.vpr8:
+    if globs.params.vprVersion == 8:
         fh.readline()
 
     lines = fh.readlines()
@@ -43,10 +46,13 @@ def parseRouting(filename ):
     routing_net = None
 
     #in vpr7 there are two items: node and node number at the start of every line
-    if globs.params.vpr7 or globs.params.vpr8:
+    if globs.params.vprVersion == 7 or globs.params.vprVersion == 8:
         offset = 1
-    else:
+    elif globs.params.vprVersion == 6:
         offset = 0
+    else:
+        print "ERROR: Unsupported Vpr Version: " + str(globs.params.vprVersion)
+        sys.exit(1)
 
     #now let us parse the routing file and add the read nets
     #to the global net dictionary.
@@ -146,6 +152,7 @@ def simpleTest():
 
     globs.init()
     globs.load_params()
+    globs.params.vprVersion = 7
 
     nets = parseRouting('route.r.vpr7')
 
@@ -162,7 +169,7 @@ def simpleTest():
 
     #now vpr8
     print '\n----------now vpr8----------------\n'
-    globs.params.vpr8 = True
+    globs.params.vprVersion = 8
 
     nets = parseRouting('route.r.vpr8')
 

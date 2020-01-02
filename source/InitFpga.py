@@ -203,10 +203,13 @@ def build_inner_structure():
 def load_graph(filename):
 
     #parse the routing ressource graph file
-    if globs.params.vpr8:
+    if globs.params.vprVersion == 8:
         (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraphXml(filename)
-    else:
+    elif globs.params.vprVersion < 8 :
         (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraph(filename)
+    else:
+        print "ERROR: Unsupported Vpr Version: " + str(globs.params.vprVersion)
+        sys.exit(1)
 
     #TODO: WORKAROUND for now we copy the nodes node by node. later we will
     #use also a global NodeGraph instance

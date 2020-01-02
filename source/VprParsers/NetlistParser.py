@@ -100,20 +100,23 @@ def parseBles(clusterNode,netlistCluster):
     #try to fin the ble nodes.
     #in vpr 7 the mode is not used for empty bles.
     #also the structure of an empty ble has changed a bit
-    if globs.params.vpr7:
+    if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
         #TODO: this should be done wirh more error checking
         #maybe check the attribute instance
         bleNodes = clusterNode.findall("./block")
-    else:
+    elif globs.params.vprVersion == 6:
         #TODO: why go through all levels. we just need the
         #the first childs.
         bleNodes = clusterNode.findall(".//block[@mode='ble']")
+    else:
+        print "ERROR: Unsupported Vpr Version: " + str(globs.params.vprVersion)
+        sys.exit(1)
 
     for bleNode in bleNodes:
         netlistBle = NetlistBle()
 
         #check if the ble is empty. this could be the case in vpr7
-        if globs.params.vpr7:
+        if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
             #get all childs
             childs =  bleNode.findall('.//*')
             #there are no childs. build a empty bleNetlist
@@ -169,7 +172,7 @@ def parseLut(bleNode,netlistBle):
     lutParentNode = bleNode.find(".//block[@mode='lut6']")
     if (lutParentNode is None):
         #in vpr 7 the lut block can be avoided if the ble is empty
-        if globs.params.vpr7:
+        if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
             return
 
         print 'error in parseNetlist/paresLut: cannot find lut6 block' \
@@ -201,7 +204,7 @@ def parseFlipflop(bleNode,netlistBle):
     #there must a flipflop tag
     if (flipflopNode is None):
         #in vpr 7 the flipflop block can be avoided if the ble is empty
-        if globs.params.vpr7:
+        if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
             return
 
         print 'error in parseNetlist/paresFlipflop: cannot find fliflop block' \

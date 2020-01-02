@@ -26,11 +26,6 @@ params.fc_in_type = 'abs'
 params.fc_out = 10
 params.fc_out_type = 'abs'
 
-#use vpr 7
-params.vpr7 = True
-#use vpr8
-params.vpr8 = True
-
 #choose a vpr version. 6,7,8 is supported
 params.vprVersion = 8
 
