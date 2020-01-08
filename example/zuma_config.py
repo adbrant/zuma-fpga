@@ -14,12 +14,12 @@ params.N = 8
 #LUT Size
 params.K = 6
 #Routing Channel Length
-params.L = 4
+params.L = 2
 #Routing Channel Width
-params.W = 112
+params.W = 104
 #ArrayDimensions
-params.X = 3
-params.Y = 3
+params.X = 2
+params.Y = 2
 #Cluster input and output flexibilities
 params.fc_in = 6
 params.fc_in_type = 'abs'
@@ -49,11 +49,21 @@ params.graphviz = False
 #activate the timing analysis. See ../TIMING README
 params.sdf = False
 #path of the two sdf files needed for timing analysis. see ../TIMING README
+#the second one sdfFlipflopFileName is only needed when ise is used for the sdf export
+#but not vivado
 params.sdfFileName = "../final_no_buffer.sdf"
 params.sdfFlipflopFileName = "../final_with_buffer.sdf"
 #time scale of your timing information. here its ps
 params.timeScale = 1.0/1000000000000
 params.timeFormat = "ps"
+
+#tell the parser which tool you used to export the sdf.
+#possible is "ise" or "vivado"
+params.sdfUsedTool = "vivado"
+
+#when you use vivado this is the celltype name where the interconnections
+#are located. We extract the interconnection delays and add them as port delays
+params.sdfInterconnectCellType = "zuma_wrapper"
 
 #used for the timing analysis.
 #The prefix of the components which is the path of your zuma instance

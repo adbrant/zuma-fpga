@@ -28,19 +28,28 @@ def isDPCell(cell):
 def isFlipFlopCell(cell):
 
     #check if the last two characters are DP
-    if cell.instanceName[-11:] == "qsdpo_int_0":
+
+    if globs.sdfUsedTool == "ise" and cell.instanceName[-11:] == "qsdpo_int_0":
         return True
-    else:
-        return False
+
+    elif globs.sdfUsedTool == "vivado" and cell.instanceName[-18:] == "qsdpo_int_reg\\[0\\]":
+        return True
+
+    return False
 
 ## Extract the lut name out of the cell name
 # return the lut name
 def getLutName(cell):
 
+    if globs.sdfUsedTool == "ise":
+        divider = "_"
+    else:
+        divider = "/"
+
     lutName = Util.find_substring(
-                cell.instanceName, 
-                globs.params.instancePrefix, 
-                "_LUT" )
+                cell.instanceName,
+                globs.params.instancePrefix,
+                divider + "LUT" )
 
     #delete the prefix
     if lutName[0:4] == "mux_":
@@ -61,24 +70,35 @@ def addFlipflopCellDelayToMappedNode(name,cell):
     ffReadPortDelay = [0.0,0.0,0.0]
 
     # Calc the ffIODelay and the ffReadPortDelay
-    # The ffIODelay delay consist of the clk input delay 
-    # and the Tshcko (Clk to Output) delay 
+    # The ffIODelay delay consist of the clk input delay
+    # and the Tshcko (Clk to Output) delay
     # described as the io path delay from clk to output in the sdf
     # The ffReadPortDelay is the delay on the input port of the ff
     for port in cell.ports:
 
-        if port.name == 'CLK':
-            ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
+        if globs.sdfUsedTool == "ise":
+            if port.name == 'CLK':
+                ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
 
-        if port.name == 'I':
-            ffReadPortDelay = numpy.add(port.fallingDelay,ffReadPortDelay)
+            if port.name == 'I':
+                ffReadPortDelay = numpy.add(port.fallingDelay,ffReadPortDelay)
+
+        elif globs.sdfUsedTool == "vivado":
+
+            if port.name == 'C':
+                ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
+
+            if port.name == 'D':
+                ffReadPortDelay = numpy.add(port.fallingDelay,ffReadPortDelay)
 
     for ioPath in cell.ioPaths:
 
-        if ioPath.name == 'CLK':
+        if globs.sdfUsedTool == "ise" and ioPath.name == 'CLK':
+            ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
+        elif globs.sdfUsedTool == "vivado" and ioPath.name == 'C':
             ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
 
-    #if ffReadPortDelay == [0.0,0.0,0.0]: 
+    #if ffReadPortDelay == [0.0,0.0,0.0]:
     if all(delay == '0.0' for delay in ffReadPortDelay):
         print "ERROR no ffReadPort delay in node: " + name
         sys.exit(1)
@@ -98,44 +118,50 @@ def addLutCellDelayToMappedNode(name,cell):
 
     mappedNode = globs.technologyMappedNodes.getNodeByName(name)
 
+    #TODO: implement support for luts with K != 6
+
     #the delay list. index is the port number
-    readPortDelay = []
-    writePortDelay = []
-    ioPathDelay = []
+    readPortDelay = [[0.0,0.0,0.0]]*6
+    writePortDelay = [[0.0,0.0,0.0]]*6
+    ioPathDelay = [[0.0,0.0,0.0]]*6
 
-    for port in cell.ports:
+    for name,port in cell.ports.items():
 
-        #in xilinx sdf, ports are in continuous order, 
-        #so the ports are listed also in increasing port number.
-        #Thus we only have to check if the name is in the list
-        if port.name in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
-            #for now we only use the falling delay, 
+        #insert the port delay into the read port delay list
+        #only look at the read and write ports
+        if name in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
+            #for now we only use the falling delay,
             #because in xilinx sdf rising and falling delays seems always the same
-            readPortDelay.append(port.fallingDelay)
 
-        if port.name in ['WADR0','WADR1','WADR2','WADR3','WADR4','WADR5']:
-            writePortDelay.append(port.fallingDelay)
+            #get the index
+            index = name[-1]
+            readPortDelay[index] = port.fallingDelay
 
-    for ioPath in cell.ioPaths:
+        if name in ['WADR0','WADR1','WADR2','WADR3','WADR4','WADR5']:
 
-        #in xilinx sdf, ports are in continuous order, 
-        #so the ports are listed also in increasing port number.
-        #Thus we only have to check if the name is in the list
-        if ioPath.name in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
-            #for now we only use the falling delay, 
+            index = name[-1]
+            writePortDelay[index] = port.fallingDelay
+
+    for name,ioPath in cell.ioPaths.items():
+
+        #insert the path delay into the path delay list
+        if name in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
+            #for now we only use the falling delay,
             #because in xilinx sdf rising and falling delays seems always the same
-            ioPathDelay.append(ioPath.fallingDelay)
 
+            #get the index
+            index = name[-1]
+            ioPathDelay[index] = ioPath.fallingDelay
 
-    if len(readPortDelay) == 0:
+    if all(delay == [0.0,0.0,0.0] for delay in readPortDelay):
         print "ERROR no read port delay in node: " + name
         sys.exit(1)
 
-    if len(writePortDelay) == 0:
+    if all(delay == [0.0,0.0,0.0] for delay in writePortDelay):
         print "ERROR no write port delay in node: " + name
         sys.exit(1)
 
-    if len(ioPathDelay) == 0:
+    if all(delay == [0.0,0.0,0.0] for delay in ioPathDelay):
         print "ERROR no io port delay in node: " + name
         sys.exit(1)
 
@@ -164,22 +190,24 @@ def addFlipFlopDelayToMappedNodes(cell):
     if isFlipFlopCell(cell):
         #get the name of the lut
         lutName =  getLutName(cell)
-        
+
         addFlipflopCellDelayToMappedNode(lutName,cell)
 
 ## Parse the globs.params.sdfFileName and globs.params.sdfFlipflopFileName
-## and add the timing information to the technology mapped node graph. 
+## and add the timing information to the technology mapped node graph.
 def ReadSDF():
 
     cells = SDFParser.ParseSdf(globs.params.sdfFileName)
 
-    for cell in cells:
+    for name,cell in cells.items():
         addLutDelayToMappedNodes(cell)
 
-    #now the workaround with the second file were we get the Tshcko 
-    #(clock to output) time. The first file hasn't this information
-    
-    cells = SDFParser.ParseSdf(globs.params.sdfFlipflopFileName)
-    for cell in cells:
+    #now the workaround with the second file were we get the Tshcko
+    #(clock to output) time. The first file hasn't this information.
+    #This is only true for ise. vivado sdf combine these information in their
+    #sdf file
+    if globs.sdfUsedTool == "ise":
+        cells = SDFParser.ParseSdf(globs.params.sdfFlipflopFileName)
+
+    for  name,cell in cells.items():
          addFlipFlopDelayToMappedNodes(cell)
-        
