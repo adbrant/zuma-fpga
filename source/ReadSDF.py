@@ -29,10 +29,10 @@ def isFlipFlopCell(cell):
 
     #check if the last two characters are DP
 
-    if globs.sdfUsedTool == "ise" and cell.instanceName[-11:] == "qsdpo_int_0":
+    if globs.params.sdfUsedTool == "ise" and cell.instanceName[-11:] == "qsdpo_int_0":
         return True
 
-    elif globs.sdfUsedTool == "vivado" and cell.instanceName[-18:] == "qsdpo_int_reg\\[0\\]":
+    elif globs.params.sdfUsedTool == "vivado" and cell.instanceName[-18:] == "qsdpo_int_reg\\[0\\]":
         return True
 
     return False
@@ -41,7 +41,7 @@ def isFlipFlopCell(cell):
 # return the lut name
 def getLutName(cell):
 
-    if globs.sdfUsedTool == "ise":
+    if globs.params.sdfUsedTool == "ise":
         divider = "_"
     else:
         divider = "/"
@@ -74,16 +74,16 @@ def addFlipflopCellDelayToMappedNode(name,cell):
     # and the Tshcko (Clk to Output) delay
     # described as the io path delay from clk to output in the sdf
     # The ffReadPortDelay is the delay on the input port of the ff
-    for port in cell.ports:
+    for portName,port in cell.ports.items():
 
-        if globs.sdfUsedTool == "ise":
+        if globs.params.sdfUsedTool == "ise":
             if port.name == 'CLK':
                 ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
 
             if port.name == 'I':
                 ffReadPortDelay = numpy.add(port.fallingDelay,ffReadPortDelay)
 
-        elif globs.sdfUsedTool == "vivado":
+        elif globs.params.sdfUsedTool == "vivado":
 
             if port.name == 'C':
                 ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
@@ -91,11 +91,11 @@ def addFlipflopCellDelayToMappedNode(name,cell):
             if port.name == 'D':
                 ffReadPortDelay = numpy.add(port.fallingDelay,ffReadPortDelay)
 
-    for ioPath in cell.ioPaths:
+    for pathName,ioPath in cell.ioPaths.items():
 
-        if globs.sdfUsedTool == "ise" and ioPath.name == 'CLK':
+        if globs.params.sdfUsedTool == "ise" and ioPath.name == 'CLK':
             ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
-        elif globs.sdfUsedTool == "vivado" and ioPath.name == 'C':
+        elif globs.params.sdfUsedTool == "vivado" and ioPath.name == 'C':
             ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
 
     #if ffReadPortDelay == [0.0,0.0,0.0]:
@@ -125,32 +125,32 @@ def addLutCellDelayToMappedNode(name,cell):
     writePortDelay = [[0.0,0.0,0.0]]*6
     ioPathDelay = [[0.0,0.0,0.0]]*6
 
-    for name,port in cell.ports.items():
+    for portName,port in cell.ports.items():
 
         #insert the port delay into the read port delay list
         #only look at the read and write ports
-        if name in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
+        if portName in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
             #for now we only use the falling delay,
             #because in xilinx sdf rising and falling delays seems always the same
 
             #get the index
-            index = name[-1]
+            index = int(portName[-1])
             readPortDelay[index] = port.fallingDelay
 
-        if name in ['WADR0','WADR1','WADR2','WADR3','WADR4','WADR5']:
+        if portName in ['WADR0','WADR1','WADR2','WADR3','WADR4','WADR5']:
 
-            index = name[-1]
+            index = int(portName[-1])
             writePortDelay[index] = port.fallingDelay
 
-    for name,ioPath in cell.ioPaths.items():
+    for pathName,ioPath in cell.ioPaths.items():
 
         #insert the path delay into the path delay list
-        if name in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
+        if pathName in ['RADR0','RADR1','RADR2','RADR3','RADR4','RADR5']:
             #for now we only use the falling delay,
             #because in xilinx sdf rising and falling delays seems always the same
 
             #get the index
-            index = name[-1]
+            index = int(pathName[-1])
             ioPathDelay[index] = ioPath.fallingDelay
 
     if all(delay == [0.0,0.0,0.0] for delay in readPortDelay):
@@ -206,7 +206,7 @@ def ReadSDF():
     #(clock to output) time. The first file hasn't this information.
     #This is only true for ise. vivado sdf combine these information in their
     #sdf file
-    if globs.sdfUsedTool == "ise":
+    if globs.params.sdfUsedTool == "ise":
         cells = SDFParser.ParseSdf(globs.params.sdfFlipflopFileName)
 
     for  name,cell in cells.items():

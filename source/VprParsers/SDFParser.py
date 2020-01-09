@@ -261,17 +261,16 @@ def getIOPaths(line,sdfFile):
     return ioPaths,line
 
 ##parse a list of interconnect declarations.
-#return a dictonary of Interconnect objects, key is the source instance name of
-#interconnction, and the current line.
+#return a list of Interconnect objects and the current line.
 def getInterconnects(line,sdfFile):
 
-    interconnects = {}
+    interconnects = []
 
     while hasInterconnect(line):
 
-        #get the port and append it to the dictonary
+        #get the port and append it to the list
         interconnect = parseInterconnect(line)
-        interconnects[interconnect.source] = interconnect
+        interconnects.append(interconnect)
 
         #go to the next line
         line = sdfFile.readline()
@@ -408,18 +407,22 @@ def parseInterconnect(line):
 
 def parseInterconnectCell(line,sdfFile,cells):
 
-    #skip the next four lines to get the interconnections
+    #skip the next lines to get the interconnections
     line = sdfFile.readline()
     line = sdfFile.readline()
     line = sdfFile.readline()
-    line = sdfFile.readline()
+
+    #print "start interconnection parsing at line", line
 
     #parse all interconnections
     interconnects,line = getInterconnects(line,sdfFile)
 
+    #print "end interconnection parsing at line", line
+    #print "has "  + str(len(interconnects))+" interconnect"
+
     #now go through the interconnections and add the port
     #delays to the sink cells
-    for source,interconnect in interconnects.items():
+    for interconnect in interconnects:
 
         #get the right cell through the sink name
         #check if the key exist because we skipped some cells types like lut5
@@ -432,6 +435,13 @@ def parseInterconnectCell(line,sdfFile,cells):
         portName = interconnect.port
         port = Port(portName,interconnect.risingDelay,interconnect.fallingDelay)
         cell.ports[portName] = port
+
+    #debug
+    #for interconnect in interconnects:
+    #    print "new interconnect"
+    #    print "source: ",interconnect.source
+    #    print "sink: ",interconnect.sink
+    #    print "port: ",interconnect.port
 
 
 #a unit test
