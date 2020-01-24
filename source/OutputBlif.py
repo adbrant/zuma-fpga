@@ -3,7 +3,7 @@ from BuildBitstream import build_lut_contents
 import globs
 
 def convertReverseLutContent(contentLine):
-    
+
     result = []
 
     for bit in contentLine:
@@ -12,6 +12,52 @@ def convertReverseLutContent(contentLine):
         else:
             result.append(0)
     return result
+
+#get a new lut content for a given bitstream
+def bistreamToLutContent(bitstream,node):
+
+    content = []
+
+    #idea: every lut has K input nodes.
+    #we have the bitstream which we can access the output bit
+    #by bitstream[ input pattern = 0011000 ].
+    #we build the lut content by increasing the line number 000000, 000001 , 000010 ,...
+    #for the used inputs and get the bitstream index by using the line number.
+    #the ouput bit of the bistream is than used for the ouput of the content line
+
+    #get the number of virtual used pins.
+    numVirtualPins = globs.params.K
+
+    #else build the lut content
+    for contentLineNum in range(pow(2,numVirtualPins)):
+
+        #when the host lut size is bigger than the virtual lut size
+        #the lower inputs are set to a static 0 input in the overlay.
+        #therefore we have to shift the adress, because the bitstream
+        #was generate for a host_size bit adress.
+        if globs.host_size > numVirtualPins:
+            index = (contentLineNum << globs.host_size - numVirtualPins)
+        elif globs.host_size == numVirtualPins:
+            index = contentLineNum
+        else:
+            print "ERROR: your host lut size is smaller than your virtual lut size"
+            sys.exit(1)
+
+        #get the bit ouput
+        bit = bitstream[index]
+
+        #get a binary string version of the content line number.
+        strBinContenLineNum = format(contentLineNum,'0' + str(numVirtualPins) + 'b')
+
+        #finally add a content line. only outputs with a 1 are added
+        if bit == 1:
+            content.append(strBinContenLineNum + ' ' + str(bit))
+
+    #luts which used all inputs but only print 0 get a special treatment:
+    if len(content) == 0:
+        content.append('-'*numVirtualPins + ' ' + '0')
+
+    return content
 
 ##Writes the zuma_out.blif file to make equivalent checks.
 #Therefore we translate the node graph to a blif file.
@@ -143,17 +189,10 @@ def output_blif(filename):
                     if globs.debug:
                         print 'normal lut ', str(node.id) , ' content: ' ,  str(bits)
 
-                at_least_one = False
-                for i in range(len(bits)):
-                    if bits[i]:
-                        for j in range(globs.params.K):
-                            f.write (str(i>>(globs.params.K-j-1) & 1))
-                        f.write(' ' +  str(bits[i]) + '\n')
-                        at_least_one = True
-                if not at_least_one:
-                    for j in range(globs.params.K):
-                        f.write ('-')
-                    f.write(' 0\n')
+                #print "host size:", globs.host_size
+                content = bistreamToLutContent(bits,node)
+                for line in content:
+                    f.write(str(line)+ '\n')
 
             #doesnt have a valid configuration. skip it
             else:
@@ -172,7 +211,7 @@ def output_blif(filename):
             elutnode = globs.nodes[node.source]
             #index of the lut in the clusters LUTs list.
             index = -1
-            
+
             #only include FFs after configured LUTs
             #This works because the lut can be:
             # 1) a normal lut with a configuration
