@@ -9,4 +9,4 @@ techmap -map +/adff2dff.v
 synth
 abc -script +strash;,scorr;,ifraig;,retime;,strash;
 clean
-write_blif test.blif
+write_blif test_unopt.blif

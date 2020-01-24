@@ -84,6 +84,9 @@ class Node():
         ##WORKAROUND: use this flag to indicate a used primary opin (fpga input)
         self.primaryOpin = False
 
+        ##TODO: document the bits attribute which is the lut content
+        #set in ReadNetlist.copyLut
+
 ## describe a node of the technology mapped node graph
 class TechnologyMappedNode():
 
@@ -233,6 +236,9 @@ class LUT:
         ##reference to the node in the graph it belongs to
         ##isnt set for empty luts
         self.node = None
+        ##Pin position dictonary. for every blif name of inputs as a key,
+        ##get the used pin position.
+        self.pinPositions = {}
 
 ##a logic cluster element which consists of an interconnection block,
 ## implemented with routing muxes, and ble's,
@@ -402,6 +408,38 @@ class Cluster:
             traceback.print_stack(file=sys.stdout)
             sys.exit(0)
         return id
+
+    ##get the updated pin position for an old pin position
+    def getNewPinPosition(self,bleIndex,oldPinPosition):
+
+        #when we use a clos network the routing algo
+        #may switched the pin positions
+        #therefore the list newPinPositions of the format:
+        #[ble Index] [list of (old pin position, new pin position)]
+        #points to the actual pin positions
+        if globs.params.UseClos:
+
+            #search the old pin position in the
+            #newPinPosition list
+            for newPinPositionTuple in self.newPinPositions[bleIndex]:
+                #found the pin position. update the pin position
+                if newPinPositionTuple[0] == oldPinPosition:
+
+                    #this value indicates a match
+                    newPosition = newPinPositionTuple[1]
+                    #return it
+                    return newPosition
+
+            #pin was not found. throw an error
+            print 'error in build_lut_contents: pin ', \
+                       oldPinPosition , \
+                       ' was not found in newPinPosition list ', \
+                       cluster.newPinPositions[bleIndex]
+            sys.exit(1)
+            
+        else:
+            print 'Unsuported interconnect network type for this operation'
+            sys.exit(1)
 
 ##An I/O block
 class IO:

@@ -36,10 +36,9 @@ def compileZUMA(circuitFileName):
     #start Synthesizing
     print 'Synthesizing ' + str(circuitPath) + ' to ZUMA'
 
-    #create the build forlder and copy necessary scripts
     import CompileUtils
-    CompileUtils.createBuildFolderAndChDir(libDir)
 
+    #create the build forlder,copy necessary scripts, then
     #run odin, abc and vpr
     CompileUtils.createBuildDirAndRunVpr(vtrDir,libDir,circuitPath,zuma_config.params.vprVersion)
 

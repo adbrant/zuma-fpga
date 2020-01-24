@@ -83,6 +83,15 @@ def dumpGraph(filename):
         f.write( 'name: '     + str( node.name)+ '\n')
 
 
+        #dump the corresponding lut
+        if  (node.type == 8 and node.LUT != 0):
+            f.write( 'content of this lut: \n')
+            f.write(str(node.LUT.contents))
+            f.write( '\ninput names: \n')
+            for name in node.LUT.inputs:
+                f.write( str(name) + ",\n")
+            f.write( '\noutput name: \n')
+            f.write( str(node.LUT.output) + ",\n")
 
         if globs.params.graphviz:
 

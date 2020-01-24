@@ -387,5 +387,55 @@ def read_netlist(filename):
 
     #fix the names
     unifyNames()
-    #finish the routing
+    #finish the routing. set the source attribute of the interconnect nodes.
     finishRouting()
+    #build a pin position reference(blif name -> pin position) for every lut
+    buildLutPinPositions()
+
+#build a pin position reference(blif name -> pin position) for every lut
+def buildLutPinPositions():
+
+    for key in globs.clusters:
+        cluster = globs.clusters[key]
+
+        for bleIndex,bleInputList in enumerate(cluster.LUT_input_nets):
+
+            #Get the corresponding lut node
+            nodeId = cluster.LUT_nodes[bleIndex]
+            node = globs.nodes[nodeId]
+
+            #check if the lut is used. if not we don't need a dict for it,
+            #because it would have only open pins
+            if not node.LUT:
+                continue
+
+            pinPositionDict = {}
+
+            for pinPosition, (tag,index) in enumerate(bleInputList):
+
+                #first check if the lut name is in this cluster
+                #or in another cluster.
+                #depending on this you use other lists to search in
+
+                #the lut is in this cluster
+                if tag == 'ble':
+                    lutName = cluster.getLutName(index)
+                #the LUT is in another cluster
+                elif tag == 'input':
+                    lutName = cluster.getNameOnClusterInput(index)
+                #this pin has no input, continue the search
+                elif tag == 'open':
+                    continue
+
+                #assign the name to the dict
+
+                #when we use a clos network the routing algo
+                #may switched the pin positions
+                if globs.params.UseClos:
+                    newPosition = cluster.getNewPinPosition(bleIndex,pinPosition)
+                    pinPositionDict[lutName] = newPosition
+                else:
+                    pinPositionDict[lutName] = pinPosition
+
+            #assign the dict to the corresponding lut object
+            node.LUT.pinPositions = pinPositionDict

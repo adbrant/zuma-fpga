@@ -39,66 +39,15 @@ def build_lut_contents(width, LUT, cluster,bleIndex):
     #get the used input pins positions on the lut.
     #At the moment we just have the names connected to unknown pin positions
     for name in LUT.inputs:
-        pin_name = ''
-        found = False
-        # search the pin position on the lut of the input name.
-        # search the input name with the informations
-        # in the input_nets list of this lut for each pin.
-        for pinPosition, (tag,index) in enumerate(cluster.LUT_input_nets[bleIndex]):
+        #search it in the pin position dict build in ReadNetlist.
+        try:
+            pinPosition = LUT.pinPositions[name]
+            #save the pin position for the mapping
+            pins.append(pinPosition)
 
-            #first check if the lut name is in this cluster
-            #or in another cluster.
-            #depending on this you use other lists to search in
-
-            #the lut is in this cluster
-            if tag == 'ble':
-                lutName = cluster.getLutName(index)
-            #the LUT is in another cluster
-            elif tag == 'input':
-                lutName = cluster.getNameOnClusterInput(index)
-            #this pin has no input, continue the search
-            elif tag == 'open':
-                continue
-            else:
-                assert(0)
-            #found the input name.
-            #now we have the name and the pin position where its connected
-            if lutName == name:
-                #save the pin position for the mapping
-                pins.append(pinPosition)
-
-                found = True
-                break
-
-        if not found:
+        except KeyError:
             print 'error in build_lut_contents: pin ', name , \
                 'in Lut ',  LUT.output ,' not found'
-
-    #when we use a clos network the routing algo
-    #may switched the pin positions
-    #therefore the list newPinPositions of the format:
-    #[ble Index] [list of (old pin position, new pin position)]
-    #points to the actual pin positions
-    if globs.params.UseClos:
-        #go through the pins list and update the positions
-        for pinIndex,oldPinPosition in enumerate(pins):
-            newPosition = -1
-            #search the old pin position in the
-            #newPinPosition list
-            for newPinPositionTuple in cluster.newPinPositions[bleIndex]:
-                #found the pin position. update the pin position
-                if newPinPositionTuple[0] == oldPinPosition:
-                    #this value indicates a match
-                    newPosition = newPinPositionTuple[1]
-                    #update the pin position
-                    pins[pinIndex] = newPosition
-
-            #pin was not found. throw an error
-            if newPosition == -1:
-                print 'error in build_lut_contents: pin ', \
-                oldPinPosition , \
-                ' was not found in newPinPosition list ', \
-                cluster.newPinPositions[bleIndex]
 
     #the final configuration. contains one config bit for each address
     #see the description below
