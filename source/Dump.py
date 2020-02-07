@@ -50,6 +50,10 @@ def dumpGraph(filename):
     for node in globs.nodes:
         typeString= ''
 
+        #node got removed
+        if node.type == 0:
+            continue
+
         if node.type == 1:
             typeString= 'SINK'
         elif node.type == 2:
@@ -63,7 +67,7 @@ def dumpGraph(filename):
         elif node.type == 6:
             typeString= 'CHANY'
         elif node.type == 7:
-            typeString= 'MUX'
+            typeString= 'IMUX'
         elif node.type == 8:
             typeString= 'ELUT'
         elif node.type == 9:
@@ -179,6 +183,11 @@ def dumpTechnologyGraph(filename):
             clusters.append(clusterxList)
 
     for node in globs.technologyMappedNodes.getNodes():
+
+        #node got removed
+        if node.type == 0:
+            continue
+
         typeString= ''
 
         if node.type == 1:
@@ -194,7 +203,7 @@ def dumpTechnologyGraph(filename):
         elif node.type == 6:
             typeString= 'CHANY'
         elif node.type == 7:
-            typeString= 'MUX'
+            typeString= 'IMUX'
         elif node.type == 8:
             typeString= 'ELUT'
         elif node.type == 9:
@@ -224,8 +233,8 @@ def dumpTechnologyGraph(filename):
         if globs.params.graphviz:
 
             #skip these nodes
-            if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
-                continue
+            #if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
+            #    continue
 
             currentGraph = clusters[node.location[0]][node.location[1]]
             currentGraph.node(node.name,label= typeString + ': ' + node.name + ', Loc: '+ str(node.location) )

@@ -101,10 +101,10 @@ def removeUndrivenNodes():
                 n.type = 0
 
 
-## build the simple network.
+## build nodes for the simple interconnect network (IIB).
 # In the simple network, every pin of a ble get
-# its own inode, which can route from every input
-# of the IIB. This can be a cluster input or a lut feedback.
+# its own interconnect node (inode), which can route from every input
+# of the IIB. The input can be a cluster input or a lut feedback.
 def buildSimpleNetwork(cluster,key):
 
     # make inodes for internal cluster connection
@@ -114,23 +114,40 @@ def buildSimpleNetwork(cluster,key):
 
             inode = structs.Node()
             inode.type = 7
-
-            # append all cluster inputs as an input
-            for clusterInput in cluster.inputs:
-                inode.inputs.append(clusterInput.id)
-            #apend all ffmuxes as an input
-            for ffmux in cluster.LUT_FFMUX_nodes:
-                inode.inputs.append(ffmux)
-
             inode.location = key
-            # append the node dict
+
+            # append it to the nodegraph. now it got a proper id
             globs.addNode(inode)
-            #append the input node to the cluster.
+
+            #append the input node to the cluster interconnect list.
             cluster.LUT_input_nodes[lut].append(inode.id)
+
             #connect the inode with the elut node
             elut = globs.nodes[cluster.LUT_nodes[lut]]
             elut.inputs.append(inode.id)
+            inode.edges.append(elut.id)
 
+            # append all cluster input node as an input.
+            # The interconnect is after thes ipin nodes.
+            # Therfore iterate through the drivers and grep the ipin nodes.
+            for ipinDriver in cluster.inputs:
+
+                #get the ipin node.
+                ipin = globs.nodes[ipinDriver.id]
+
+                #set the input and edge attribute
+                ipin.edges.append(inode.id)
+                inode.inputs.append(ipin.id)
+
+            #apend all ffmuxes of the cluster as an input
+            for ffmuxId in cluster.LUT_FFMUX_nodes:
+
+                #get the ffmux node
+                ffmux = globs.nodes[ffmuxId]
+
+                #set the input and edge attributes
+                ffmux.edges.append(inode.id)
+                inode.inputs.append(ffmux.id)
 
 
 
@@ -147,21 +164,32 @@ def build_inner_structure():
         #node graph
 
         for lut in range(globs.params.N):
-            #actual eLUT
+
+            #build an eLUT node
+            #NOTE: inputs of the elut are set in buildSimpleNetwork
             elut = structs.Node()
             elut.type = 8
             elut.location = key
             elut.eLUT = True
-            # append to the node dict
+
+            # append to the node dict. now it got a proper id.
             globs.addNode(elut)
+
             # write its id to the LUT_nodes list
             cluster.LUT_nodes.append(elut.id)
 
+            #build the ffmux node
             ffmux = structs.Node()
             ffmux.type = 9
             ffmux.ffmux = True
-            ffmux.inputs.append(elut.id)
             ffmux.location = key
+
+            #append the ffmux node to the node graph
+            globs.addNode(ffmux)
+
+            #set the input and edge attributes
+            ffmux.inputs.append(elut.id)
+            elut.edges.append(ffmux.id)
 
             #LUT node drives this node.
             #Because we used the registered and unregisterd output, the source
@@ -171,17 +199,27 @@ def build_inner_structure():
             #so therefore we can set the final routing always to the lut
             ffmux.source = elut.id
 
-            #append the ffmux node to the node graph
-            globs.addNode(ffmux)
             #append it to the cluster list
             cluster.LUT_FFMUX_nodes.append(ffmux.id)
 
             # Reconnect the corresponding cluster output opin in the node graph:
             # Disconnect it from the source node
             # Connect it to the ffmux
-            opin_id = cluster.outputs[lut].id
-            globs.nodes[opin_id].inputs = [ffmux.id]
-            globs.nodes[opin_id].source = ffmux.id
+            opinId = cluster.outputs[lut].id
+            opin = globs.nodes[opinId]
+
+            #save the sourceId and overwrite it
+            sourceId = opin.inputs[0]
+
+            opin.inputs = [ffmux.id]
+            ffmux.edges.append(opin.id)
+            opin.source = ffmux.id
+
+            #kill the now unused source node
+            source = globs.nodes[sourceId]
+            source.inputs = []
+            source.edges = []
+            source.type = 0
 
         # we can use the clos or simple network
         if globs.params.UseClos:

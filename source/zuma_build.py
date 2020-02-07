@@ -101,7 +101,7 @@ def Zuma(verilog_file,
 
         #dump the node graph. textual and graphical
         if globs.params.dumpNodeGraph:
-            Dump.dumpGraph('originGraph')
+            Dump.dumpGraph('configuredGraph')
 
         if globs.params.dumpNodeGraph:
             Dump.dumpTechnologyGraph('mappedGraph')
