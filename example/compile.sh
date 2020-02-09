@@ -52,7 +52,7 @@ def compileZUMA(circuitFileName):
     if zuma_config.params.verifyOverlay:
         #load the yosys path
         yosysDir = local.path(toolpaths.yosysDir)
-        CompileUtils.checkOverlayEquivalence(zumaDir,yosysDir)
+        CompileUtils.checkOverlayEquivalence(zumaDir,yosysDir,vtrDir)
 
 def main():
 

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #find the folder of this file and place the path in dir
 
 SOURCE="${BASH_SOURCE[0]}"
@@ -14,11 +14,12 @@ echo "---------verification Overlay tests----------------"
 cd $DIR
 
 # include base and VTR directories
-ZUMA_DIR=$(readlink -f $DIR/../../..)
-. $ZUMA_DIR/toolpaths
-pwd
+#ZUMA_DIR=$(readlink -f $DIR/../../..)
+#. $ZUMA_DIR/toolpaths
+#pwd
 
-YOSYS_DIR=/home/xoar/Projects/yosys
+#yosys dir is extracted from the toolpath.py
+#YOSYS_DIR=/home/xoar/Projects/yosys
 
 
 #run yosis and abc

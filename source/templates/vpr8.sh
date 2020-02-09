@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 #uses a clock file see: http://code.google.com/p/vtr-verilog-to-routing/wiki/ClocksFile
 if [ ! -f user_clocks.clock ]; then
@@ -20,4 +20,4 @@ $VTR_DIR/vpr/vpr ARCH_vpr8.xml zuma \
 --disp off \
 --route_chan_width ZUMA_CHAN_W \
 --echo_file on \
---write_rr_graph rr_graph.echo
+--write_rr_graph rr_graph.xml

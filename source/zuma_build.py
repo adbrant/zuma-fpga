@@ -22,7 +22,7 @@ def main ():
 
     options = sys.argv[1:]
 
-    graph_file = 'rr_graph.echo'
+    graph_file = 'rr_graph.xml'
     verilog_file = 'ZUMA_custom_generated.v'
     blif_file = 'abc_out.blif'
     place_file = 'place.p'

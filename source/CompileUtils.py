@@ -1,7 +1,7 @@
 import sys
 from plumbum import local
 
-def checkOverlayEquivalence(zumaDir,yosysDir):
+def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir):
 
     from plumbum.cmd import cp
 
@@ -10,9 +10,13 @@ def checkOverlayEquivalence(zumaDir,yosysDir):
     cp("verificationOverlay.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
     cp("top_module.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
 
+    #set the used env variables
+    local.env["VTR_DIR"] = str(vtrDir)
+    local.env["YOSYS_DIR"] = str(yosysDir)    
+
     #run the equivalence check
     check = local[zumaDir / "verilog/verification/VerificationTestsuite/check_equivalence.sh"]
-    print check(str(yosysDir))
+    print check()
 
 def checkEquivalence(vtrDir,vprVersion):
 
@@ -110,6 +114,8 @@ def runOdinAndAbc(vtrDir,fileName,vprVersion):
 
 def runVpr(vtrDir,vprVersion):
 
+    print 'vtrdDir: ' + str(vtrDir)
+
     #get the cwd. Note that we should be in the build dir
     cwd = local.cwd
 
@@ -127,6 +133,7 @@ def runVpr(vtrDir,vprVersion):
         print "ERROR: Unsupported vpr version: " + str(vprVersion)
         sys.exit(1)
 
+    print 'vpr script path:' + str(vprPath)    
     #because the vpr script was copied, set the x flag
     from plumbum.cmd import chmod
     chmod("a+x",str(vprPath))
@@ -167,10 +174,14 @@ def runZUMA(vprVersion):
 
     if vprVersion == 6:
         blif_file = 'clock_fixed.blif'
+        graph_file = 'rr_graph.echo'
+    elif vprVersion == 7:
+        blif_file = 'abc_out.blif'
+        graph_file = 'rr_graph.echo'
     else:
         blif_file = 'abc_out.blif'
-
-    graph_file = 'rr_graph.echo'
+        graph_file = 'rr_graph.xml'
+   
     verilog_file = '../ZUMA_custom_generated.v'
 
     place_file = 'place.p'
