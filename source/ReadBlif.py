@@ -1,7 +1,16 @@
-from structs import *
+# use this if you want to include modules from a subforder
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+
+import structs
 import globs
 import re
 
+import BlifParser
 
 
 ## Parse the source blif file, which was generated from the
@@ -23,170 +32,75 @@ import re
 # *) store the configuration of the luts in an internal format.
 def read_BLIF(filename):
 
-    fh = open(filename,"r")
-    line = fh.readline()
+    blifFile = BlifParser.parseBlif(filename)
 
-    inputoffset = 0
+    #assign the inputs and outputs
+    for input in blifFile.inputs:
 
-    # Parse the source blif file
-    while len(line) > 0:
+        # append the blif name to the global input list
+        globs.inputs.append(input.blifName)
 
-        if line.find(".model") > -1:
-            line = fh.readline()
+        # assign the name to the nodes in the node graph. skip the clock here
+        if input.blifName != 'top^clock':
 
-        #get the blif names of the inputs and assign them to
-        #nodes(name attribute) in the node graph.
-        elif line.find(".inputs") > -1:
-            #read items until no more backslashes appear
-            items = line.strip().split(' ')[1:]
+            nodeId = globs.orderedInputs[input.ioIndex]
+            node =  globs.nodes[nodeId]
+            node.name = input.blifName
+            print 'found input ',node.name ,'in blif file, assign to node id:',nodeId
 
-            while items[-1] == '\\':
-                items = items[:-1]
-                nextline = fh.readline()
-                items = items + nextline.strip().split(' ')
+    for output in blifFile.outputs:
 
-            for item in items:
-                # append the blif name to the global input list
-                globs.inputs.append(item.strip())
-                if item.strip() == 'top^clock':
-                    continue
-                if item.strip() == 'top^reset':
-                    # set reset to the first input pin
-                    i = 0
-                    inputoffset += 1
-                elif item.strip() == 'top^in':
-                    # just one input
-                    i = 0
-                else:
-                    nums = re.findall(r'\d+', item)
-                    nums = [int(i) for i in nums ]
-                    i = nums[-1] + inputoffset
-                # assign the name to the nodes in the node graph
-                globs.nodes[globs.orderedInputs[i]].name = item.strip()
+        # append the blif name to the global output list
+        globs.outputs.append(output.blifName)
 
-            line = fh.readline()
+        # assign the name to the nodes in the node graph.
+        nodeId = globs.orderedOutputs[output.ioIndex]
+        node =  globs.nodes[nodeId]
+        node.name = output.blifName
 
-        #get the blif names of the outputs and assign them to
-        #nodes(name attribute) in the node graph
-        elif line.find(".outputs") > -1:
-            #read items until no more backslashes appear
-            items = line.strip().split(' ')[1:]
-            while items[-1] == '\\':
-                items = items[:-1]
-                nextline = fh.readline()
-                items = items + nextline.strip().split(' ')
+    for latch in blifFile.latches:
 
-            for item in items:
-                # append the blif name to the global output list
-                globs.outputs.append(item.strip())
-                if item.strip() == 'top^out':
-                    # just one output
-                    i = 0
-                else:
-                    nums = re.findall(r'\d+', item)
-                    nums = [int(i) for i in nums ]
-                    i = nums[-1]
-                # assign the name to the nodes in the node graph
-                globs.nodes[globs.orderedOutputs[i]].name = item.strip()
+        newLatch = structs.latch()
+        newLatch.input = latch.inputNet
+        newLatch.output = latch.ouputNet
 
+        globs.latches[newLatch.output] = newLatch
 
-            line = fh.readline()
+    for name in blifFile.names:
+        print str(name.content)
 
-        #get the latches and place an new latch instance in the latches dict.
-        elif line.find(".latch") > -1:
-            #read items until no more backslashes
-            items = line.strip().split(' ',1)[1].strip().split(' ')
+        #create a lut instance
+        newLUT = structs.LUT()
+        #assign the input and output blif names
+        newLUT.output = name.ouputNet
+        newLUT.inputs = name.inputNets
+        newLUT.contents = name.content
 
-            while items[-1] == '\\':
-                items = items[:-1]
-                nextline = fh.readline()
-                items = items + nextline.strip().split(' ')
-            innet = items[0]
-            outnet = items[1]
-            newLatch = latch()
-            newLatch.input = innet
-            newLatch.output = outnet
+        globs.LUTs[newLUT.output] = newLUT
 
-            globs.latches[outnet] = newLatch
+        # The LUT can describe a passthrough from a fpga input
+        # to a fpga output.
+        # We save the mapping (input name, list of output names)
+        # to find later in read_routing the corresponding sink node,
+        # which has the output name in the name attribute
+        # This is possible because the net name to this sink
+        # is same as the blif fpga input name.
 
-            line = fh.readline()
+        # Important: We assume here that abc build the
+        # passthrough in a increasing order of the output pins
+        # And that Vpr route the output pins in the same order.
+        # TODO: is that true?
+        if newLUT.output in globs.outputs and len(newLUT.inputs) == 1:
 
-        #got a lut. create a LUT instance and place it in the LUTs dict.
-        elif line.find(".names") > -1:
+            inputName = newLUT.inputs[0]
+            outputName = newLUT.output
+            #There is no entry for the fpga input yet
+            if inputName not in globs.lastnetmapping:
+                #create a empty list
+                globs.lastnetmapping[inputName] = []
 
-            #read items until no more backslashes appear
-            items = line.strip().split(' ')[1:]
-
-            while items[-1] == '\\':
-                items = items[:-1]
-                nextline = fh.readline()
-                items = items + nextline.strip().split(' ')
-
-            #these are the names of the input nets and output nets
-            innets = items[:-1]
-            outnet = items[-1]
-
-            #create a lut instance
-            newLUT = LUT()
-            #assign the input and output blif names
-            newLUT.output = outnet
-            newLUT.inputs = innets
-
-            # The LUT can describe a passthrough from a fpga input
-            # to a fpga output.
-            # We save the mapping (input name, list of output names) 
-            # to find later in read_routing the corresponding sink node,
-            # which has the output name in the name attribute
-            # This is possible because the net name to this sink
-            # is same as the blif fpga input name.
-
-            # Important: We assume here that abc build the
-            # passthrough in a increasing order of the output pins
-            # And that Vpr route the output pins in the same order.
-            # TODO: is that true?
-            if outnet in globs.outputs and len(innets) == 1:
-                
-                inputName = innets[0]
-                outputName = outnet
-                #There is no entry for the fpga input yet
-                if inputName not in globs.lastnetmapping:
-                    #create a empty list
-                    globs.lastnetmapping[inputName] = []
-
-                #append the output name
-                globs.lastnetmapping[inputName].append(outputName)
-
-            line = fh.readline()
-            items = line.split()
-            contents = []
-
-            #ABC format of the content of a logic gate:
-            #1) if the content consist of only a 1 or 0, then we have
-            #   a constant 1 or 0 as the output
-            #2) else we have at least one a PLA description line
-            #   like 0101-1 1 or 01- 0
-
-            #internal representation:
-            # For 1) we store a tuple ('-', constant output value)
-            # and for 2) we store the two given values:
-            # (k-input,output value)
-            while items[-1] == '1' or items[-1] == '0' :
-                #option 1)
-                #just a single output value
-                if (len(items) < 2):
-                    contents.append(('-',items[0]))
-                #option 2)
-                else:
-                    contents.append((items[0],items[1]))
-
-                line = fh.readline()
-                items = line.split()
-
-            #assign the new content
-            newLUT.contents = contents
-            globs.LUTs[outnet] = newLUT
-        else:
-            line = fh.readline()
+            #append the output name
+            globs.lastnetmapping[inputName].append(outputName)
 
     # Mark which LUTs are using latches
     for key in globs.latches:

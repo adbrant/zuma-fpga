@@ -1,0 +1,2 @@
+`define ZUMA_LUT_SIZE 6
+`define ZUMA_VERIFICATION 1

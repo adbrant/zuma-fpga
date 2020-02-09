@@ -1,6 +1,5 @@
-import os, sys, inspect
-
 # use this if you want to include modules from a subforder
+import os, sys, inspect
 cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
 (inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
 if cmd_subfolder not in sys.path:
@@ -73,15 +72,15 @@ def copyLut(netlistBle,cluster,bleIndex):
 
     #apend the lut to the clusters LUTs list
     cluster.LUTs.append(lutname )
-    
+
     #update the nodes graph
     lut = globs.LUTs[lutname]
     lutNode = globs.nodes[cluster.LUT_nodes[bleIndex]]
-    
+
     lutNode.eLUT = True
     lutNode.bits = lut.contents
     lutNode.LUT = lut
-    
+
     lut.node = lutNode
 
 ## Build a passtrough lut for a ble that only use its flipflop.
@@ -121,12 +120,12 @@ def copyFlipFlopBuildPasstrough(netlistBle,cluster,bleIndex):
     #the passthrough lut gets the original lut as an input
     originalLutName = globs.latches[latchName].input
     passThroughLUT.inputs.append(originalLutName)
-    
+
     #configure the lut node
     passTroughLutNode.eLUT = True
     passTroughLutNode.bits = passThroughLUT.contents
     passTroughLutNode.LUT = passThroughLUT
-    
+
     #add the lut to the lut dict
     globs.LUTs[latchName] = passThroughLUT
     #add the passthrough lut name (same as latchName)
@@ -238,7 +237,7 @@ def finishNormalRouting(RoutingVector,cluster):
                     = cluster.getFFMuxNodeId(inputPinIndex - globs.params.I)
 
 ## Finsish the routing by apply the right path for every mux
-## of the internal routing. 
+## of the internal routing.
 # The muxes are represented by so called inodes
 # and the reference to the inodes is done by the LUT_input_nodes list.
 # To apply the path the source attribute of the inode object is set to
@@ -282,7 +281,7 @@ def finishRouting():
             finishNormalRouting(RoutingVector,cluster)
 
 ## Unify node names for LUTs with FFs.
-# change the input of latches, 
+# change the input of latches,
 # so this is always the name of the lut on the same ble
 def unifyNames():
 
@@ -388,5 +387,55 @@ def read_netlist(filename):
 
     #fix the names
     unifyNames()
-    #finish the routing
+    #finish the routing. set the source attribute of the interconnect nodes.
     finishRouting()
+    #build a pin position reference(blif name -> pin position) for every lut
+    buildLutPinPositions()
+
+#build a pin position reference(blif name -> pin position) for every lut
+def buildLutPinPositions():
+
+    for key in globs.clusters:
+        cluster = globs.clusters[key]
+
+        for bleIndex,bleInputList in enumerate(cluster.LUT_input_nets):
+
+            #Get the corresponding lut node
+            nodeId = cluster.LUT_nodes[bleIndex]
+            node = globs.nodes[nodeId]
+
+            #check if the lut is used. if not we don't need a dict for it,
+            #because it would have only open pins
+            if not node.LUT:
+                continue
+
+            pinPositionDict = {}
+
+            for pinPosition, (tag,index) in enumerate(bleInputList):
+
+                #first check if the lut name is in this cluster
+                #or in another cluster.
+                #depending on this you use other lists to search in
+
+                #the lut is in this cluster
+                if tag == 'ble':
+                    lutName = cluster.getLutName(index)
+                #the LUT is in another cluster
+                elif tag == 'input':
+                    lutName = cluster.getNameOnClusterInput(index)
+                #this pin has no input, continue the search
+                elif tag == 'open':
+                    continue
+
+                #assign the name to the dict
+
+                #when we use a clos network the routing algo
+                #may switched the pin positions
+                if globs.params.UseClos:
+                    newPosition = cluster.getNewPinPosition(bleIndex,pinPosition)
+                    pinPositionDict[lutName] = newPosition
+                else:
+                    pinPositionDict[lutName] = pinPosition
+
+            #assign the dict to the corresponding lut object
+            node.LUT.pinPositions = pinPositionDict

@@ -1,3 +1,11 @@
+# use this if you want to include modules from a subforder.
+# used for the unit tests to import the globs module
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"../")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
 import xml.etree.ElementTree as xml
 import re
 import globs
@@ -14,7 +22,7 @@ class NetlistCluster():
 class NetlistBle():
     def __init__(self):
         ## a list of a input tuples: (mode, number)
-        ##mode can be: 
+        ##mode can be:
         ## 1) input, for a input of the cluster.
         ## number then describe the input pin number
         ## 2) ble, for the input of a other ble of this cluster
@@ -81,7 +89,7 @@ def parseClusters(root):
 
 ##in vpr7 there can be empty ble tags.
 ##in vpr 6 these tags has a valid input structure filled with open ports.
-##We have to setup this empty structure 
+##We have to setup this empty structure
 def setupEmptyNetlistBle(netlistBle):
     for pinPosition in range(globs.params.K):
         #append an open pin representation
@@ -92,20 +100,23 @@ def parseBles(clusterNode,netlistCluster):
     #try to fin the ble nodes.
     #in vpr 7 the mode is not used for empty bles.
     #also the structure of an empty ble has changed a bit
-    if globs.params.vpr7:
+    if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
         #TODO: this should be done wirh more error checking
         #maybe check the attribute instance
         bleNodes = clusterNode.findall("./block")
-    else:
+    elif globs.params.vprVersion == 6:
         #TODO: why go through all levels. we just need the
         #the first childs.
         bleNodes = clusterNode.findall(".//block[@mode='ble']")
+    else:
+        print "ERROR: Unsupported Vpr Version: " + str(globs.params.vprVersion)
+        sys.exit(1)
 
     for bleNode in bleNodes:
         netlistBle = NetlistBle()
 
         #check if the ble is empty. this could be the case in vpr7
-        if globs.params.vpr7:
+        if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
             #get all childs
             childs =  bleNode.findall('.//*')
             #there are no childs. build a empty bleNetlist
@@ -116,8 +127,8 @@ def parseBles(clusterNode,netlistCluster):
                 netlistCluster.bles.append(netlistBle)
                 #there is no need in checking the rest of this node
                 continue
-        
-        #parse the input structure and append the 
+
+        #parse the input structure and append the
         #pin representation to the netlistBle input list
         parseBleInput(bleNode,netlistBle)
 
@@ -161,7 +172,7 @@ def parseLut(bleNode,netlistBle):
     lutParentNode = bleNode.find(".//block[@mode='lut6']")
     if (lutParentNode is None):
         #in vpr 7 the lut block can be avoided if the ble is empty
-        if globs.params.vpr7:
+        if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
             return
 
         print 'error in parseNetlist/paresLut: cannot find lut6 block' \
@@ -193,7 +204,7 @@ def parseFlipflop(bleNode,netlistBle):
     #there must a flipflop tag
     if (flipflopNode is None):
         #in vpr 7 the flipflop block can be avoided if the ble is empty
-        if globs.params.vpr7:
+        if globs.params.vprVersion == 8 or globs.params.vprVersion == 7:
             return
 
         print 'error in parseNetlist/paresFlipflop: cannot find fliflop block' \
@@ -208,9 +219,41 @@ def parseFlipflop(bleNode,netlistBle):
         netlistFlipflop.name = flipflopNode.get('name')
         netlistBle.flipflop = netlistFlipflop
 
-
+#you should provide a zuma config in your source file for this test.
 def simpleTest():
+
+    globs.init()
+    globs.load_params()
+
     clusters = parseNetlist('netlistTest.net')
+    for cluster in clusters:
+        print 'cluster: ' +  cluster.name
+
+        for input in cluster.inputs:
+            print 'cluster input: ' + input
+
+        bleCount = 1
+        for ble in cluster.bles:
+            print 'analyse ble ' + str(bleCount)
+
+            for (name,number) in ble.inputs:
+                print 'ble input: ' + name + ' ' + str(number)
+
+            if (ble.lut is None):
+                print 'no lut'
+            else:
+                print 'has lut: ' + ble.lut.name
+
+            if (ble.flipflop is None):
+                print 'no flipflop'
+            else:
+                print 'has flipflop: ' + ble.flipflop.name
+            bleCount= bleCount +1
+    print 'end test'
+
+    print 'vpr8 test'
+
+    clusters = parseNetlist('netlist.net.vpr8')
     for cluster in clusters:
         print 'cluster: ' +  cluster.name
 

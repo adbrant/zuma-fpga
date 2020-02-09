@@ -1,186 +1,69 @@
-#find the folder of this file and place the path in dir
-
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+#!/usr/bin/python2.7
 
 
-# include base and VTR directories
-ZUMA_DIR=$(readlink -f $DIR/..)
-. $DIR/../toolpaths
-pwd
-
-#check which file to compile
-filename=$1
-if [ -z "$filename" ]; then
-    filename="test.v"
-fi
-filename=$(readlink -f $filename)
-echo "Synthesizing '$filename' to ZUMA"
-
-#move configuration files to python source folder
-cp zuma_config.py $ZUMA_DIR/source/
-
-#we can check if vpr7 or vpr6 is used
-#by checking the exit status
-$ZUMA_DIR/source/ReadVprVersion
-STATUS=$?
-#echo "output of vpr status was"
-#echo $STATUS
-if [ $STATUS -ne 0 ]; then
-    echo "VPR7 is used!"
-    export USE_VPR_7=1
-else
-    echo "VPR7 is not used!"
-    export USE_VPR_7=0
-fi
-
-#move to build folder to collect build related files
-mkdir -p build
-cd build
-rm abccommands \
-   mem.echo \
-   rr_graph.echo \
-   vpr.sh \
-   abc_out.blif \
-   configpattern.txt \
-   netlist.net \
-   seg_details.txt \
-   zuma_out.blif \
-   arch.echo \
-   config_script.tcl \
-   place.p \
-   startfile \
-   default_out.blif\
-   route.r \
-   user_clocks.clock
-
-if [ $USE_VPR_7 -eq 0 ]; then
-    rm clock_fixed.blif \
-       ARCH.xml
-#vpr7 is used
-else
-    rm ARCH_vpr7.xml
-fi
-
-touch startfile
-
-#generate vpr architecture and other files needes during build process
-python2.7 $ZUMA_DIR/source/generate_buildfiles.py ./ $ZUMA_DIR/source/templates
-
-failed=0
-
-#run odin, abc and vpr
-$VTR_DIR/ODIN_II/odin_II.exe -V $filename &&\
-$VTR_DIR/abc_with_bb_support/abc < abccommands &&\
-sh vpr.sh || failed=1
-
-echo
-if [ "startfile" -nt "place.p" ]; then
-    echo "Placement failed..."
-    failed=1
-fi
-
-if [ "startfile" -nt "route.r" ]; then
-    echo "Routing failed..."
-    failed=1
-fi
-if [ "$failed" -eq 1 ]; then
-    echo "ODIN, ABC or VPR failed..."
-    echo
-    exit
-fi
+import sys
+from plumbum import local
 
 
+##compile a ZUMA overlay and a bitstream for the given circuit.
+#@param circuitFileName Path to the user circuit file
+def compileZUMA(circuitFileName):
 
-#if vpr7 is unset
-if [ $USE_VPR_7 -eq 0 ]; then
-    #run the zuma generation scripts
-    #python $ZUMA_DIR/source/run_zuma_all.py ./ ../generated/
-    python2.7 $ZUMA_DIR/source/zuma_build.py  \
-    -graph_file 'rr_graph.echo' \
-    -blif_file 'clock_fixed.blif' \
-    -place_file 'place.p' \
-    -route_file 'route.r' \
-    -net_file 'netlist.net' \
-    -bit_file '../output.hex' \
-    -blif_out_file 'zuma_out.blif' \
-    -verilog_file '../ZUMA_custom_generated.v' &&\
-    {
-        sequential=$(grep -c -m 1 "^.latch" clock_fixed.blif)
+    #load the user circuit path
+    circuitPath = local.path(circuitFileName)
+    if not circuitPath.exists():
+        print 'Can\'t load file: ' + str(circuitPath)
+        sys.exit(1)
 
-        echo
-        echo "Success: All done."
-        if [ $sequential -eq 0 ]; then
-            echo "Found no latches in input circuit: Circuit is combinational"
-            echo
-            echo "Checking for combinational equivalence with ODINs result:"
-            echo -e 'cec clock_fixed.blif zuma_out.blif\nquit' | $VTR_DIR/abc_with_bb_support/abc
-        else
-            echo "Found latches in input circuit: Circuit is sequential"
-            echo
-            echo "Checking for sequential equivalence with ODINs result:"
-            echo -e 'sec clock_fixed.blif zuma_out.blif\nquit' | $VTR_DIR/abc_with_bb_support/abc
-        fi
-        echo
+    #get the path of this file to extract the zuma base dir.
+    zumaExampleDir = local.path(__file__).parent
+    zumaDir = zumaExampleDir.parent
+    libDir = zumaDir / 'source'
 
-        cd ..
-        sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
+    #add the zuma dir as well as the cwd to the python path variable
+    #cwd is used for import the zuma config
+    sys.path.insert(0, str(libDir))
+    sys.path.insert(0, str(zumaDir))
+    sys.path.insert(0, str(local.cwd))
 
-        lutrams=$(grep -c "lut_custom" ZUMA_custom_generated.v)
-        eluts=$(grep -c "elut_custom" ZUMA_custom_generated.v)
-        muxluts=$((lutrams - eluts))
+    #load the vtr dir (and optinal yosys dir)
+    import toolpaths
+    vtrDir = local.path(toolpaths.vtrDir)
 
-        echo
-        echo "Overlay uses $eluts embedded LUTs and $muxluts routing/MUX LUTs, so $lutrams LUTRAMs in total."
-    }
+    #import the cwd zuma config
+    import zuma_config
 
-#vpr7 is used
-else
-    echo "Take branch VPR used"
-    #run the zuma generation scripts
-    #python $ZUMA_DIR/source/run_zuma_all.py ./ ../generated/
-    python2.7 $ZUMA_DIR/source/zuma_build.py \
-    -graph_file 'rr_graph.echo' \
-    -blif_file 'abc_out.blif' \
-    -place_file 'place.p' \
-    -route_file 'route.r' \
-    -net_file 'netlist.net' \
-    -bit_file '../output.hex' \
-    -blif_out_file 'zuma_out.blif' \
-    -verilog_file '../ZUMA_custom_generated.v' &&\
-    {
-        sequential=$(grep -c -m 1 "^.latch" abc_out.blif)
+    #start Synthesizing
+    print 'Synthesizing ' + str(circuitPath) + ' to ZUMA'
 
-        echo
-        echo "Success: All done."
-        if [ $sequential -eq 0 ]; then
-            echo "Found no latches in input circuit: Circuit is combinational"
-            echo
-            echo "Checking for combinational equivalence with ODINs result:"
-            echo -e 'cec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc_with_bb_support/abc
-        else
-            echo "Found latches in input circuit: Circuit is sequential"
-            echo
-            echo "Checking for sequential equivalence with ODINs result:"
-            echo -e 'sec abc_out.blif zuma_out.blif\nquit' | $VTR_DIR/abc_with_bb_support/abc
-        fi
-        echo
+    import CompileUtils
 
-        cd ..
-        sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
+    #create the build forlder,copy necessary scripts, then
+    #run odin, abc and vpr
+    CompileUtils.createBuildDirAndRunVpr(vtrDir,libDir,circuitPath,zuma_config.params.vprVersion)
 
-        lutrams=$(grep -c "lut_custom" ZUMA_custom_generated.v)
-        eluts=$(grep -c "elut_custom" ZUMA_custom_generated.v)
-        muxluts=$((lutrams - eluts))
+    #run zuma
+    CompileUtils.runZUMA(zuma_config.params.vprVersion)
+    CompileUtils.createMif(zumaExampleDir)
+    CompileUtils.checkEquivalence(vtrDir,zuma_config.params.vprVersion)
+    CompileUtils.displayRessourceUsage()
 
-        echo
-        echo "Overlay uses $eluts embedded LUTs and $muxluts routing/MUX LUTs, so $lutrams LUTRAMs in total."
-    }
+    #verify the generated verilog description
+    if zuma_config.params.verifyOverlay:
+        #load the yosys path
+        yosysDir = local.path(toolpaths.yosysDir)
+        CompileUtils.checkOverlayEquivalence(zumaDir,yosysDir)
 
-fi
+def main():
 
+    #check which user circuit file to compile
+    if len(sys.argv) > 1:
+        fileName =  sys.argv[1]
+    else:
+        fileName = "test.v"
+
+    #start the compilation
+    compileZUMA(fileName)
+
+if __name__ == '__main__':
+    main()
