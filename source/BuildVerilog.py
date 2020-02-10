@@ -224,7 +224,7 @@ def writeFooter(f):
     );
     """
     f.write(string)
-    f.write('endmodule')
+    f.write('endmodule\n')
 
 
 ## get the right mux_prefix for a given node.
@@ -254,7 +254,7 @@ def addSimpleNode(node,configStageOffset,configStageNumber):
     input_names = [(str(i)) for i in node.inputs]
 
     mappedNode = TechnologyMappedNode(node,name,input_names)
-    
+
     mappedNode.stageNumber = configStageNumber
     mappedNode.stageOffset = configStageOffset
 
@@ -470,7 +470,7 @@ def addComplexNode(node,configStageOffset,configStageNumber):
             input_names = [str(i) for i in mux_nodes[count:count+globs.host_size]]
 
             mappedNode = TechnologyMappedNode(node,name,input_names)
-            
+
             mappedNode.stageNumber = configStageNumber
             mappedNode.stageOffset = configStageOffset
             configStageOffset += 1
@@ -504,7 +504,7 @@ def addComplexNode(node,configStageOffset,configStageNumber):
     input_names = mux_nodes
 
     mappedNode = TechnologyMappedNode(node,name,input_names)
-    
+
     mappedNode.stageNumber = configStageNumber
     mappedNode.stageOffset = configStageOffset
     configStageOffset += 1

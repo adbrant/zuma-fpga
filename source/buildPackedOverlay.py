@@ -360,9 +360,14 @@ def buildOuterRouting(file):
         if node.type < 3:
             continue
 
-        #skip opins
+        #skip opins of clusters, but not those of IOs.
         if node.type == 3:
-            continue
+            #check if it is not on an edge. only skip cluster opins
+            if (node.location[0] != 0) and \
+               (node.location[1] != 0) and \
+               (node.location[0] != globs.clusterx) and \
+               (node.location[1] != globs.clustery):
+               continue
 
         #skip elut ffmux and interconnect nodes
         if node.type  >= 7 and node.type  <= 9:
@@ -466,11 +471,13 @@ def buildClusterInterfaces(f):
             f.write( '    .node_' + str(ipin.id) +'(' + 'node_' + str(ipin.id) + '),\n')
 
         # iterate through the drivers and grep the opin nodes.
-        for opinDriver in cluster.outputs:
+        for index,opinDriver in enumerate(cluster.outputs,1):
             #get the ipin node.
             opin = globs.nodes[opinDriver.id]
             #connect it with the interface
-            f.write( '    .node_' + str(opin.id) +'(' + 'node_' + str(opin.id) + '),\n')
+            f.write( '    .node_' + str(opin.id) +'(' + 'node_' + str(opin.id) + ')')
+            if index != len(cluster.outputs):
+                f.write( ',\n')
 
         #write the footer
         f.write( '    );\n')
@@ -502,23 +509,26 @@ def buildClusterDescriptions(f):
             f.write( '    node_' + str(ipin.id) + ',\n')
 
         # iterate through the drivers and grep the opin nodes.
-        for opinDriver in cluster.outputs:
+        for index,opinDriver in enumerate(cluster.outputs,1):
             #get the ipin node.
             opin = globs.nodes[opinDriver.id]
             #connect it with the interface
-            f.write( '    node_' + str(opin.id) + ',\n')
+            f.write( '    node_' + str(opin.id))
+            #the last entry got no delimiter
+            if index != len(cluster.outputs):
+                f.write( ',\n')
 
         #write the input footer
         f.write( '    );\n')
 
         #now repeat the same pattern
         #TODO: use parameter config with
-        f.write( '    input [5:0] wr_addr,\n' )
-        f.write( '    input [32-1:0] wr_data,\n' )
-        f.write( '    input [4096:0] wren,\n' )
-        f.write( '    input clk,\n' )
-        f.write( '    input clk2,\n' )
-        f.write( '    input ffrst,\n' )
+        f.write( '    input [5:0] wr_addr;\n' )
+        f.write( '    input [32-1:0] wr_data;\n' )
+        f.write( '    input [4096:0] wren;\n' )
+        f.write( '    input clk;\n' )
+        f.write( '    input clk2;\n' )
+        f.write( '    input ffrst;\n' )
 
         # iterate through the drivers and grep the ipin nodes.
         for ipinDriver in cluster.inputs:
@@ -543,7 +553,8 @@ def buildClusterDescriptions(f):
 
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
-def buildVerificationOverlay(fileName):
+#@param verificationalBuild flags that the file is used for verification
+def buildVerificationOverlay(fileName,verificationalBuild):
 
     #write a configuration to the mapped nodes
     generateMappedNodesConfiguration()
@@ -557,7 +568,8 @@ def buildVerificationOverlay(fileName):
     BuildVerilog.writeHeader(file)
 
     #to make things easier in the testsuite
-    writeTestsuitePatch(file)
+    if verificationalBuild:
+        writeTestsuitePatch(file)
 
     #build in two steps: first the outer routing. then connect the clb module interface to the outer routing.
     #later we genearte these used clb modules
@@ -568,7 +580,11 @@ def buildVerificationOverlay(fileName):
     ConnectIO(file)
 
     #finish the the main module
-    writeFooter(file)
+    #the verificational build don't instantiate the config controller
+    if verificationalBuild:
+        writeFooter(file)
+    else:
+        BuildVerilog.writeFooter(file)
 
     #generate the clb modules
     buildClusterDescriptions(file)
@@ -576,4 +592,5 @@ def buildVerificationOverlay(fileName):
     file.close()
 
     #rewrite the abc output file for equivalnce checks
-    writeCircuitVerificationBlif()
+    if verificationalBuild:
+        writeCircuitVerificationBlif()
