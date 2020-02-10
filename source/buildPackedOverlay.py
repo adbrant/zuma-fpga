@@ -387,13 +387,61 @@ def buildOuterRouting(file):
         else:
             writeLUTRAM(file,node)
 
+#buld the lutrams and wires for nodes in a clb for a given location.
+#generate lutrams for every elut ffmux opin and interconnect node.
+def buildInnerRouting(file,location):
+    
+    for node in globs.technologyMappedNodes.getNodes():
+
+        #source and sinks were skipped. They are not used as lutrams yet.
+        if node.type < 3:
+            continue
+        
+        #skip ipins and channels
+        if node.type  >= 4 and node.type  <= 6:
+            continue
+
+        #skip iomuxes
+        if node.type == 10:
+            continue
+
+        #skip nodes not part of this cluster
+        if node.location != location:
+            continue
+    
+        #write a wire for the node output.
+        #because every node has only one unique output
+        writeWire(file,node)
+
+        #if the node is a passtrough node just use the assign optimization
+        #these are nodes with only one input except an lut,ffmux or ipin which
+        #are a special case
+        if node.passTrough:
+            writePassTroughNode(file,node)
+            continue
+
+        #this node is a part of a routing mux,lut,ffmux or ipin -> write a lutram
+        else:
+            writeLUTRAM(file,node)
+
 
 #build the connection between the clbs and the outer routing
 #therfore connect the cluster ipin and opin outputs with the interface
 #Note: ipins are part of the outer routing and not part of the generated cluster.
 #for opins we generate a wire for the connection with the outer routing
-def buildClusterInterfaces(file):
+def buildClusterInterfaces(f):
     
+    #for the opins of a cluster we generate a wire for the connection with the cluster module.
+    for location in globs.clusters:
+        cluster = globs.clusters[location]         
+
+        # iterate through the drivers and grep the opin nodes.
+        for opinDriver in cluster.outputs:
+            #get the ipin node.
+            opin = globs.nodes[opinDriver.id]
+            #write the wire
+            f.write('wire ' + 'node_' + str(opin.id) + ';\n')    
+
     #step through ipins and opins of a cluster and grep the coressponding technolog mapped nodes.
     #then write a connection for the interface
     for location in globs.clusters:
@@ -402,10 +450,12 @@ def buildClusterInterfaces(file):
         #first write a cluster header:
         (x,y) = location        
         f.write( '    Cluster_' + str(x) + '_' + str(y) + ' cluster_'+ str(x) + '_' + str(y) + '(\n')
+        f.write( '    .wr_addr(wr_addr),\n' )
         f.write( '    .wr_data(wr_data),\n' )
+        f.write( '    .wren(wren),\n' )
         f.write( '    .clk(clk),\n' )
         f.write( '    .clk2(clk2),\n' )
-        f.write( '    .wren(wren),\n' )
+        f.write( '    .ffrst(ffrst),\n' )
 
         # iterate through the drivers and grep the ipin nodes.
         for ipinDriver in cluster.inputs:
@@ -422,18 +472,73 @@ def buildClusterInterfaces(file):
             f.write( '    .node_' + str(opin.id) +'(' + 'node_' + str(opin.id) + '),\n')
 
         #write the footer
-        f.write( '    );'
+        f.write( '    );\n')
 
-    #for the opins of a cluster we generate a wire for the connection with the cluster module.
+#build a special verilog cluster module for each cluster
+def buildClusterDescriptions(f):
+
+
+    #step through ipins and opins of each cluster and grep the coressponding technolog mapped nodes.
+    #then write the corresponding interface
     for location in globs.clusters:
-        cluster = globs.clusters[location]         
+        cluster = globs.clusters[location]    
+        
+        #first write a cluster header:
+        (x,y) = location        
+        f.write( 'module  Cluster_' + str(x) + '_' + str(y) + '(\n')
+        f.write( '    wr_addr,\n' )
+        f.write( '    wr_data,\n' )
+        f.write( '    wren,\n' )
+        f.write( '    clk,\n' )
+        f.write( '    clk2,\n' )
+        f.write( '    ffrst,\n' )
+
+        # iterate through the drivers and grep the ipin nodes.
+        for ipinDriver in cluster.inputs:
+            #get the ipin node.
+            ipin = globs.nodes[ipinDriver.id]
+            #connect it with the interface
+            f.write( '    node_' + str(ipin.id) +'(' + 'node_' + str(ipin.id) + '),\n')          
 
         # iterate through the drivers and grep the opin nodes.
         for opinDriver in cluster.outputs:
             #get the ipin node.
             opin = globs.nodes[opinDriver.id]
-            #write the wire
-            f.write('wire ' + 'node_' + node.name + ';\n')
+            #connect it with the interface
+            f.write( '    node_' + str(opin.id) +'(' + 'node_' + str(opin.id) + '),\n')
+
+        #write the input footer
+        f.write( '    );\n')
+
+        #now repeat the same pattern
+        #TODO: use parameter config with      
+        f.write( '    input [5:0] wr_addr,\n' )
+        f.write( '    input [32-1:0] wr_data,\n' )
+        f.write( '    input [4096:0] wren,\n' )
+        f.write( '    input clk,\n' )
+        f.write( '    input clk2,\n' )
+        f.write( '    input ffrst,\n' )
+
+        # iterate through the drivers and grep the ipin nodes.
+        for ipinDriver in cluster.inputs:
+            #get the ipin node.
+            ipin = globs.nodes[ipinDriver.id]
+            #connect it with the interface
+            f.write( '    input node_' + str(ipin.id) + ';\n')          
+
+        # iterate through the drivers and grep the opin nodes.
+        for opinDriver in cluster.outputs:
+            #get the ipin node.
+            opin = globs.nodes[opinDriver.id]
+            #connect it with the interface
+            f.write( '    output node_' + str(opin.id) + ';\n')
+
+        #now we have finished the interface. build the content
+        #iterate through all nodes and build those with the right location
+        buildInnerRouting(f,location)
+
+        #write the footer
+        f.write( 'endmodule')
 
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
@@ -455,8 +560,8 @@ def buildVerificationOverlay(fileName):
 
     #build in two steps: first the outer routing. then connect the clb module interface to the outer routing.
     #later we genearte these used clb modules
-    buildOuterRouting()
-    buildClusterInterfaces()
+    buildOuterRouting(file)
+    buildClusterInterfaces(file)
     
     #conncet the opins/ipins with the fpga outputs/inputs
     ConnectIO(file)
@@ -465,7 +570,7 @@ def buildVerificationOverlay(fileName):
     writeFooter(file)
 
     #generate the clb modules
-    buildClusterDescriptions()
+    buildClusterDescriptions(file)
     
     file.close()
 

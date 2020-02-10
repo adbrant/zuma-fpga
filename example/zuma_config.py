@@ -37,7 +37,10 @@ params.orderedIO = True
 #check the equivalence of the generated overlay with the user circuit
 #need a path to yosys in the toolpath.py
 #WARNING: is only supported for vpr version 8
-params.verifyOverlay = False
+params.verifyOverlay = True
+
+#if you want to use a packed overlay for verification and build
+params.packedOverlay = True
 
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.
@@ -47,7 +50,7 @@ params.graphviz = False
 
 
 #activate the timing analysis. See ../TIMING README
-params.sdf = True
+params.sdf = False
 #path of the two sdf files needed for timing analysis. see ../TIMING README
 #the second one sdfFlipflopFileName is only needed when ise is used for the sdf export
 #but not vivado
