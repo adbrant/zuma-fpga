@@ -56,6 +56,10 @@ def getLutName(cell):
         lutName = lutName[4:]
     elif lutName[0:6] == "c_mux_":
         lutName = lutName[6:]
+    elif lutName[0:4] == "MUX_":
+        lutName = lutName[4:]
+    elif lutName[0:4] == "LUT_":
+        lutName = lutName[4:]
 
     return lutName
 
