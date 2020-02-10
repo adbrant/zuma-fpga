@@ -242,7 +242,7 @@ def getMuxPrefix(node):
 
 ## Add a simple mux node to the technology mapped graph.
 # This node represents a mux implemented through a single lutram
-def addSimpleNode(node):
+def addSimpleNode(node,configStageOffset,configStageNumber):
 
     #the node name
     name = str(node.id)
@@ -254,6 +254,10 @@ def addSimpleNode(node):
     input_names = [(str(i)) for i in node.inputs]
 
     mappedNode = TechnologyMappedNode(node,name,input_names)
+    
+    mappedNode.stageNumber = configStageNumber
+    mappedNode.stageOffset = configStageOffset
+
     #add the node to the node graph
     globs.technologyMappedNodes.add(mappedNode)
 
@@ -284,7 +288,7 @@ def writeSimpleLut(node,config_row,f):
 ## Add a tighly packed mux node to the technology mapped graph.
 # This node represents a mux which is implemented through several mapped nodes
 # divided into two levels
-def addTightlyNodes(node):
+def addTightlyNodes(node,configStageOffset,configStageNumber):
 
     # calc the number of used luts for this mux.
     num_luts = getNumLuts(node)
@@ -307,6 +311,10 @@ def addTightlyNodes(node):
 
         mappedNode = TechnologyMappedNode(node,name,input_names)
 
+        mappedNode.stageNumber = configStageNumber
+        mappedNode.stageOffset = configStageOffset
+        configStageOffset += 1
+
         #add it to the node graph
         globs.technologyMappedNodes.add(mappedNode)
 
@@ -327,6 +335,10 @@ def addTightlyNodes(node):
     input_names2 = [(str(i)) for i in inputNodesIDs]
 
     mappedNode = TechnologyMappedNode(node,name,input_names + input_names2)
+
+    mappedNode.stageNumber = configStageNumber
+    mappedNode.stageOffset = configStageOffset
+    configStageOffset += 1
 
     #add it to the node graph
     globs.technologyMappedNodes.add(mappedNode)
@@ -398,7 +410,7 @@ def writeTightlyLut(node,config_row,f):
 ## Add a complex packed mux node to the technology mapped graph.
 # This node represents a mux which is implemented through many mapped nodes
 # in several levels.
-def addComplexNode(node):
+def addComplexNode(node,configStageOffset,configStageNumber):
 
     #the input width
     mux_size = len(node.inputs)
@@ -418,6 +430,10 @@ def addComplexNode(node):
         input_names = [(str(i)) for i in node.inputs[count:count+globs.host_size]]
 
         mappedNode = TechnologyMappedNode(node,name,input_names)
+
+        mappedNode.stageNumber = configStageNumber
+        mappedNode.stageOffset = configStageOffset
+        configStageOffset += 1
         #add it to the node graph
         globs.technologyMappedNodes.add(mappedNode)
 
@@ -430,6 +446,10 @@ def addComplexNode(node):
     input_names = [(str(i)) for i in node.inputs[count:]]
 
     mappedNode = TechnologyMappedNode(node,name,input_names)
+
+    mappedNode.stageNumber = configStageNumber
+    mappedNode.stageOffset = configStageOffset
+    configStageOffset += 1
     #add it to the node graph
     globs.technologyMappedNodes.add(mappedNode)
 
@@ -450,6 +470,10 @@ def addComplexNode(node):
             input_names = [str(i) for i in mux_nodes[count:count+globs.host_size]]
 
             mappedNode = TechnologyMappedNode(node,name,input_names)
+            
+            mappedNode.stageNumber = configStageNumber
+            mappedNode.stageOffset = configStageOffset
+            configStageOffset += 1
             #add it to the node graph
             globs.technologyMappedNodes.add(mappedNode)
 
@@ -463,6 +487,10 @@ def addComplexNode(node):
         input_names = [str(i) for i in mux_nodes[count:]]
 
         mappedNode = TechnologyMappedNode(node,name,input_names)
+
+        mappedNode.stageNumber = configStageNumber
+        mappedNode.stageOffset = configStageOffset
+        configStageOffset += 1
         #add it to the node graph
         globs.technologyMappedNodes.add(mappedNode)
 
@@ -476,6 +504,10 @@ def addComplexNode(node):
     input_names = mux_nodes
 
     mappedNode = TechnologyMappedNode(node,name,input_names)
+    
+    mappedNode.stageNumber = configStageNumber
+    mappedNode.stageOffset = configStageOffset
+    configStageOffset += 1
     #add it to the node graph
     globs.technologyMappedNodes.add(mappedNode)
 
@@ -921,24 +953,28 @@ def build_global_routing_verilog(filename):
             globs.config_pattern.append(config_row)
             config_row = []
 
+        #the current row ofset provided for the technology mapped nodes
+        configStageOffset = len(config_row)
+        configStageNumber = len(globs.config_pattern)
+
         # a node fit in a single LUTRAM. write it to the file and append
         # the node id to the current config row.
         if packingType == 'simple':
             writeSimpleLut(node,config_row,f)
-            addSimpleNode(node)
+            addSimpleNode(node,configStageOffset,configStageNumber)
 
 
         # write two levels of LUTRAMs.
         elif packingType == 'tightly':
             writeTightlyLut(node,config_row,f)
-            addTightlyNodes(node)
+            addTightlyNodes(node,configStageOffset,configStageNumber)
 
         # if it even doesn't fit into the k^2 size.
         # quick approach: Not as tightly packed as above case
         # In this approach every LUT only serves one level (depth)
         else:
             writeComplexLut(node,config_row,f)
-            addComplexNode(node)
+            addComplexNode(node,configStageOffset,configStageNumber)
 
     #now all nodes are created.
 

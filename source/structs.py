@@ -148,6 +148,10 @@ class TechnologyMappedNode():
         #an array where each bit is an element
         self.bits = None
 
+        #its config stage number and offset
+        self.stageNumber = -1
+        self.stageOffset = -1
+
     ##check if the mapped node is a mux on a ble
     #return True of False
     def isBleMux(mappedNode):

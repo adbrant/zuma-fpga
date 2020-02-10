@@ -84,7 +84,7 @@ def writeFooter(f):
     f.write('parameter NUM_CONFIG_STAGES = ' + \
         str(len(globs.config_pattern)) + ';')
 
-    f.write('\nendmodule')
+    f.write('\nendmodule\n')
 
 #to make things easier in the testsuite
 def writeTestsuitePatch(f):
@@ -161,9 +161,10 @@ def writeLUTRAMInputs(f, node):
     #list of input wire names
     inputNames = []
 
-    #for the verification overlay we dont use the staging configuration
-    config_stage = 0
-    config_offset = 0
+    #get the stage number and stage offset offset
+    #was set in BuildVerilog.py
+    config_stage = node.stageNumber
+    config_offset = node.stageOffset
 
     #is it a regular routing mux or a mux on a ble behind a lut(ffmux)?
     #the input of a ffmux is the name of the conncected lut.
@@ -538,7 +539,7 @@ def buildClusterDescriptions(f):
         buildInnerRouting(f,location)
 
         #write the footer
-        f.write( 'endmodule')
+        f.write( 'endmodule\n')
 
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
