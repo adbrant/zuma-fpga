@@ -49,9 +49,9 @@ def getLutName(cell):
     lutName = Util.find_substring(
                 cell.instanceName,
                 globs.params.instancePrefix,
-                divider + "LUT" )
+                divider + "LUT/" )
 
-    #delete the prefix
+    #delete the prefix. support various versions of zuma
     if lutName[0:4] == "mux_":
         lutName = lutName[4:]
     elif lutName[0:6] == "c_mux_":
@@ -60,6 +60,15 @@ def getLutName(cell):
         lutName = lutName[4:]
     elif lutName[0:4] == "LUT_":
         lutName = lutName[4:]
+    else:
+        #have a cluster prefix
+        for x in range(0,globs.clusterx):
+            for y in range(0,globs.clustery):
+                if lutName[0:16] == ("cluster_" + str(x) + "_" + str(y) + "/MUX_") or \
+                   lutName[0:16] == ("cluster_"+ str(x) + "_"+ str(y) + "/LUT_"):
+
+                    lutName = lutName[16:]
+                    return lutName
 
     return lutName
 
