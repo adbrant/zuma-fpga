@@ -87,6 +87,10 @@ class Node():
         ##TODO: document the bits attribute which is the lut content
         #set in ReadNetlist.copyLut
 
+        #Delay dictonaries for the vpr timing back annotation
+        ioPathDelay = None
+        readPortDelay = None
+
 ## describe a node of the technology mapped node graph
 class TechnologyMappedNode():
 
@@ -131,6 +135,10 @@ class TechnologyMappedNode():
         ##delay information for this node
         ##list of list(min, average, max).
         ##for every input port one tuple.
+
+        #the inputs in verilog are written downto, e.g [5:0], so readPortDelay[0]
+        #is the delay of inputs[5]
+        #TODO: change this to a dictionary with the input names to prevent errors
         self.readPortDelay = []
         self.writePortDelay = []
         self.ioPathDelay = []
@@ -440,7 +448,7 @@ class Cluster:
                        ' was not found in newPinPosition list ', \
                        cluster.newPinPositions[bleIndex]
             sys.exit(1)
-            
+
         else:
             print 'Unsuported interconnect network type for this operation'
             sys.exit(1)

@@ -138,6 +138,10 @@ def addLutCellDelayToMappedNode(name,cell):
     writePortDelay = [[0.0,0.0,0.0]]*6
     ioPathDelay = [[0.0,0.0,0.0]]*6
 
+
+    #NOTE: the inputs in verilog are written downto, e.g [5:0], so RADR0 is node.inputs[5]
+    #see structs readPortDelay
+    #TODO:change this by reversing it. this is faulty and irritating
     for portName,port in cell.ports.items():
 
         #insert the port delay into the read port delay list
