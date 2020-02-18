@@ -18,14 +18,19 @@ def getPathDelay(source,target,inputName,start = True):
     #because the verilog is written downto, the first index is the last port.
     portIndex = source.inputs.index(inputName)
     portIndex = (globs.host_size-1)- portIndex
+    #print 'port index' + str(portIndex) + ' of ' + str(source.name)
 
     #get the corresponding port delay of that input pin
     #if its the start node of the path we omit this delay
-    if (not start):
-        portDelay = source.readPortDelay[portIndex]
+    portDelay = [0.0,0.0,0.0]
+    ioPathDelay = [0.0,0.0,0.0]
 
-    #now get the io path delay.
-    ioPathDelay = source.ioPathDelay[portIndex]
+    if (not start) and (not source.passTrough):
+            portDelay = source.readPortDelay[portIndex]
+
+    #now get the io path delay. skip passtrough nodes (they have no timing)
+    if not source.passTrough:
+        ioPathDelay = source.ioPathDelay[portIndex]
 
     #the delays are vectors (min,avg,max). add them with numpy
     result = numpy.add(portDelay,ioPathDelay)
@@ -38,7 +43,7 @@ def getPathDelay(source,target,inputName,start = True):
 
     nextInputName =  source.name
     #intermediate mapped nodes have only one edge
-    nextSourceNode = globs.technologyMappedNodes.getNodeByName(source.edge[0])
+    nextSourceNode = globs.technologyMappedNodes.getNodeByName(source.edges[0])
 
     newResult = getPathDelay(nextSourceNode,target,nextInputName,False)
     result = numpy.add(newResult,result)
@@ -56,6 +61,14 @@ def AnnotateTiming():
         if node.type <= 2:
             continue
 
+        #if the node is a pasthrough his mapped node is also one
+        #skip it. Currently the node graph doesn't have a passTrough flag
+        #TODO fix this
+        if len(node.mappedNodes) == 1:
+            name = node.mappedNodes[-1]
+            mappedNode = globs.technologyMappedNodes.getNodeByName(name)
+            if mappedNode.passTrough:
+                continue
 
         #for every input get the path delay started
         #from the first lvl nodes to the last mapped node
@@ -71,25 +84,38 @@ def AnnotateTiming():
             for inputName in firstlvlNode.inputs:
 
                 #check if the input of this mapped node
-                #is an input of the parent node
+                #is an input of the parent node. we need a edge to an outer node
                 inputNode = globs.technologyMappedNodes.getNodeByName(inputName)
-                if inputNode.parentNode.id != node.id:
+                if inputNode.parentNode.id == node.id:
+                    continue
 
-                        #get the delay for this input
-                        target = node.mappedNodes[-1]
-                        source = firstlvlNode
-                        pathDelay = getPathDelay((source,target,inputName)
+                #get the last mapped node of
+                targetName = node.mappedNodes[-1]
+                target = globs.technologyMappedNodes.getNodeByName(targetName)
 
-                        #add it to the dict
-                        ioPathDelay[inputNode.parentNode.id] = pathDelay
+                #if the node is a passtrough go down until the target and find the
+                #first not passtrough node
+                #TODO: can this happen?
+                source = firstlvlNode
+                sourceInputName = inputName
 
-                        #get the port delay. therfore we calc the correct port inde
-                        portIndex = source.inputs.index(inputName)
-                        portIndex = (globs.host_size-1)- portIndex
-                        portDelay = source.readPortDelay[portIndex]
+                if source.passTrough:
+                    while(source.passTrough and (source.name != target.name)):
+                        sourceInputName = source.name
+                        source = globs.technologyMappedNodes.getNodeByName(source.edges[0])
 
-                        readPortDelay[inputNode.parentNode.id] = portDelay
+                #now get the path delay timing
+                pathDelay = getPathDelay(source,target,sourceInputName)
+
+                #get the port delay. therfore we calc the correct port index
+                portIndex = source.inputs.index(sourceInputName)
+                portIndex = (globs.host_size-1)- portIndex
+                portDelay = source.readPortDelay[portIndex]
+
+                #add it to the dict
+                ioPathDelay[inputNode.parentNode.id] = pathDelay
+                readPortDelay[inputNode.parentNode.id] = portDelay
 
         #now add the path delay and port delay to the node
         node.ioPathDelay = ioPathDelay
-        node.portDelay = readPortDelay
+        node.readPortDelay = readPortDelay

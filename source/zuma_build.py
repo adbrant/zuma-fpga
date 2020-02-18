@@ -15,6 +15,7 @@ import TimingAnalysisSDF
 import ReadSDF
 import buildVerificationOverlay
 import buildPackedOverlay
+import NodeGraphTiming
 
 import os
 import sys
@@ -123,8 +124,11 @@ def Zuma(verilog_file,
         if globs.params.sdf:
             ReadSDF.ReadSDF()
             TimingAnalysisSDF.performTimingAnalysis()
+            NodeGraphTiming.AnnotateTiming()
+
             if globs.params.dumpNodeGraph:
                 Dump.dumpTechnologyGraph('mappedTimedGraph')
+                Dump.dumpGraph('timedGraph')
 
 
 if __name__ == '__main__':

@@ -88,8 +88,8 @@ class Node():
         #set in ReadNetlist.copyLut
 
         #Delay dictonaries for the vpr timing back annotation
-        ioPathDelay = None
-        readPortDelay = None
+        self.ioPathDelay = None
+        self.readPortDelay = None
 
 ## describe a node of the technology mapped node graph
 class TechnologyMappedNode():

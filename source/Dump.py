@@ -86,6 +86,10 @@ def dumpGraph(filename):
         f.write( 'ffmux: '    + str( node.ffmux)+ '\n')
         f.write( 'name: '     + str( node.name)+ '\n')
 
+        f.write( 'ioPathDelay: '     + str( node.ioPathDelay)+ '\n')
+        f.write( 'readPortDelay: '     + str( node.readPortDelay)+ '\n')
+
+
 
         #dump the corresponding lut
         if  (node.type == 8 and node.LUT != 0):
