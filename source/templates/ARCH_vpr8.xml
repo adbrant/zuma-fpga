@@ -135,6 +135,7 @@
                   <pb_type name="lut6" blif_model=".names" num_pb="1" class="lut">
                     <input name="in" num_pins="ZUMA_K" port_class="lut_in"/>
                     <output name="out" num_pins="1" port_class="lut_out"/>
+                    DELAYMATRIX
                   </pb_type>
                   <interconnect>
                     <direct name="direct1" input="soft_logic.in[ZUMA_K_m_1:0]" output="lut6[0:0].in[ZUMA_K_m_1:0]"/>

@@ -123,10 +123,13 @@ def Zuma(verilog_file,
 
         #if we want to parse the sdf file
         if globs.params.sdf:
+
             ReadSDF.ReadSDF()
             TimingAnalysisSDF.performTimingAnalysis()
+
             NodeGraphTiming.AnnotateTiming()
             TimingAnnotation.annotateBack()
+
 
             if globs.params.dumpNodeGraph:
                 Dump.dumpTechnologyGraph('mappedTimedGraph')

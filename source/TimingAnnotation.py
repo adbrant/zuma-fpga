@@ -6,7 +6,7 @@ import numpy
 
 def addVprSwitch(edge,switchesElement,newId,switchName,delay):
     strdelay = (str(delay) + "e-12")
-    switchAttr = {'type':'mux', 'name':switchName,  'R':"0.000000", 'Cin':"0.000000e+00", 'Cout':"0.000000e+00", 'Cinternal':"0.000000e+00", 'Tdel':strdelay, 'mux_trans_size':"2.183570", 'buf_size':"32.753502" }
+    switchAttr = {'type':'mux', 'name':switchName,  'R':"0", 'Cin':"0", 'Cout':"0", 'Cinternal':"0", 'Tdel':strdelay, 'mux_trans_size':'0', 'buf_size':'0' }
     #<switch type="mux" name="0" R="0.000000" Cin="0.000000e+00" Cout="0.000000e+00" Cinternal="0.000000e+00" Tdel="8.972000e-11" mux_trans_size="2.183570" buf_size="32.753502"/>
 
     switchElement = ET.SubElement(switchesElement,'switch',switchAttr)
@@ -22,8 +22,8 @@ def addRRSwitch(edge,switchesElement,newId,switchName,delay):
 
     switchElement = ET.SubElement(switchesElement,'switch',switchAttr)
 
-    ET.SubElement(switchElement, 'timing', {"Tdel":strdelay})
-    ET.SubElement(switchElement, 'sizing', {"buf_size":'32.7535019',"mux_trans_size":'2.18356991'})
+    ET.SubElement(switchElement, 'timing', {'Cin':"0", 'Cinternal':"0", 'Cout':"0", 'R':"0","Tdel":strdelay})
+    ET.SubElement(switchElement, 'sizing', {"buf_size":'0',"mux_trans_size":'0'})
 
 
 def annotateBack():
@@ -55,9 +55,9 @@ def annotateBack():
         #also deleted nodes are skipped
         #these node have connections in the nodegraph which are
         #not represented in the rr_graph (ordered layer)
-        if sinkNode.type < 3:
+        if sinkNode.type == 0 or sinkNode.type == 1:
             continue
-        if sourceNode.type < 3:
+        if sourceNode.type == 0 or sourceNode.type == 0:
             continue
 
         #update the switch Id in the edge
@@ -69,23 +69,24 @@ def annotateBack():
 
         if sinkNode.ioPathDelay is not None:
             ioPathDelay = sinkNode.ioPathDelay[int(sourceId)]
-        else:
-            print "Error: no timing"
+        #else:
+            #print "Error: no timing"
         if sinkNode.readPortDelay is not None:
             readPortDelay = sinkNode.readPortDelay[int(sourceId)]
-        else:
-            print "Error: no timing"
-        #we use the average timing for now
-        #average is the middle timing entry
-        delay = numpy.add(ioPathDelay,readPortDelay)[1]
+        #else:
+            #print "Error: no timing"
+
+        #we use the worst case timing for now
+        #worst case is the last timing entry
+        delay = numpy.add(ioPathDelay,readPortDelay)[2]
 
         #add switches with the corresponding delay to vpr and rr xml files
         addRRSwitch(edge,switchesElement,newId,switchName,delay)
         addVprSwitch(edge,switchesElementVpr,newId,switchName,delay)
 
     #write the modificaion back to the file
-    tree.write('rr_graph2.xml')
-    treeVpr.write('ARCH_vpr82.xml')
+    tree.write('rr_graph_timing.xml')
+    treeVpr.write('ARCH_vpr8_timing.xml')
 
 if __name__ == "__main__":
     # execute only if run as a script

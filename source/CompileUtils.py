@@ -12,7 +12,7 @@ def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir):
 
     #set the used env variables
     local.env["VTR_DIR"] = str(vtrDir)
-    local.env["YOSYS_DIR"] = str(yosysDir)    
+    local.env["YOSYS_DIR"] = str(yosysDir)
 
     #run the equivalence check
     check = local[zumaDir / "verilog/verification/VerificationTestsuite/check_equivalence.sh"]
@@ -81,7 +81,7 @@ def createBuildDirAndRunVpr(vtrDir,libDir,fileName,vprVersion):
 
     #now run odin abc and vpr scripts in the build file
     runOdinAndAbc(vtrDir,fileName,vprVersion)
-    runVpr(vtrDir,vprVersion)
+    runVpr(vtrDir,vprVersion,False)
 
 
 def runOdinAndAbc(vtrDir,fileName,vprVersion):
@@ -111,8 +111,9 @@ def runOdinAndAbc(vtrDir,fileName,vprVersion):
     print odin("-V",str(fileName))
     print abc("-F",str(abcCommands))
 
-
-def runVpr(vtrDir,vprVersion):
+#@ param timingRun indicate that vpr8 use built in timing analysis
+#                  via the vpr8_timing script
+def runVpr(vtrDir,vprVersion,timingRun):
 
     print 'vtrdDir: ' + str(vtrDir)
 
@@ -124,7 +125,12 @@ def runVpr(vtrDir,vprVersion):
 
     #choose the right tool path, depending on the vpr version
     if vprVersion == 8:
-        vprPath = cwd / "vpr8.sh"
+
+        if timingRun:
+            vprPath = cwd / "vpr8_timing.sh"
+        else:
+            vprPath = cwd / "vpr8.sh"
+
     elif vprVersion == 7:
         vprPath = cwd / "vpr7.sh"
     elif vprVersion == 6:
@@ -133,7 +139,7 @@ def runVpr(vtrDir,vprVersion):
         print "ERROR: Unsupported vpr version: " + str(vprVersion)
         sys.exit(1)
 
-    print 'vpr script path:' + str(vprPath)    
+    print 'vpr script path:' + str(vprPath)
     #because the vpr script was copied, set the x flag
     from plumbum.cmd import chmod
     chmod("a+x",str(vprPath))
@@ -168,7 +174,7 @@ def createMif(zumaExampleDir):
     out = (hexToMif["../output.hex"] > "../output.hex.mif").run()
     #sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
 
-def runZUMA(vprVersion):
+def runZUMA(vprVersion,timingRun):
 
     import zuma_build
 
@@ -181,7 +187,10 @@ def runZUMA(vprVersion):
     else:
         blif_file = 'abc_out.blif'
         graph_file = 'rr_graph.xml'
-   
+
+    if timingRun:
+        graph_file = 'rr_graph_timing.xml'
+
     verilog_file = '../ZUMA_custom_generated.v'
 
     place_file = 'place.p'

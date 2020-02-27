@@ -37,24 +37,24 @@ params.orderedIO = True
 #check the equivalence of the generated overlay with the user circuit
 #need a path to yosys in the toolpath.py
 #WARNING: is only supported for vpr version 8
-params.verifyOverlay = True
+params.verifyOverlay = False
 
 #if you want to use a packed overlay for verification and build
-params.packedOverlay = True
+params.packedOverlay = False
 
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.
 #WARNING:graphviz could freeze the build process if the graph is too big.
-params.dumpNodeGraph = False
+params.dumpNodeGraph = True
 params.graphviz = False
 
 
 #activate the timing analysis. See ../TIMING README
-params.sdf = False
+params.sdf = True
 #path of the two sdf files needed for timing analysis. see ../TIMING README
 #the second one sdfFlipflopFileName is only needed when ise is used for the sdf export
 #but not vivado
-params.sdfFileName = "../postRoute.sdf"
+params.sdfFileName = "../adder.sdf"
 params.sdfFlipflopFileName = "../final_with_buffer.sdf"
 #time scale of your timing information. here its ps
 params.timeScale = 1.0/1000000000000
@@ -73,3 +73,7 @@ params.sdfInterconnectCellType = "zuma_wrapper"
 #in the sdf file.
 #E.g the component zuma_top/zuma_i is translated to zuma_top_zuma_i_ in the sdf file.
 params.instancePrefix = "XUM/"
+
+#use vpr8 in a second run to place and route in vpr8 with the timing from the sdf file
+#back annotated to the vpr files
+params.vprAnnotation = True

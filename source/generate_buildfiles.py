@@ -6,7 +6,9 @@ def make_files(directory, template_directory):
     print "MAKEFILE:" + str(directory)
 
     #which vpr version
-    if (zuma_config.params.vprVersion == 8):
+    if (zuma_config.params.vprVersion == 8) and zuma_config.params.vprAnnotation:
+        filelist = ['ARCH_vpr8.xml', 'abccommands.vpr8','vpr8.sh','vpr8_timing.sh']
+    elif zuma_config.params.vprVersion == 8:
         filelist = ['ARCH_vpr8.xml', 'abccommands.vpr8', 'vpr8.sh']
     elif (zuma_config.params.vprVersion == 7):
         filelist = ['ARCH_vpr7.xml', 'abccommands', 'vpr7.sh']
@@ -17,6 +19,7 @@ def make_files(directory, template_directory):
         sys.exit(1)
 
     rep = []
+
     #tiling pattern changed in vpr8
     if (zuma_config.params.vprVersion == 8):
         rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X+2)])
@@ -24,6 +27,24 @@ def make_files(directory, template_directory):
     else:
         rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X)])
         rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y)])
+
+
+    #for the timing usage we have a special architecture file with
+    #special placeholders
+    if (zuma_config.params.vprVersion == 8):
+
+        if zuma_config.params.vprAnnotation:
+            #build the matrix delay string
+            matrixDelayString = '<delay_matrix type="max" in_port="lut6.in" out_port="lut6.out">\n'
+            for i in range(zuma_config.params.K):
+                matrixDelayString += "261e-12\n"
+            matrixDelayString += "</delay_matrix>\n"
+
+            rep.append(['DELAYMATRIX',matrixDelayString])
+
+        else:
+            rep.append(['DELAYMATRIX',''])
+
 
     rep.append(['ZUMA_FCIN_TYPE',str(zuma_config.params.fc_in_type)])
     rep.append(['ZUMA_FCOUT_TYPE',str(zuma_config.params.fc_out_type)])

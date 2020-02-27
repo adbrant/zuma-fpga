@@ -43,7 +43,7 @@ def compileZUMA(circuitFileName):
     CompileUtils.createBuildDirAndRunVpr(vtrDir,libDir,circuitPath,zuma_config.params.vprVersion)
 
     #run zuma
-    CompileUtils.runZUMA(zuma_config.params.vprVersion)
+    CompileUtils.runZUMA(zuma_config.params.vprVersion,False)
     CompileUtils.createMif(zumaExampleDir)
     CompileUtils.checkEquivalence(vtrDir,zuma_config.params.vprVersion)
     CompileUtils.displayRessourceUsage()
@@ -53,6 +53,12 @@ def compileZUMA(circuitFileName):
         #load the yosys path
         yosysDir = local.path(toolpaths.yosysDir)
         CompileUtils.checkOverlayEquivalence(zumaDir,yosysDir,vtrDir)
+
+    #if vpr8 timing back annotation is used, run a zuma second time
+    if zuma_config.params.vprAnnotation:
+        CompileUtils.runVpr(vtrDir,zuma_config.params.vprVersion,True)
+        CompileUtils.runZUMA(zuma_config.params.vprVersion,True)
+
 
 def main():
 
