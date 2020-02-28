@@ -160,6 +160,9 @@ class TechnologyMappedNode():
         self.stageNumber = -1
         self.stageOffset = -1
 
+        #signal the node was set on a clister by the packed overlay routine
+        self.isOnCluster = False
+
     ##check if the mapped node is a mux on a ble
     #return True of False
     def isBleMux(mappedNode):

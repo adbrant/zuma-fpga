@@ -35,7 +35,7 @@ class RoutingPath():
 ## i.e. all primary IO and the latches.
 # @return return a list of node references
 def findSinksAndSources():
-    
+
     sources = []
     sinks = []
 
@@ -89,12 +89,12 @@ def findSinksAndSources():
         #when orderedIO is not active check the primaryOpin flag
         opinNode = globs.nodes[opinID]
         if opinNode.source >= 0 or opinNode.primaryOpin:
-            #now get the mapped opin of the first lvl 
+            #now get the mapped opin of the first lvl
             #which connect to the outer world
             mappedOpin = globs.technologyMappedNodes.getFistInputNode(opinNode)
             sources += [ mappedOpin ]
 
-    
+
     for ipinID in ipinIdList:
         #is it driven?
         #check this in the normal node graph.
@@ -106,19 +106,19 @@ def findSinksAndSources():
             mappedIpin = globs.technologyMappedNodes.getNodeByName(ipinNode.mappedNodes[-1])
             sinks += [ mappedIpin ]
 
-    
+
     #now find LUTS before used latches
     #alternatively, we could inspect all elut nodes and check the lut reference
     for lut in globs.LUTs.values():
-        
+
         if lut.useFF:
             #get the mapped node of the lut.
             lutNode = lut.node
             #get the last node of the lut.
-            #this is for future extension, 
+            #this is for future extension,
             #where a lut can have several mapped nodes
             mappedNodeName = lutNode.mappedNodes[-1]
-            mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName) 
+            mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
 
             #append it to source and sinks
             sources = sources + [ mappedNode ]
@@ -130,12 +130,12 @@ def findSinksAndSources():
     print "Printing sinks: ---------"
 
     for node in sinks:
-        print "node in sinks: " + node.name 
+        print "node in sinks: " + node.name
 
     print "Printing sources: ---------"
 
     for node in sources:
-        print "node in sources: " + node.name 
+        print "node in sources: " + node.name
 
     return sources, sinks
 
@@ -166,13 +166,13 @@ def prependNodeToPath(path,newSrcNode):
     path.pathlength += 1
 
     #the delay of the hop
-    #delay tuple has the form: (min,average,max) 
+    #delay tuple has the form: (min,average,max)
     delay = [0.0,0.0,0.0]
 
     #passThrough nodes have no delay
     if not destNode.passTrough:
 
-        #the destination is a mux. We have to check which input of the mux 
+        #the destination is a mux. We have to check which input of the mux
         #is used(registered or unregistered) and choose the right delay
         if destNode.isBleMux():
 
@@ -205,7 +205,7 @@ def prependNodeToPath(path,newSrcNode):
 
         #adjustment for delays
         #time to travel through the component + routing delay
-        
+
         portDelay = destNode.readPortDelay[portIndex]
         ioPathDelay = destNode.ioPathDelay[portIndex]
         #for debug purpose add it to the list
@@ -219,7 +219,7 @@ def prependNodeToPath(path,newSrcNode):
         #check if there is a delay information of the route.
         #the iopath delay is always available
         if portDelay == [0.0,0.0,0.0]:
-            
+
             print "connection " + newSrcNode.name +" to " +  destNode.name + " has no delay"
             return 1
 
@@ -252,15 +252,15 @@ def trackPathsBackwards(sources,sinks):
 
                         #we have to check if the input pin is driven.
                         #therefore we check the pin in the not mapped graph,
-                        #the node graph.because the source attr can be set 
+                        #the node graph.because the source attr can be set
                         #because of optimizations in the mapped graph.
-                        inputNode = mappedInputNode.parentNode 
+                        inputNode = mappedInputNode.parentNode
                         if inputNode.source >= 0:
                             # driven pin of the LUT, use for new path
                             childpath = deepcopy(path)
                             newSrcNode = mappedInputNode
                             edgesWoDelay += prependNodeToPath(childpath,newSrcNode)
-                            
+
                             if newSrcNode in sources:
                                 finishedPaths.append(childpath)
                             else:
@@ -353,7 +353,33 @@ def printAllPathDelays(paths):
     for path in paths:
         printPathDelay(path)
         print ""
-        
+
+
+##print a comma seperate list of a path
+# @param routingPath a routing path object you want to print
+def printSDFPathtoFile (filename,routingPath):
+
+    fh = open(filename,"w")
+
+
+    for node in routingPath.path:
+
+        if node.eLUT:
+            prefix = 'LUT_'
+        else:
+            prefix = 'MUX_'
+
+        if node.passTrough:
+            continue
+
+        if node.isOnCluster:
+            (x,y) = node.location
+            fh.write(  globs.params.instancePrefix + 'cluster_'+ str(x) + '_' + str(y) +'/' + prefix +  str(node.name) + '\n')
+
+        else:
+            fh.write( globs.params.instancePrefix + prefix + str(node.name) + '\n')
+
+    fh.close()
 
 
 ##perform a timing analysis of the circuit in the mapped node graph.
@@ -380,7 +406,9 @@ def performTimingAnalysis():
         print "f_avg is thus: " + str((1.0/ (criticalPath.delay[1] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
         print "f_bestcase is thus: " + str((1.0/ (criticalPath.delay[0] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
 
+        printSDFPathtoFile('criticalPath.txt',criticalPath)
+
         #now print all paths for debug purpose
         #printAllPathDelays(paths)
-        
+
         #printPathDelay(criticalPath)

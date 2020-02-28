@@ -428,6 +428,9 @@ def buildInnerRouting(file,location):
 
         #this node is a part of a routing mux,lut,ffmux or ipin -> write a lutram
         else:
+            #signal that this node is chosen to be in a cluster module
+            node.isOnCluster = True
+            #now write the lut code
             writeLUTRAM(file,node)
 
 

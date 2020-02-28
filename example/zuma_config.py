@@ -40,7 +40,7 @@ params.orderedIO = True
 params.verifyOverlay = False
 
 #if you want to use a packed overlay for verification and build
-params.packedOverlay = False
+params.packedOverlay = True
 
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.
