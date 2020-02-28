@@ -1,6 +1,35 @@
 from structs import *
 import globs
 
+
+def dumpUnconfiguredNodesToFile(filename):
+
+    fh = open(filename,"w")
+
+    for node in globs.technologyMappedNodes.getNodes():
+
+        #only dump the unconfigrued
+        if node.source == -1:
+            dumpVerilogNameToFile(fh,node)
+
+    fh.close()
+
+def dumpVerilogNameToFile(fh,node):
+
+    if node.eLUT:
+        prefix = 'LUT_'
+    else:
+        prefix = 'MUX_'
+
+    if node.isOnCluster:
+        (x,y) = node.location
+        fh.write(  globs.params.instancePrefix + 'cluster_'+ str(x) + '_' + str(y) +'/' + prefix +  str(node.name) + '\n')
+
+    else:
+        fh.write( globs.params.instancePrefix + prefix + str(node.name) + '\n')
+
+
+
 #dump the node graph in a file and plot it when globs.params.graphviz is enabled
 #param filename the file name where we dump the node graph in
 def dumpGraph(filename):

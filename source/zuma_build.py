@@ -121,6 +121,10 @@ def Zuma(verilog_file,
         else:
             buildVerificationOverlay.buildVerificationOverlay("verificationOverlay.v")
 
+        #dump a list of unconfigured nodes with their corresponding verilog names
+        if globs.params.dumpUnconfiguredNodes:
+            Dump.dumpUnconfiguredNodesToFile('unconfigured.txt')
+
         #if we want to parse the sdf file
         if globs.params.sdf:
 

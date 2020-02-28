@@ -48,6 +48,9 @@ params.packedOverlay = True
 params.dumpNodeGraph = True
 params.graphviz = False
 
+#provide a list of unconfigured nodes with their verilog names
+params.dumpUnconfiguredNodes = True
+
 
 #activate the timing analysis. See ../TIMING README
 params.sdf = True

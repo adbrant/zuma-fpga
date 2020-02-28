@@ -1,6 +1,7 @@
 import os, sys, inspect
 from copy import deepcopy
 import numpy
+import Dump
 
 
 # use this if you want to include modules from a subfolder
@@ -361,23 +362,12 @@ def printSDFPathtoFile (filename,routingPath):
 
     fh = open(filename,"w")
 
-
     for node in routingPath.path:
-
-        if node.eLUT:
-            prefix = 'LUT_'
-        else:
-            prefix = 'MUX_'
 
         if node.passTrough:
             continue
 
-        if node.isOnCluster:
-            (x,y) = node.location
-            fh.write(  globs.params.instancePrefix + 'cluster_'+ str(x) + '_' + str(y) +'/' + prefix +  str(node.name) + '\n')
-
-        else:
-            fh.write( globs.params.instancePrefix + prefix + str(node.name) + '\n')
+        Dump.dumpVerilogNameToFile(fh,node)
 
     fh.close()
 
