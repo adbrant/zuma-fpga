@@ -2,12 +2,154 @@
 import sys
 import zuma_config
 
+
+def buildClbTilePattern(rep):
+
+    tilePattern = ""
+
+    for x in range(zuma_config.params.X):
+        for y in range(zuma_config.params.Y):
+
+            location = str(x+1) + '_' + str(y+1)
+
+            tilePattern += \
+            '''<tile name="clb''' + location + '''">
+              <equivalent_sites>
+                <site pb_type="clb''' + location + '''"/>
+              </equivalent_sites>
+            <input name="I" num_pins="ZUMA_I"/>
+            <output name="O" num_pins="ZUMA_N"/>
+            <clock name="clk" num_pins="1"/>
+            <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
+            <pinlocations pattern="spread"/>
+            </tile>
+            '''
+
+    rep.append(['CLBTILES',tilePattern])
+
+
+def buildLayoutPattern(rep):
+
+    layoutPattern = ""
+
+    for x in range(zuma_config.params.X):
+        for y in range(zuma_config.params.Y):
+
+            location = str(x+1) + '_' + str(y+1)
+
+            layoutPattern += '<single type="clb' + location + \
+                             '" x="' + str(x+1) + \
+                             '" y="' + str(y+1) + '"  priority="1"/>'
+
+    rep.append(['CLBLAYOUT',layoutPattern])
+
+def buildClbPbTypePattern(rep):
+
+    pbTypePattern = ""
+
+    for x in range(zuma_config.params.X):
+        for y in range(zuma_config.params.Y):
+
+            location = str(x+1) + '_' + str(y+1)
+
+            pbTypePattern += \
+            '''<pb_type name="clb''' + location + '''">
+
+                <input name="I" num_pins="ZUMA_I"/>
+                <output name="O" num_pins="ZUMA_N"/>
+                <clock name="clk" num_pins="1"/>
+                <!-- allow an easier parsing of the netlist -->
+                <mode name="clb">
+                  <pb_type name="ble" num_pb="ZUMA_N">
+                    <input name="in" num_pins="ZUMA_K"/>
+                    <output name="out" num_pins="1"/>
+                    <clock name="clk" num_pins="1"/>
+                    <mode name="ble">
+                      <pb_type name="soft_logic" num_pb="1">
+                        <input name="in" num_pins="ZUMA_K"/>
+                        <output name="out" num_pins="1"/>
+                        <mode name="n1_lut6">
+                          <pb_type name="lut6" blif_model=".names" num_pb="1" class="lut">
+                            <input name="in" num_pins="ZUMA_K" port_class="lut_in"/>
+                            <output name="out" num_pins="1" port_class="lut_out"/>
+                            DELAYMATRIX
+                          </pb_type>
+                          <interconnect>
+                            <direct name="direct1" input="soft_logic.in[ZUMA_K_m_1:0]" output="lut6[0:0].in[ZUMA_K_m_1:0]"/>
+                            <direct name="direct2" input="lut6[0:0].out" output="soft_logic.out[0:0]"/>
+                          </interconnect>
+                        </mode>
+                      </pb_type>
+                      <pb_type name="ff" blif_model=".latch" num_pb="1" class="flipflop">
+                        <input name="D" num_pins="1" port_class="D"/>
+                        <output name="Q" num_pins="1" port_class="Q"/>
+                        <clock name="clk" num_pins="1" port_class="clock"/>
+                      </pb_type>
+                      <interconnect>
+                        <direct name="direct1" input="soft_logic.out[0:0]" output="ff.D"/>
+                        <direct name="direct2" input="ble.in" output="soft_logic.in"/>
+                        <direct name="direct3" input="ble.clk" output="ff.clk"/>
+                        <mux name="mux1" input="ff.Q soft_logic.out[0:0]" output="ble.out[0:0]"/>
+                       </interconnect>
+                    </mode>
+                  </pb_type>
+
+                  <interconnect>
+                    <complete name="complete1" input="clb''' + location +'''.I ble[ZUMA_N_m_1:0].out" output="ble[ZUMA_N_m_1:0].in"/>
+                    <complete name="complete2" input="clb''' + location +'''.clk" output="ble[ZUMA_N_m_1:0].clk"/>
+                    <direct name="direct1" input="ble[ZUMA_N_m_1:0].out" output="clb''' + location +'''.O"/>
+                  </interconnect>
+                </mode>
+            </pb_type>
+              '''
+
+    rep.append(['CLBPBTYPES',pbTypePattern])
+
+def buildDelayPattern(rep):
+
+    #build the matrix delay string
+    matrixDelayString = '<delay_matrix type="max" in_port="lut6.in" out_port="lut6.out">\n'
+
+    for i in range(zuma_config.params.K):
+            matrixDelayString += "261e-12\n"
+
+    matrixDelayString += "</delay_matrix>\n"
+
+    rep.append(['DELAYMATRIX',matrixDelayString])
+
+
+def buildTimingArchFile(directory, template_directory,sourceFileName,targetFileName,rep):
+
+    #for the timing usage we have a special architecture file with
+    #special placeholders
+
+    buildClbTilePattern(rep)
+    buildLayoutPattern(rep)
+    buildClbPbTypePattern(rep)
+    buildDelayPattern(rep)
+
+    #write the patterns to the arch file in two runs
+    o = open(directory  + '//' + targetFileName + 'temp',"w") #open for write
+    for line in open(template_directory + '//' + sourceFileName):
+        for pair in rep:
+            line = line.replace(pair[0],pair[1])
+        o.write(line)
+    o.close()
+
+    o = open(directory  + '//' + targetFileName,"w") #open for write
+    for line in open(directory  + '//' + targetFileName + 'temp'):
+        for pair in rep:
+            line = line.replace(pair[0],pair[1])
+        o.write(line)
+    o.close()
+
+
 def make_files(directory, template_directory):
     print "MAKEFILE:" + str(directory)
 
     #which vpr version
     if (zuma_config.params.vprVersion == 8) and zuma_config.params.vprAnnotation:
-        filelist = ['ARCH_vpr8.xml', 'abccommands.vpr8','vpr8.sh','vpr8_timing.sh']
+        filelist = ['abccommands.vpr8','vpr8.sh','vpr8_timing.sh']
     elif zuma_config.params.vprVersion == 8:
         filelist = ['ARCH_vpr8.xml', 'abccommands.vpr8', 'vpr8.sh']
     elif (zuma_config.params.vprVersion == 7):
@@ -29,23 +171,6 @@ def make_files(directory, template_directory):
         rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y)])
 
 
-    #for the timing usage we have a special architecture file with
-    #special placeholders
-    if (zuma_config.params.vprVersion == 8):
-
-        if zuma_config.params.vprAnnotation:
-            #build the matrix delay string
-            matrixDelayString = '<delay_matrix type="max" in_port="lut6.in" out_port="lut6.out">\n'
-            for i in range(zuma_config.params.K):
-                matrixDelayString += "261e-12\n"
-            matrixDelayString += "</delay_matrix>\n"
-
-            rep.append(['DELAYMATRIX',matrixDelayString])
-
-        else:
-            rep.append(['DELAYMATRIX',''])
-
-
     rep.append(['ZUMA_FCIN_TYPE',str(zuma_config.params.fc_in_type)])
     rep.append(['ZUMA_FCOUT_TYPE',str(zuma_config.params.fc_out_type)])
     rep.append(['ZUMA_FCIN_VAL',str(zuma_config.params.fc_in)])
@@ -64,6 +189,14 @@ def make_files(directory, template_directory):
                 line = line.replace(pair[0],pair[1])
             o.write(line)
         o.close()
+
+    #the timing architecture need a seperate generation procedure
+    if (zuma_config.params.vprVersion == 8) and zuma_config.params.vprAnnotation:
+        buildTimingArchFile(directory,
+                            template_directory,
+                            'ARCH_vpr8_timing.xml',
+                            'ARCH_vpr8.xml',
+                            rep)
 
 if __name__ == '__main__':
     make_files(sys.argv[1], sys.argv[2])

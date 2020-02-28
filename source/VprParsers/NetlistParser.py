@@ -162,7 +162,11 @@ def parseBleInput(bleNode,netlistBle):
                 #get an input of a entity from another cluster.
                 #get the Input pin Number of the cluster
                 elif (netlistInput[0:3] == 'clb'):
-                    netlistBle.inputs.append( ('input', int(nums[0])))
+                    ##if the vpr annotation is used, the cluster has a location prefix
+                    if globs.params.vprAnnotation:
+                        netlistBle.inputs.append( ('input', int(nums[2])))
+                    else:
+                        netlistBle.inputs.append( ('input', int(nums[0])))
                 ##this pin is not driven
                 elif (netlistInput[0:3] == 'ope'):
                     netlistBle.inputs.append( ('open', -1))
