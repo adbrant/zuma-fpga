@@ -10,6 +10,19 @@ def dumpUnconfiguredNodesToFile(filename):
 
         #only dump the unconfigrued
         if node.source == -1:
+
+            #luts sources are always unconfigured check the content of the lut
+            if node.eLUT:
+
+                #get the parent node in the nodegraph of this mapped node
+                parentNode = node.parentNode
+
+                #is it used, i.e is there a config availible?
+                #When it is skip that node
+                if parentNode.LUT:
+                    continue
+
+            #if its unuesd lut or still an unconfigured node -> dump it.
             dumpVerilogNameToFile(fh,node)
 
     fh.close()
