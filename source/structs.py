@@ -261,7 +261,10 @@ class LUT:
 class Cluster:
     def __init__(self):
         self.size = 8
-        ## list of driver classes
+        ## list of driver objects. Assumed to be ordered in the same way as the opins
+        ##appear in the graph_rr file. See InitFpgay.py.
+        ##TODO:not only check the ptc number there, but add them in this order !!!
+        ##also every ith opin is connected with the output of every ith ble ffmux (bleIndex)
         self.outputs = []
         ## list of driver classes
         self.inputs = []
@@ -322,6 +325,18 @@ class Cluster:
         ##see build_global_routing_verilog
         ##also used in output_blif
         self.LUT_nodes = []
+
+        ##timing back annotation for various tracks
+
+        ## delay dict for the path from the lut output to the clusters output.
+        ## key is the ble index (same as the cluster output pin number)
+        self.delayBleOutToClbOut = None
+
+
+        self.delayBleOutToBleIn = None
+        self.delayClbInToBleIn = None
+        self.delayBle = None
+
 
     def do_local_interconnect(self):
         global LUTs

@@ -132,6 +132,7 @@ def Zuma(verilog_file,
             TimingAnalysisSDF.performTimingAnalysis()
 
             NodeGraphTiming.AnnotateTiming()
+            TimingAnnotation.annotateClusterTiming()
             TimingAnnotation.annotateBack()
 
 

@@ -149,7 +149,37 @@ def buildSimpleNetwork(cluster,key):
                 ffmux.edges.append(inode.id)
                 inode.inputs.append(ffmux.id)
 
+##check if the opins and ipins list are ordered as their pin position number (index attribute)
+##This pin position is read from the rr_graph file.
+def checkOpinIpinOrder(cluster,location):
 
+    #sanity check if the opins are on the right pin position
+    for (pinPoistion,driver) in enumerate(cluster.outputs):
+        #get the opin
+        opinId = driver.id
+        opin = globs.nodes[opinId]
+
+        #check the ptc number(index attribute) of the rr_graph file
+        #and pin position. should be the same
+        if opin.index != pinPoistion:
+            print 'Error: opin' + str(opinId) + \
+                  ' is on the wrong position on the ouputs list of cluster: ' + \
+                  str(location)
+            sys.exit(1)
+
+    #sanity check if the ipins are on the right pin position
+    for (pinPoistion,driver) in enumerate(cluster.inputs):
+        #get the opin
+        ipinId = driver.id
+        ipin = globs.nodes[ipinId]
+
+        #check the ptc number(index attribute) of the rr_graph file
+        #and pin position. should be the same
+        if ipin.index != pinPoistion:
+            print 'Error: opin' + str(ipinId) + \
+                  ' is on the wrong position on the ouputs list of cluster: ' + \
+                  str(location)
+            sys.exit(1)
 
 ##builds for each cluster the inner structure (ble's+ IIB).
 #The interconnection block can be implemented
@@ -229,6 +259,9 @@ def build_inner_structure():
         else:
             print ' ----------- build simple network --------------'
             buildSimpleNetwork(cluster,key)
+
+        #check if the opins and ipins list are ordered as their pin position number
+        #checkOpinIpinOrder(cluster,key)
 
 
 ## This function builds up the virtual fpga.

@@ -88,6 +88,151 @@ def annotateBack():
     tree.write('rr_graph_timing.xml')
     treeVpr.write('ARCH_vpr8_timing.xml')
 
+##anotate the delay after the lut to the clusters output
+def annotateBleOutToClbOut(clb):
+
+    #iterate thourgh the outputs(opins), grab the corresponding ffmux
+    #and calc the delay
+
+    #init the list were we save the delay for each output pin
+    delay = {}
+
+    #the opins can be accessed through the drivers list
+    for bleIndex,driver in enumerate(clb.outputs):
+
+        #get the opin of this driver
+        opinId = driver.id
+        opin = globs.nodes[opinId]
+
+        #get the ffmux. opins have only one input
+        ffmuxId = opin.inputs[0]
+        ffmux = globs.nodes[ffmuxId]
+
+        #get the the lut id
+        lutId = ffmux.inputs[0]
+
+        #now calc the delay and add it to the dict
+        #skip the opin delay. opins are passtrough nodes on a cluster
+        #delayOpin = numpy.add(opin.ioPathDelay[ffmuxId],opin.readPortDelay[ffmuxId])
+
+        delayffmux = numpy.add(ffmux.ioPathDelay[lutId],ffmux.readPortDelay[lutId])
+        delay[bleIndex] = delayffmux
+
+    #append the delay to the cluster
+    clb.delayBleOutToClbOut = delay
+
+##anotate the delay after the lut output to another lut input on the same cluster
+def annotateBleOutToBleIn(clb):
+
+    #get the delay for every combination of every lut output to any lut input pin
+    #in that cluster
+
+    delay = {}
+
+    for sourceBleIndex,sourceBleId in enumerate(clb.LUT_nodes):
+
+        #get the source elut node
+        sourceBle = globs.nodes[sourceBleId]
+
+        #get the ffmux of the source:
+        ffmuxId = sourceBle.edges[0]
+        ffmux = globs.nodes[ffmuxId]
+
+        #get the delay for the ffmux
+        delayffmux = numpy.add(ffmux.ioPathDelay[sourceBleId],ffmux.readPortDelay[sourceBleId])
+
+        #now get the path to every other pin of every other lut in the cluster
+        for targetBleIndex,targetBleId in enumerate(clb.LUT_nodes):
+
+            #get the traget elut node
+            targetBle = globs.nodes[targetBleId]
+
+            for pinPoisiton,InterconNodeId in enumerate(targetBle.inputs):
+
+                #get the iterconnect node (inode)
+                interconNode = globs.nodes[InterconNodeId]
+
+                #now calc the delay from the source lut output to the target lust input
+                delayIntercon = numpy.add(interconNode.ioPathDelay[ffmuxId],interconNode.readPortDelay[ffmuxId])
+
+                key = (sourceBleIndex,targetBleIndex,pinPoisiton)
+                delay[key] = numpy.add(delayffmux,delayIntercon)
+
+    #append the delay to the cluster
+    clb.delayBleOutToBleIn = delay
+
+def annotateClbInToBleIn(clb):
+
+    #get the delay from every clb pin position to every lut pin
+    #therefore we iterate through the interconnect nodes and need predecessor ipin node
+    #the get the right port delay
+
+    delay = {}
+
+    #grep the predecessor ipin
+    for clbPinPosition,driver in enumerate(clb.inputs):
+
+        ipinId = driver.id
+
+        #now get the intercon node
+        for bleIndex in range(globs.params.N):
+            for blePinPosition in range(globs.params.K):
+
+                interconNodeId = clb.LUT_input_nodes[bleIndex][blePinPosition]
+                interconNode = globs.nodes[interconNodeId]
+
+                #now get the interconn delay
+                delayIntercon = numpy.add(interconNode.ioPathDelay[ipinId],interconNode.readPortDelay[ipinId])
+
+                #add the delay to the dict
+                key = (clbPinPosition,bleIndex,blePinPosition)
+                delay[key] = delayIntercon
+
+    #append the delay to the cluster
+    clb.delayClbInToBleIn = delay
+
+#annotate the lut delay (port delay and io path) for every lut
+def annotateBle(clb):
+
+    delay = {}
+
+    for bleIndex in range(globs.params.N):
+        for blePinPosition in range(globs.params.K):
+
+            #get the elut node
+            elutId = clb.LUT_nodes[bleIndex]
+            elutNode = globs.nodes[elutId]
+
+            #get the input id for accessing port delay
+            inputId = elutNode.inputs[blePinPosition]
+
+            #now get the delay
+            delayElut = numpy.add(elutNode.ioPathDelay[inputId],elutNode.readPortDelay[inputId])
+
+            #add the delay to the dict
+            key = (bleIndex,blePinPosition)
+            delay[key] = delayElut
+
+    #append the delay to the cluster
+    clb.delayBle = delay
+
+##annotate each cluster with a couple of delay dictionaries to represent the internal delays.
+# we used the same method as for the global routing graph
+# to bundle the port delay with the io path delay for each pin on the internal elements (mux,ble, ...).
+# Therefore it was the easiest way, for the later backpropagation in the xml file,
+# to divide the internal delay into four parts:
+# - from the clb pin through the interconnect network to the ble input (but ommiting the ble input)
+# - from the lut input through the lut (port delay + io paht delay).
+# - from the lut output to the cluster output.
+# - from the lut ouput back to anather ble input by passing the interconnect network again.
+def annotateClusterTiming():
+
+    for clb in globs.clusters.values():
+        annotateBleOutToClbOut(clb)
+        annotateBleOutToBleIn(clb)
+        annotateClbInToBleIn(clb)
+        annotateBle(clb)
+
 if __name__ == "__main__":
     # execute only if run as a script
     annotateBack()
