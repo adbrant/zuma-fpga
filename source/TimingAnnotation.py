@@ -84,6 +84,62 @@ def annotateBack():
         addRRSwitch(edge,switchesElement,newId,switchName,delay)
         addVprSwitch(edge,switchesElementVpr,newId,switchName,delay)
 
+
+    #now propagate the lut timing
+    cmplxBlockElement = rootVpr.find("./complexblocklist")
+
+    for location,clb in globs.clusters.items():
+        x,y = location
+        strlocation = str(x) +'_' + str(y)
+        clusterElement = cmplxBlockElement.find("./pb_type[@name='clb"+ strlocation + "']")
+        #no find the delays
+        lutDelayElements = clusterElement.findall(".//delay_matrix[@in_port='lut6.in']")
+        completeDelayElementsClb = clusterElement.findall(".//delay_matrix[@in_port='clb"+ strlocation +".I']")
+        completeDelayElementsBle = clusterElement.findall(".//delay_matrix[@in_port='ble[" + str(globs.params.N -1) + ":0].out']")
+        directDelayElements =  clusterElement.findall('.//delay_constant')
+
+        for bleIndex,lutDelayElement in enumerate(lutDelayElements):
+
+            newText = ''
+            for blePinPosition in range(globs.params.K):
+                newText += str(clb.delayBle[(bleIndex,blePinPosition)][2]) + " "
+                newText += '\n'
+
+            lutDelayElement.text = newText
+        #------------
+        for bleIndex,completeDelayElementClb in enumerate(completeDelayElementsClb):
+
+            newText = ''
+
+            for clbPinPosition in range(globs.params.I):
+
+                #take th worst case time
+                for blePinPosition in range(globs.params.K):
+                    newText += str(clb.delayClbInToBleIn[(clbPinPosition,bleIndex,blePinPosition)][2]) + " "
+                newText += '\n'
+
+            completeDelayElementClb.text = newText
+        #----------------------
+        for targetBleIndex,completeDelayElementBle in enumerate(completeDelayElementsBle):
+
+            newText = ''
+
+            for sourceBleIndex in range(globs.params.N):
+
+                #take th worst case time
+                for targetPinPosition in range(globs.params.K):
+                    newText += str(clb.delayBleOutToBleIn[(sourceBleIndex,targetBleIndex,targetPinPosition)][2]) + " "
+                newText += '\n'
+
+            completeDelayElementBle.text = newText
+        #----------------------
+        for bleIndex,directDelayElement in enumerate(directDelayElements):
+
+            newTime = str(clb.delayBleOutToClbOut[(bleIndex)][2])
+
+            directDelayElement.set('max', newTime)
+            directDelayElement.set('min', newTime)
+
     #write the modificaion back to the file
     tree.write('rr_graph_timing.xml')
     treeVpr.write('ARCH_vpr8_timing.xml')

@@ -2,7 +2,6 @@
 import sys
 import zuma_config
 
-
 def buildClbTilePattern(rep):
 
     tilePattern = ""
@@ -72,7 +71,7 @@ def buildClbPbTypePattern(rep):
                           <pb_type name="lut6" blif_model=".names" num_pb="1" class="lut">
                             <input name="in" num_pins="ZUMA_K" port_class="lut_in"/>
                             <output name="out" num_pins="1" port_class="lut_out"/>
-                            DELAYMATRIX
+                            ''' + location +'''LUTDELAYMATRIX
                           </pb_type>
                           <interconnect>
                             <direct name="direct1" input="soft_logic.in[ZUMA_K_m_1:0]" output="lut6[0:0].in[ZUMA_K_m_1:0]"/>
@@ -95,28 +94,66 @@ def buildClbPbTypePattern(rep):
                   </pb_type>
 
                   <interconnect>
-                    <complete name="complete1" input="clb''' + location +'''.I ble[ZUMA_N_m_1:0].out" output="ble[ZUMA_N_m_1:0].in"/>
+                    <complete name="complete1" input="clb''' + location +'''.I ble[ZUMA_N_m_1:0].out" output="ble[ZUMA_N_m_1:0].in">
+                    ''' + location +'''COMPLETE1DELAYMATRIX
+                    </complete>
                     <complete name="complete2" input="clb''' + location +'''.clk" output="ble[ZUMA_N_m_1:0].clk"/>
-                    <direct name="direct1" input="ble[ZUMA_N_m_1:0].out" output="clb''' + location +'''.O"/>
+                    <direct name="direct1" input="ble[ZUMA_N_m_1:0].out" output="clb''' + location +'''.O">
+                    ''' + location +'''DIRECTDELAYMATRIX
+                    </direct>
                   </interconnect>
                 </mode>
             </pb_type>
               '''
 
+            buildDelayPattern(rep,location)
+
     rep.append(['CLBPBTYPES',pbTypePattern])
 
-def buildDelayPattern(rep):
+def buildDelayPattern(rep,location):
 
     #build the matrix delay string
     matrixDelayString = '<delay_matrix type="max" in_port="lut6.in" out_port="lut6.out">\n'
 
     for i in range(zuma_config.params.K):
-            matrixDelayString += "261e-12\n"
+            matrixDelayString += "0\n"
 
     matrixDelayString += "</delay_matrix>\n"
 
-    rep.append(['DELAYMATRIX',matrixDelayString])
+    rep.append([location +'LUTDELAYMATRIX',matrixDelayString])
 
+
+    #complete1
+    matrixDelayString = ''
+    for bleIndex in range(zuma_config.params.N):
+
+        matrixDelayString += '<delay_matrix type="max" in_port="clb'+ location +'.I" out_port="ble[' + str(bleIndex) + '].in">\n'
+
+        for clbPinPosition in range(zuma_config.params.I):
+            matrixDelayString += "0 "*zuma_config.params.K
+
+        matrixDelayString += "</delay_matrix>\n"
+
+    for bleIndex in range(zuma_config.params.N):
+
+        matrixDelayString += '<delay_matrix type="max" in_port="ble[' +str(zuma_config.params.N -1) + ':0].out" out_port="ble[' + str(bleIndex) +  '].in">\n'
+
+        for x in range(zuma_config.params.N):
+            matrixDelayString += "0 "*zuma_config.params.K
+
+        matrixDelayString += "</delay_matrix>\n"
+
+    rep.append([location +'COMPLETE1DELAYMATRIX',matrixDelayString])
+
+
+    #direct delay
+    matrixDelayString = ''
+
+    for bleIndex in range(zuma_config.params.N):
+        matrixDelayString += '<delay_constant max="0" min="0" in_port="ble[' + str(bleIndex) + '].out" out_port="clb'+ location +'.O[' + str(bleIndex) + ']"/>\n'
+
+
+    rep.append([location +'DIRECTDELAYMATRIX',matrixDelayString])
 
 def buildTimingArchFile(directory, template_directory,sourceFileName,targetFileName,rep):
 
@@ -126,7 +163,6 @@ def buildTimingArchFile(directory, template_directory,sourceFileName,targetFileN
     buildClbTilePattern(rep)
     buildLayoutPattern(rep)
     buildClbPbTypePattern(rep)
-    buildDelayPattern(rep)
 
     #write the patterns to the arch file in two runs
     o = open(directory  + '//' + targetFileName + 'temp',"w") #open for write
