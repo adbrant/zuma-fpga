@@ -102,7 +102,7 @@ def annotateBack():
 
             newText = ''
             for blePinPosition in range(globs.params.K):
-                newText += str(clb.delayBle[(bleIndex,blePinPosition)][2]) + " "
+                newText += str(clb.delayBle[(bleIndex,blePinPosition)][2]) + "e-12 "
                 newText += '\n'
 
             lutDelayElement.text = newText
@@ -115,7 +115,7 @@ def annotateBack():
 
                 #take th worst case time
                 for blePinPosition in range(globs.params.K):
-                    newText += str(clb.delayClbInToBleIn[(clbPinPosition,bleIndex,blePinPosition)][2]) + " "
+                    newText += str(clb.delayClbInToBleIn[(clbPinPosition,bleIndex,blePinPosition)][2]) + "e-12 "
                 newText += '\n'
 
             completeDelayElementClb.text = newText
@@ -128,14 +128,14 @@ def annotateBack():
 
                 #take th worst case time
                 for targetPinPosition in range(globs.params.K):
-                    newText += str(clb.delayBleOutToBleIn[(sourceBleIndex,targetBleIndex,targetPinPosition)][2]) + " "
+                    newText += str(clb.delayBleOutToBleIn[(sourceBleIndex,targetBleIndex,targetPinPosition)][2]) + "e-12 "
                 newText += '\n'
 
             completeDelayElementBle.text = newText
         #----------------------
         for bleIndex,directDelayElement in enumerate(directDelayElements):
 
-            newTime = str(clb.delayBleOutToClbOut[(bleIndex)][2])
+            newTime = str(clb.delayBleOutToClbOut[(bleIndex)][2]) + "e-12"
 
             directDelayElement.set('max', newTime)
             directDelayElement.set('min', newTime)
