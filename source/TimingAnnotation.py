@@ -53,25 +53,36 @@ def annotateBack():
 
         #if it is a source or a sink. skip it.
         #also deleted nodes are skipped
-        #these node have connections in the nodegraph which are
-        #not represented in the rr_graph (ordered layer)
+        #TODO: are sink and source nodes used?
+
         if sinkNode.type == 0 or sinkNode.type == 1:
             continue
-        if sourceNode.type == 0 or sourceNode.type == 0:
+        if sourceNode.type == 0 or sourceNode.type == 2:
+            continue
+
+        #also skip timing delay caused by the ordered layer nodes
+        #we don't know which input will be chosen.
+        #therfore we add only the iopath to edges from a layer node to an opin
+        #and skip completly edges from an ipin to a layer node
+
+        #skip the edges from ipins to layer nodes
+        if sinkNode.type == 10:
             continue
 
         #update the switch Id in the edge
         edge.attrib["switch_id"] = str(newId)
 
         #get the timing from the sink. port and path delay
-        portDelay = [0.0,0.0,0.0]
+        readPortDelay = [0.0,0.0,0.0]
         ioPathDelay = [0.0,0.0,0.0]
 
         if sinkNode.ioPathDelay is not None:
             ioPathDelay = sinkNode.ioPathDelay[int(sourceId)]
         #else:
             #print "Error: no timing"
-        if sinkNode.readPortDelay is not None:
+
+        #skip the read port dealy for opins connected to the ordered layer
+        if (sinkNode.readPortDelay is not None) and (sourceNode.type != 10):
             readPortDelay = sinkNode.readPortDelay[int(sourceId)]
         #else:
             #print "Error: no timing"

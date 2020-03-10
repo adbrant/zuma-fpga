@@ -358,7 +358,7 @@ def printAllPathDelays(paths):
 
 ##print a comma seperate list of a path
 # @param routingPath a routing path object you want to print
-def printSDFPathtoFile (filename,routingPath):
+def printPathInFile (filename,routingPath):
 
     fh = open(filename,"w")
 
@@ -370,6 +370,96 @@ def printSDFPathtoFile (filename,routingPath):
         Dump.dumpVerilogNameToFile(fh,node)
 
     fh.close()
+
+
+# get the io path and read port delay for a node. therefore we used the source atrribute of this node
+# @return a tuple (readPortDelay,ioPathDelay)
+def getDelayForNode(node):
+
+    readPortDelay = [0.0,0.0,0.0]
+    ioPathDelay = [0.0,0.0,0.0]
+
+    if node.passTrough:
+        return (readPortDelay,ioPathDelay)
+
+
+    #skip elut for now
+    if node.isElut():
+        return (readPortDelay,ioPathDelay)
+
+    sourceName = node.source
+    sourceNode = globs.technologyMappedNodes.getNodeByName(node.source)
+
+
+    #find the port index where the source is connected to
+    portIndex = node.inputs.index(sourceName)
+    #because the verilog is written downto, the first index is the last port.
+    #correct the port index
+    portIndex = (globs.host_size-1)- portIndex
+
+    #adjustment for delays
+    #time to travel through the component + routing delay
+
+    readPortDelay = node.readPortDelay[portIndex]
+    ioPathDelay = node.ioPathDelay[portIndex]
+
+    return (readPortDelay,ioPathDelay)
+
+
+#print the critical path delay
+def printCriticalPathDelay(criticalPath):
+
+    #we split the path in two parts:
+    #the ordered layer + the rest
+
+    delayOrderedLayer = [0.0,0.0,0.0]
+    delayRest = [0.0,0.0,0.0]
+
+    #first get the delay for the ordered layer.
+    #the ordered layer only influence the read port delay of the global opins,
+    #because the ordere layer nodes are connected to all opins, and the opins decide
+    #which ordered layer node is routed in contrast to the global ipins where
+    #the routing is done by the ordered layer nodes itself
+    for node in criticalPath.path:
+
+        #search for a global opin in the path
+        if (node.source > -1) and (node.type == 3):
+
+            sourceNode = globs.technologyMappedNodes.getNodeByName(node.source)
+
+            #node is connected to ordere layer node
+            #extract the read port delay
+            if sourceNode.type == 10:
+                (readPortDelay,ioPathDelay) = getDelayForNode(node)
+                delayOrderedLayer = readPortDelay
+
+    # now get the rest delay through subtraction
+    delayRest = numpy.subtract(criticalPath.delay,delayOrderedLayer)
+
+
+    #dump all delay:
+    print 'dump all delays'
+    for node in criticalPath.path:
+
+        (readPortDelay,ioPathDelay) = getDelayForNode(node)
+        print 'node name: ' + str(node.name) + ' readport: ' + str(readPortDelay[2]) + ' iopath: '+ str(ioPathDelay[2])
+
+    print 'delay list:'
+    print str(criticalPath.delayList)
+    print '\n'
+
+    sum = 0.0
+    for delay in criticalPath.delayList:
+        sum += delay[2]
+    print "delay list sum: " + str(sum) + "\n"
+
+    print "Critical path max delay is: " + str(criticalPath.delay[2]) + " " + globs.params.timeFormat
+    print "Ordered input Layer read port delay : " + str(delayOrderedLayer[2]) + " " + globs.params.timeFormat
+    print "Rest delay is: " + str(delayRest[2]) + " " + globs.params.timeFormat
+
+    print "f_worstcase is thus: " + str((1.0/ (criticalPath.delay[2] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
+    print "f_avg is thus: " + str((1.0/ (criticalPath.delay[1] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
+    print "f_bestcase is thus: " + str((1.0/ (criticalPath.delay[0] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
 
 
 ##perform a timing analysis of the circuit in the mapped node graph.
@@ -385,18 +475,19 @@ def performTimingAnalysis():
         print "Error: No critical path found"
     else:
         print "Critical path found with " + str(criticalPath.pathlength) + " hops"
-        print "Path:"
+
+        #print the nodes of the critical path
         pathIDs = []
+        print "Path:"
         for node in criticalPath.path:
             pathIDs.append(str(node.name))
         print " -> ".join(pathIDs)
-        print
-        print "Critical path delay is: " + str(criticalPath.delay[2]) + " " + globs.params.timeFormat
-        print "f_worstcase is thus: " + str((1.0/ (criticalPath.delay[2] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
-        print "f_avg is thus: " + str((1.0/ (criticalPath.delay[1] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
-        print "f_bestcase is thus: " + str((1.0/ (criticalPath.delay[0] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
 
-        printSDFPathtoFile('criticalPath.txt',criticalPath)
+        #print the delay
+        printCriticalPathDelay(criticalPath)
+
+        #export the critical path
+        printPathInFile('criticalPath.txt',criticalPath)
 
         #now print all paths for debug purpose
         #printAllPathDelays(paths)
