@@ -88,7 +88,10 @@ def buildClbPbTypePattern(rep):
                         <direct name="direct1" input="soft_logic.out[0:0]" output="ff.D"/>
                         <direct name="direct2" input="ble.in" output="soft_logic.in"/>
                         <direct name="direct3" input="ble.clk" output="ff.clk"/>
-                        <mux name="mux1" input="ff.Q soft_logic.out[0:0]" output="ble.out[0:0]"/>
+                        <mux name="mux1" input="ff.Q soft_logic.out[0:0]" output="ble.out[0:0]">
+                            <delay_constant max="0" in_port="soft_logic.out" out_port="ble.out"/>
+                            <delay_constant max="0" in_port="ff.Q" out_port="ble.out"/>
+                        </mux>
                        </interconnect>
                     </mode>
                   </pb_type>
@@ -99,7 +102,6 @@ def buildClbPbTypePattern(rep):
                     </complete>
                     <complete name="complete2" input="clb''' + location +'''.clk" output="ble[ZUMA_N_m_1:0].clk"/>
                     <direct name="direct1" input="ble[ZUMA_N_m_1:0].out" output="clb''' + location +'''.O">
-                    ''' + location +'''DIRECTDELAYMATRIX
                     </direct>
                   </interconnect>
                 </mode>
@@ -147,13 +149,13 @@ def buildDelayPattern(rep,location):
 
 
     #direct delay
-    matrixDelayString = ''
+    #matrixDelayString = ''
 
-    for bleIndex in range(zuma_config.params.N):
-        matrixDelayString += '<delay_constant max="0" min="0" in_port="ble[' + str(bleIndex) + '].out" out_port="clb'+ location +'.O[' + str(bleIndex) + ']"/>\n'
+    #for bleIndex in range(zuma_config.params.N):
+    #    matrixDelayString += '<delay_constant max="0" in_port="ble[' + str(bleIndex) + '].out" out_port="clb'+ location +'.O[' + str(bleIndex) + ']"/>\n'
 
 
-    rep.append([location +'DIRECTDELAYMATRIX',matrixDelayString])
+    #rep.append([location +'DIRECTDELAYMATRIX',matrixDelayString])
 
 def buildTimingArchFile(directory, template_directory,sourceFileName,targetFileName,rep):
 

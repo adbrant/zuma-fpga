@@ -328,12 +328,12 @@ class Cluster:
 
         ##timing back annotation for various tracks
 
-        ## delay dict for the path from the lut output to the clusters output.
-        ## key is the ble index (same as the cluster output pin number)
-        self.delayBleOutToClbOut = None
+        ## delay dict for the path from the lut output to the mux output.
+        ## key is the (bleIndex, 'registered'/'unregistered') 
+        self.delayBleOutToMuxOut = None
 
 
-        self.delayBleOutToBleIn = None
+        self.delayMuxOutToBleIn = None
         self.delayClbInToBleIn = None
         self.delayBle = None
 

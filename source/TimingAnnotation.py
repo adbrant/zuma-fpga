@@ -105,9 +105,11 @@ def annotateBack():
         clusterElement = cmplxBlockElement.find("./pb_type[@name='clb"+ strlocation + "']")
         #no find the delays
         lutDelayElements = clusterElement.findall(".//delay_matrix[@in_port='lut6.in']")
+        ffmuxDelayElementsLut = clusterElement.findall(".//delay_constant[@in_port='soft_logic.out']")
+        ffmuxDelayElementsFF =  clusterElement.findall(".//delay_constant[@in_port='ff.Q']")
         completeDelayElementsClb = clusterElement.findall(".//delay_matrix[@in_port='clb"+ strlocation +".I']")
         completeDelayElementsBle = clusterElement.findall(".//delay_matrix[@in_port='ble[" + str(globs.params.N -1) + ":0].out']")
-        directDelayElements =  clusterElement.findall('.//delay_constant')
+        #directDelayElements =  clusterElement.findall('.//direct/delay_constant')
 
         for bleIndex,lutDelayElement in enumerate(lutDelayElements):
 
@@ -139,74 +141,65 @@ def annotateBack():
 
                 #take th worst case time
                 for targetPinPosition in range(globs.params.K):
-                    newText += str(clb.delayBleOutToBleIn[(sourceBleIndex,targetBleIndex,targetPinPosition)][2]) + "e-12 "
+                    newText += str(clb.delayMuxOutToBleIn[(sourceBleIndex,targetBleIndex,targetPinPosition)][2]) + "e-12 "
                 newText += '\n'
 
             completeDelayElementBle.text = newText
         #----------------------
-        for bleIndex,directDelayElement in enumerate(directDelayElements):
+        for bleIndex,directDelayElement in enumerate(ffmuxDelayElementsLut):
 
-            newTime = str(clb.delayBleOutToClbOut[(bleIndex)][2]) + "e-12"
+            newTime = str(clb.delayBleOutToMuxOut[(bleIndex,'unregistered')][2]) + "e-12"
 
             directDelayElement.set('max', newTime)
-            directDelayElement.set('min', newTime)
+        #----------------------
+        for bleIndex,directDelayElement in enumerate(ffmuxDelayElementsFF):
+
+            newTime = str(clb.delayBleOutToMuxOut[(bleIndex,'registered')][2]) + "e-12"
+
+            directDelayElement.set('max', newTime)
 
     #write the modificaion back to the file
     tree.write('rr_graph_timing.xml')
     treeVpr.write('ARCH_vpr8_timing.xml')
 
-##anotate the delay after the lut to the clusters output
-def annotateBleOutToClbOut(clb):
+##anotate the delay after the lut to the mux output
+def annotateBleOutToMuxOut(clb):
 
-    #iterate thourgh the outputs(opins), grab the corresponding ffmux
-    #and calc the delay
-
-    #init the list were we save the delay for each output pin
+    #init the list were we save the delay for each ffmux
     delay = {}
 
-    #the opins can be accessed through the drivers list
-    for bleIndex,driver in enumerate(clb.outputs):
+    #iterate thorugh the ffmux and clac the delays.
+    #note that a ffmux has two inputs from a lut (unregisterd/registered).
+    #one combinatorial input and one from the flipflop
+    for bleIndex,ffmuxId in enumerate(clb.LUT_FFMUX_nodes):
 
-        #get the opin of this driver
-        opinId = driver.id
-        opin = globs.nodes[opinId]
-
-        #get the ffmux. opins have only one input
-        ffmuxId = opin.inputs[0]
+        #get the ffmux.
         ffmux = globs.nodes[ffmuxId]
 
-        #get the the lut id
-        lutId = ffmux.inputs[0]
+        #get the lut id
+        bleId = ffmux.inputs[0]
 
-        #now calc the delay and add it to the dict
-        #skip the opin delay. opins are passtrough nodes on a cluster
-        #delayOpin = numpy.add(opin.ioPathDelay[ffmuxId],opin.readPortDelay[ffmuxId])
+        delayUnregistered = numpy.add(ffmux.ioPathDelay[(bleId,'unregistered')],ffmux.readPortDelay[(bleId,'unregistered')])
+        delayRegistered = numpy.add(ffmux.ioPathDelay[(bleId,'registered')],ffmux.readPortDelay[(bleId,'registered')])
 
-        delayffmux = numpy.add(ffmux.ioPathDelay[lutId],ffmux.readPortDelay[lutId])
-        delay[bleIndex] = delayffmux
+        delay[(bleIndex,'unregistered')] = delayUnregistered
+        delay[(bleIndex,'registered')] = delayRegistered
 
     #append the delay to the cluster
-    clb.delayBleOutToClbOut = delay
+    clb.delayBleOutToMuxOut = delay
 
-##anotate the delay after the lut output to another lut input on the same cluster
-def annotateBleOutToBleIn(clb):
+##anotate the delay after the ffmux output to another lut input on the same cluster
+def annotateMuxOutToBleIn(clb):
 
-    #get the delay for every combination of every lut output to any lut input pin
+    #get the delay for every combination of every ffmux output to any lut input pin
     #in that cluster
 
     delay = {}
 
-    for sourceBleIndex,sourceBleId in enumerate(clb.LUT_nodes):
-
-        #get the source elut node
-        sourceBle = globs.nodes[sourceBleId]
+    for sourceBleIndex,ffmuxId in enumerate(clb.LUT_FFMUX_nodes):
 
         #get the ffmux of the source:
-        ffmuxId = sourceBle.edges[0]
         ffmux = globs.nodes[ffmuxId]
-
-        #get the delay for the ffmux
-        delayffmux = numpy.add(ffmux.ioPathDelay[sourceBleId],ffmux.readPortDelay[sourceBleId])
 
         #now get the path to every other pin of every other lut in the cluster
         for targetBleIndex,targetBleId in enumerate(clb.LUT_nodes):
@@ -223,10 +216,10 @@ def annotateBleOutToBleIn(clb):
                 delayIntercon = numpy.add(interconNode.ioPathDelay[ffmuxId],interconNode.readPortDelay[ffmuxId])
 
                 key = (sourceBleIndex,targetBleIndex,pinPoisiton)
-                delay[key] = numpy.add(delayffmux,delayIntercon)
+                delay[key] = delayIntercon
 
     #append the delay to the cluster
-    clb.delayBleOutToBleIn = delay
+    clb.delayMuxOutToBleIn = delay
 
 def annotateClbInToBleIn(clb):
 
@@ -289,14 +282,14 @@ def annotateBle(clb):
 # Therefore it was the easiest way, for the later backpropagation in the xml file,
 # to divide the internal delay into four parts:
 # - from the clb pin through the interconnect network to the ble input (but ommiting the ble input)
-# - from the lut input through the lut (port delay + io paht delay).
-# - from the lut output to the cluster output.
-# - from the lut ouput back to anather ble input by passing the interconnect network again.
+# - from the lut input through the lut output (port delay + io paht delay).
+# - from the lut output to the ffmux output.
+# - from the ffmux ouput back to anather ble input by passing the interconnect network again.
 def annotateClusterTiming():
 
     for clb in globs.clusters.values():
-        annotateBleOutToClbOut(clb)
-        annotateBleOutToBleIn(clb)
+        annotateBleOutToMuxOut(clb)
+        annotateMuxOutToBleIn(clb)
         annotateClbInToBleIn(clb)
         annotateBle(clb)
 

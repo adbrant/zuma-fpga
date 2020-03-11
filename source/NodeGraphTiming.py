@@ -70,6 +70,49 @@ def AnnotateTiming():
             if mappedNode.passTrough:
                 continue
 
+        #ffmux are special:
+        #for verilog ffmux we have two inputs from the lut node (unregistered/registered)
+        #but the ffmux nodes (mapped or not mapped) have only one id (the lut) in their input
+        #so we have to add the timing manually
+        if node.ffmux:
+
+            node.ioPathDelay = {}
+            node.readPortDelay = {}
+
+            #get the mapped node
+            name = node.mappedNodes[-1]
+            mappedNode = globs.technologyMappedNodes.getNodeByName(name)
+
+            #get the ble id
+            bleId = node.inputs[0]
+
+            #first the unregistered output
+            #the unregistered ouput is on the second pin of the mux
+            #see buildPackedOverlay.writeLUTRAMInputs
+            portIndex = 1
+            portIndex = (globs.host_size-1)- portIndex
+
+            portDelay = mappedNode.readPortDelay[portIndex]
+            pathDelay = mappedNode.ioPathDelay[portIndex]
+
+            #add it to the dict
+            node.ioPathDelay[(bleId,'unregistered')] = pathDelay
+            node.readPortDelay[(bleId,'unregistered')] = portDelay
+
+            #then the registered output
+            #the registered ouput is on the first pin of the mux
+            portIndex = 0
+            portIndex = (globs.host_size-1)- portIndex
+
+            portDelay = mappedNode.readPortDelay[portIndex]
+            pathDelay = mappedNode.ioPathDelay[portIndex]
+
+            #add it to the dict
+            node.ioPathDelay[(bleId,'registered')] = pathDelay
+            node.readPortDelay[(bleId,'registered')] = portDelay
+
+            continue
+
         #for every input get the path delay started
         #from the first lvl nodes to the last mapped node
         #and use these first lvl nodes for the port delay
