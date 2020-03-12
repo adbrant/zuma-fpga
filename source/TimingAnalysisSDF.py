@@ -166,67 +166,67 @@ def prependNodeToPath(path,newSrcNode):
     path.path = [ newSrcNode ] + path.path
     path.pathlength += 1
 
-    #the delay of the hop
-    #delay tuple has the form: (min,average,max)
-    delay = [0.0,0.0,0.0]
-
-    #passThrough nodes have no delay
-    if not destNode.passTrough:
-
-        #the destination is a mux. We have to check which input of the mux
-        #is used(registered or unregistered) and choose the right delay
-        if destNode.isBleMux():
-
-            #the mux uses the registered input.
-            if newSrcNode.UseItsFlipflop():
-                #the registered output is the first input
-                portIndex = 0
-                #get the setup time for the flipflop.
-                #the delay on the read port is not important here,
-                #because the path starts on the end of the flipflop
-                delay = numpy.add(newSrcNode.ffIODelay,delay)
-                #for debug purpose add it to the list
-                path.delayList.append(newSrcNode.ffIODelay)
-
-            #otherwise we use the unregistered port
-            else:
-                #the unregistered output is the second input
-                portIndex = 1
-
-        #if the destination is a elut we must include the read delay of the ff
-        if destNode.isElut():
-            if destNode.UseItsFlipflop():
-                delay = numpy.add(newSrcNode.ffReadPortDelay,delay)
-                #for debug purpose add it to the list
-                path.delayList.append(newSrcNode.ffReadPortDelay)
-
-        #because the verilog is written downto, the first index is the last port.
-        #correct the port index
-        portIndex = (globs.host_size-1)- portIndex
-
-        #adjustment for delays
-        #time to travel through the component + routing delay
-
-        portDelay = destNode.readPortDelay[portIndex]
-        ioPathDelay = destNode.ioPathDelay[portIndex]
-        #for debug purpose add it to the list
-        path.delayList.append(destNode.readPortDelay[portIndex])
-        path.delayList.append(destNode.ioPathDelay[portIndex])
-
-        tmpDelay = numpy.add(ioPathDelay,portDelay)
-        #add it to the current delay
-        delay = numpy.add(delay,tmpDelay)
-
-        #check if there is a delay information of the route.
-        #the iopath delay is always available
-        if portDelay == [0.0,0.0,0.0]:
-
-            print "connection " + newSrcNode.name +" to " +  destNode.name + " has no delay"
-            return 1
-
-        else:
-            #add it on the path delay
-            path.delay = numpy.add(path.delay,delay)
+    # #the delay of the hop
+    # #delay tuple has the form: (min,average,max)
+    # delay = [0.0,0.0,0.0]
+    #
+    # #passThrough nodes have no delay
+    # if not destNode.passTrough:
+    #
+    #     #the destination is a mux. We have to check which input of the mux
+    #     #is used(registered or unregistered) and choose the right delay
+    #     if destNode.isBleMux():
+    #
+    #         #the mux uses the registered input.
+    #         if newSrcNode.UseItsFlipflop():
+    #             #the registered output is the first input
+    #             portIndex = 0
+    #             #get the setup time for the flipflop.
+    #             #the delay on the read port is not important here,
+    #             #because the path starts on the end of the flipflop
+    #             delay = numpy.add(newSrcNode.ffIODelay,delay)
+    #             #for debug purpose add it to the list
+    #             path.delayList.append(newSrcNode.ffIODelay)
+    #
+    #         #otherwise we use the unregistered port
+    #         else:
+    #             #the unregistered output is the second input
+    #             portIndex = 1
+    #
+    #     #if the destination is a elut we must include the read delay of the ff
+    #     if destNode.isElut():
+    #         if destNode.UseItsFlipflop():
+    #             delay = numpy.add(newSrcNode.ffReadPortDelay,delay)
+    #             #for debug purpose add it to the list
+    #             path.delayList.append(newSrcNode.ffReadPortDelay)
+    #
+    #     #because the verilog is written downto, the first index is the last port.
+    #     #correct the port index
+    #     portIndex = (globs.host_size-1)- portIndex
+    #
+    #     #adjustment for delays
+    #     #time to travel through the component + routing delay
+    #
+    #     portDelay = destNode.readPortDelay[portIndex]
+    #     ioPathDelay = destNode.ioPathDelay[portIndex]
+    #     #for debug purpose add it to the list
+    #     path.delayList.append(destNode.readPortDelay[portIndex])
+    #     path.delayList.append(destNode.ioPathDelay[portIndex])
+    #
+    #     tmpDelay = numpy.add(ioPathDelay,portDelay)
+    #     #add it to the current delay
+    #     delay = numpy.add(delay,tmpDelay)
+    #
+    #     #check if there is a delay information of the route.
+    #     #the iopath delay is always available
+    #     if portDelay == [0.0,0.0,0.0]:
+    #
+    #         print "connection " + newSrcNode.name +" to " +  destNode.name + " has no delay"
+    #         return 1
+    #
+    #     else:
+    #         #add it on the path delay
+    #         path.delay = numpy.add(path.delay,delay)
 
     return 0
 
@@ -286,16 +286,51 @@ def trackPathsBackwards(sources,sinks):
 
     return finishedPaths, edgesWoDelay
 
+#calc and set the delay for a given path
+def calcPathDelay(path):
+
+    sourceNode = None
+    destNode = None
+
+    delay = [0.0,0.0,0.0]
+
+    #for the iteration we use a window with node in the middle and sourceNode and destNode at the border
+    for index,node in enumerate(path.path):
+
+        #node is not at the end, update th4e destNode
+        if index + 1 < len(path.path):
+            destNode = path.path[index + 1]
+        else:
+            destNode = None
+
+        #get the delay and add it
+        (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,destNode)
+        nodeDelay = numpy.add(readPortDelay,ioPathDelay)
+
+        delay = numpy.add(delay,nodeDelay)
+
+        #update the sourceNode
+        sourceNode = node
+
+    #update the path delay
+    path.delay = delay
+
 
 ##search for the critical path among all paths.
 #use only the max component of the delay tuple
 def findCriticalPath(paths):
     maxDelay = float("-inf")
     criticalPath = None
+
     for path in paths:
+
+        #first calc the delay and then compare the wc time
+        calcPathDelay(path)
+
         if path.delay[2] > maxDelay:
             maxDelay = path.delay[2]
             criticalPath = path
+
     return criticalPath
 
 ##print the maximum delay together with the list of nodes and some other infos.
@@ -374,25 +409,77 @@ def printPathInFile (filename,routingPath):
 
 # get the io path and read port delay for a node. therefore we used the source atrribute of this node
 # @return a tuple (readPortDelay,ioPathDelay)
-def getDelayForNode(node):
+def getDelayForNode(sourceNode,node,destNode):
 
     readPortDelay = [0.0,0.0,0.0]
     ioPathDelay = [0.0,0.0,0.0]
 
     if node.passTrough:
-        return (readPortDelay,ioPathDelay)
+        return ([0.0,0.0,0.0],[0.0,0.0,0.0])
 
+    #current node is a lut node.
+    #check if it use the unregistered or unregistered output.
+    # - for the unregistered we have a read port delay and a io path delay
+    #   and a valid source node.
+    # - for the registered (use its flipflop) we have two cases:
+    #   the path start or end with the flipflop. depending on the case
+    #   we only use the read port delay or io path delay
 
-    #skip elut for now
     if node.isElut():
-        return (readPortDelay,ioPathDelay)
 
-    sourceName = node.source
-    sourceNode = globs.technologyMappedNodes.getNodeByName(node.source)
+        if node.UseItsFlipflop():
+
+            #end with a flipflop: destnode is a lut node and
+            #we must include the read delay of the ff
+            if (destNode is None):
+                return (node.ffReadPortDelay,[0.0,0.0,0.0])
+
+            #start with a flipflop. current node is a lut
+            if (destNode is not None):
+                return ([0.0,0.0,0.0],node.ffIODelay)
+
+        #timing for a elut which use its unregistered output:
+        #the source node will never be None, because path don't start
+        #by a unregistered used lut.
+        else:
+            portIndex = node.inputs.index(sourceNode.name)
+
+            #because the verilog is written downto, the first index is the last port.
+            #correct the port index
+            portIndex = (globs.host_size-1)- portIndex
+
+            readPortDelay = node.readPortDelay[portIndex]
+            ioPathDelay = node.ioPathDelay[portIndex]
+
+            return (readPortDelay,ioPathDelay)
 
 
     #find the port index where the source is connected to
-    portIndex = node.inputs.index(sourceName)
+
+    #the node is a ffmux. We have to check which input of the mux
+    #is used(registered or unregistered) and choose the right delay
+    if node.isBleMux():
+
+        #the registered output is the first input
+        if sourceNode.UseItsFlipflop():
+            portIndex = 0
+
+        #the unregistered output is the second input
+        else:
+            portIndex = 1
+
+    #the rest of the nodes get the port index from the source
+    #(global routing muxes)
+    else:
+
+        #sourceNode is only not always set e.g when node is a startpoint.
+        #get it. we only can't do this when we node is lut.
+        #then the source attribute is not set
+        sourceName = node.source
+        sourceNode = globs.technologyMappedNodes.getNodeByName(node.source)
+
+        portIndex = node.inputs.index(sourceNode.name)
+
     #because the verilog is written downto, the first index is the last port.
     #correct the port index
     portIndex = (globs.host_size-1)- portIndex
@@ -430,7 +517,7 @@ def printCriticalPathDelay(criticalPath):
             #node is connected to ordere layer node
             #extract the read port delay
             if sourceNode.type == 10:
-                (readPortDelay,ioPathDelay) = getDelayForNode(node)
+                (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,None)
                 delayOrderedLayer = readPortDelay
 
     # now get the rest delay through subtraction
@@ -439,19 +526,35 @@ def printCriticalPathDelay(criticalPath):
 
     #dump all delay:
     print 'dump all delays'
-    for node in criticalPath.path:
 
-        (readPortDelay,ioPathDelay) = getDelayForNode(node)
-        print 'node name: ' + str(node.name) + ' readport: ' + str(readPortDelay[2]) + ' iopath: '+ str(ioPathDelay[2])
+    sourceNode = None
+    destNode = None
+    for index,node in enumerate(criticalPath.path):
+
+        #node is not at the end, update th4e destNode
+        if index + 1 < len(criticalPath.path):
+            destNode = criticalPath.path[index + 1]
+        else:
+            destNode = None
+
+        #get the delay and add it
+        (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,destNode)
+
+        print 'node name: ' + str(node.name) + ' readport: ' + str(readPortDelay[2]) + ' iopath: '+ str(ioPathDelay[2]) + \
+              'sum' + str(readPortDelay[2] + ioPathDelay[2])
+
+        #update the sourceNode
+        sourceNode = node
+
 
     print 'delay list:'
     print str(criticalPath.delayList)
     print '\n'
 
-    sum = 0.0
-    for delay in criticalPath.delayList:
-        sum += delay[2]
-    print "delay list sum: " + str(sum) + "\n"
+    # sum = 0.0
+    # for delay in criticalPath.delayList:
+    #     sum += delay[2]
+    # print "delay list sum: " + str(sum) + "\n"
 
     print "Critical path max delay is: " + str(criticalPath.delay[2]) + " " + globs.params.timeFormat
     print "Ordered input Layer read port delay : " + str(delayOrderedLayer[2]) + " " + globs.params.timeFormat
