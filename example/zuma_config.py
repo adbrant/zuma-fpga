@@ -77,6 +77,10 @@ params.sdfInterconnectCellType = "zuma_wrapper"
 #E.g the component zuma_top/zuma_i is translated to zuma_top_zuma_i_ in the sdf file.
 params.instancePrefix = "XUM/"
 
+#signals if the timing of the ordered layer should be used for the critical path calculation
+# this makes only sense when params.orderedIO is turned True
+params.skipOrderedLayerTiming = False
+
 #use vpr8 in a second run to place and route in vpr8 with the timing from the sdf file
 #back annotated to the vpr files
 params.vprAnnotation = True

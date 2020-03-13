@@ -18,18 +18,22 @@ class RoutingPath():
         self.delay = [0.0,0.0,0.0]
         #for debug purpose.
         #a list of the used delays
-        self.delayList = []
         self.path = [ ]
         self.pathlength = 0
+        self.edgesWithoutDelay = 0
+        #delay caused by the ordering layer
+        self.orderedDelay = [0.0,0.0,0.0]
 
     def __init__(self, node):
         #the delay with min avg and max delay
         self.delay = [0.0,0.0,0.0]
         #for debug purpose.
         #a list of the used delays
-        self.delayList = []
         self.path = [ node ]
         self.pathlength = 0
+        self.edgesWithoutDelay = 0
+        #delay caused by the ordering layer
+        self.orderedDelay = [0.0,0.0,0.0]
 
 
 ## returns all routing path sources and sinks of the current circuit,
@@ -54,11 +58,11 @@ def findSinksAndSources():
 
         #get one iomux input node
         IOMuxInputNode = globs.nodes[globs.orderedInputs[0]]
-        #get one output mux node
-        IOMuxOutputNode = globs.nodes[globs.orderedOutputs[0]]
-
         opinIdList += IOMuxInputNode.edges
-        ipinIdList += IOMuxOutputNode.inputs
+
+        #little hack. when the ordered layer is not used we have ipins as sinks
+        # and if it used we have the iomuxes as sinks
+        ipinIdList += globs.orderedOutputs
 
     #if orderedIO is false we have to check all first lvl ipin/opins
     else:
@@ -102,7 +106,7 @@ def findSinksAndSources():
         #In the technology mapped graph, it could be that its optimized
         #and therefore the source attribute is set, whether or not its driven.
         ipinNode = globs.nodes[ipinID]
-        if ipinNode.source >= 0:
+        if ipinNode.source >= 0 and ipinNode.type > -1:
             #because its an output we only need the node of the last lvl
             mappedIpin = globs.technologyMappedNodes.getNodeByName(ipinNode.mappedNodes[-1])
             sinks += [ mappedIpin ]
@@ -141,8 +145,6 @@ def findSinksAndSources():
     return sources, sinks
 
 
-
-
 ##initialize trackable paths for backward tracking from the sinks
 def initActivePaths(sinks):
     paths =  []
@@ -166,68 +168,6 @@ def prependNodeToPath(path,newSrcNode):
     path.path = [ newSrcNode ] + path.path
     path.pathlength += 1
 
-    # #the delay of the hop
-    # #delay tuple has the form: (min,average,max)
-    # delay = [0.0,0.0,0.0]
-    #
-    # #passThrough nodes have no delay
-    # if not destNode.passTrough:
-    #
-    #     #the destination is a mux. We have to check which input of the mux
-    #     #is used(registered or unregistered) and choose the right delay
-    #     if destNode.isBleMux():
-    #
-    #         #the mux uses the registered input.
-    #         if newSrcNode.UseItsFlipflop():
-    #             #the registered output is the first input
-    #             portIndex = 0
-    #             #get the setup time for the flipflop.
-    #             #the delay on the read port is not important here,
-    #             #because the path starts on the end of the flipflop
-    #             delay = numpy.add(newSrcNode.ffIODelay,delay)
-    #             #for debug purpose add it to the list
-    #             path.delayList.append(newSrcNode.ffIODelay)
-    #
-    #         #otherwise we use the unregistered port
-    #         else:
-    #             #the unregistered output is the second input
-    #             portIndex = 1
-    #
-    #     #if the destination is a elut we must include the read delay of the ff
-    #     if destNode.isElut():
-    #         if destNode.UseItsFlipflop():
-    #             delay = numpy.add(newSrcNode.ffReadPortDelay,delay)
-    #             #for debug purpose add it to the list
-    #             path.delayList.append(newSrcNode.ffReadPortDelay)
-    #
-    #     #because the verilog is written downto, the first index is the last port.
-    #     #correct the port index
-    #     portIndex = (globs.host_size-1)- portIndex
-    #
-    #     #adjustment for delays
-    #     #time to travel through the component + routing delay
-    #
-    #     portDelay = destNode.readPortDelay[portIndex]
-    #     ioPathDelay = destNode.ioPathDelay[portIndex]
-    #     #for debug purpose add it to the list
-    #     path.delayList.append(destNode.readPortDelay[portIndex])
-    #     path.delayList.append(destNode.ioPathDelay[portIndex])
-    #
-    #     tmpDelay = numpy.add(ioPathDelay,portDelay)
-    #     #add it to the current delay
-    #     delay = numpy.add(delay,tmpDelay)
-    #
-    #     #check if there is a delay information of the route.
-    #     #the iopath delay is always available
-    #     if portDelay == [0.0,0.0,0.0]:
-    #
-    #         print "connection " + newSrcNode.name +" to " +  destNode.name + " has no delay"
-    #         return 1
-    #
-    #     else:
-    #         #add it on the path delay
-    #         path.delay = numpy.add(path.delay,delay)
-
     return 0
 
 
@@ -236,12 +176,15 @@ def trackPathsBackwards(sources,sinks):
     activePaths = initActivePaths(sinks)
 
     #now find the critical path
-    edgesWoDelay = 0
+
     finishedPaths = []
+
     while len(activePaths) > 0:
+
         oldactivePaths = activePaths
         activePaths = []
         for path in oldactivePaths:
+
             activeNode = path.path[0]
             #follow path backwards
             #check if the node is driven
@@ -260,7 +203,7 @@ def trackPathsBackwards(sources,sinks):
                             # driven pin of the LUT, use for new path
                             childpath = deepcopy(path)
                             newSrcNode = mappedInputNode
-                            edgesWoDelay += prependNodeToPath(childpath,newSrcNode)
+                            prependNodeToPath(childpath,newSrcNode)
 
                             if newSrcNode in sources:
                                 finishedPaths.append(childpath)
@@ -276,7 +219,7 @@ def trackPathsBackwards(sources,sinks):
             #has an active source
             else:
                 newSrcNode = globs.technologyMappedNodes.getNodeByName(activeNode.source)
-                edgesWoDelay += prependNodeToPath(path,newSrcNode)
+                prependNodeToPath(path,newSrcNode)
 
                 #check if we've arrived at a source yet.
                 if newSrcNode in sources:
@@ -284,7 +227,14 @@ def trackPathsBackwards(sources,sinks):
                 else:
                     activePaths.append(path)
 
-    return finishedPaths, edgesWoDelay
+    return finishedPaths
+
+
+def calcPathDelays(paths):
+    for path in paths:
+
+        #calc the path delay and the number of edges without a delay
+        calcPathDelay(path)
 
 #calc and set the delay for a given path
 def calcPathDelay(path):
@@ -307,10 +257,34 @@ def calcPathDelay(path):
         (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,destNode)
         nodeDelay = numpy.add(readPortDelay,ioPathDelay)
 
+        #update the edge counter
+        if readPortDelay == [0.0,0.0,0.0]:
+            print "connection " + node.name +" to " +  destNode.name + " has no delay"
+            path.edgesWithoutDelay += 1
+
+
+        #search for a global opin in the path (imux to opins will be otimized)
+        #or imux connected to global inputs
+        if ((sourceNode is None) and (node.source > -1) and (node.type == 3)) or ((sourceNode is not None) and (node.type == 10) and (node.source > -1) and (sourceNode.type == 4)):
+
+                print 'Found global opin/ipin iomux ' + str(node.name)
+                #add the node delay to the ordered layer attribut
+                path.orderedDelay = numpy.add(nodeDelay,path.orderedDelay)
+
+                #don't add the delay to the result when without OrderedLayer is turned on
+                if globs.params.skipOrderedLayerTiming:
+
+                    #update the sourceNode
+                    sourceNode = node
+
+                    continue
+
+        #add the delay to the result
         delay = numpy.add(delay,nodeDelay)
 
         #update the sourceNode
         sourceNode = node
+
 
     #update the path delay
     path.delay = delay
@@ -323,9 +297,6 @@ def findCriticalPath(paths):
     criticalPath = None
 
     for path in paths:
-
-        #first calc the delay and then compare the wc time
-        calcPathDelay(path)
 
         if path.delay[2] > maxDelay:
             maxDelay = path.delay[2]
@@ -378,9 +349,14 @@ def printPathDelay(path):
 
     print "Delay:", str(path.delay)
 
-    print "Delay list:"
-    #print reversed list
-    print str(path.delayList[::-1])
+#only print the path
+def printPath(path):
+
+    pathIDs = []
+    print "Path:"
+    for node in path.path:
+        pathIDs.append(str(node.name))
+    print " -> ".join(pathIDs)
 
 ##print the delays of all paths
 def printAllPathDelays(paths):
@@ -493,47 +469,16 @@ def getDelayForNode(sourceNode,node,destNode):
     return (readPortDelay,ioPathDelay)
 
 
-#print the critical path delay
-def printCriticalPathDelay(criticalPath):
-
-    #we split the path in two parts:
-    #the ordered layer + the rest
-
-    delayOrderedLayer = [0.0,0.0,0.0]
-    delayRest = [0.0,0.0,0.0]
-
-    #first get the delay for the ordered layer.
-    #the ordered layer only influence the read port delay of the global opins,
-    #because the ordere layer nodes are connected to all opins, and the opins decide
-    #which ordered layer node is routed in contrast to the global ipins where
-    #the routing is done by the ordered layer nodes itself
-    for node in criticalPath.path:
-
-        #search for a global opin in the path
-        if (node.source > -1) and (node.type == 3):
-
-            sourceNode = globs.technologyMappedNodes.getNodeByName(node.source)
-
-            #node is connected to ordere layer node
-            #extract the read port delay
-            if sourceNode.type == 10:
-                (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,None)
-                delayOrderedLayer = readPortDelay
-
-    # now get the rest delay through subtraction
-    delayRest = numpy.subtract(criticalPath.delay,delayOrderedLayer)
-
-
-    #dump all delay:
-    print 'dump all delays'
+#dump every delay in detail
+def dumpAllDelays(path):
 
     sourceNode = None
     destNode = None
-    for index,node in enumerate(criticalPath.path):
+    for index,node in enumerate(path.path):
 
         #node is not at the end, update th4e destNode
-        if index + 1 < len(criticalPath.path):
-            destNode = criticalPath.path[index + 1]
+        if index + 1 < len(path.path):
+            destNode = path.path[index + 1]
         else:
             destNode = None
 
@@ -541,23 +486,30 @@ def printCriticalPathDelay(criticalPath):
         (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,destNode)
 
         print 'node name: ' + str(node.name) + ' readport: ' + str(readPortDelay[2]) + ' iopath: '+ str(ioPathDelay[2]) + \
-              'sum' + str(readPortDelay[2] + ioPathDelay[2])
+              ' sum: ' + str(readPortDelay[2] + ioPathDelay[2])
 
         #update the sourceNode
         sourceNode = node
 
 
-    print 'delay list:'
-    print str(criticalPath.delayList)
-    print '\n'
+#print the critical path delay
+def printCriticalPathDelay(criticalPath):
 
-    # sum = 0.0
-    # for delay in criticalPath.delayList:
-    #     sum += delay[2]
-    # print "delay list sum: " + str(sum) + "\n"
+    #we split the path in two parts:
+    #the ordered layer + the rest
+
+    delayRest = [0.0,0.0,0.0]
+
+    # now get the rest delay through subtraction
+    if (not globs.params.skipOrderedLayerTiming):
+        delayRest = numpy.subtract(criticalPath.delay,criticalPath.orderedDelay)
+
+    #dump all delay:
+    print 'dump all delays'
+    dumpAllDelays(criticalPath)
 
     print "Critical path max delay is: " + str(criticalPath.delay[2]) + " " + globs.params.timeFormat
-    print "Ordered input Layer read port delay : " + str(delayOrderedLayer[2]) + " " + globs.params.timeFormat
+    print "Ordered delay : " + str(criticalPath.orderedDelay[2]) + " " + globs.params.timeFormat
     print "Rest delay is: " + str(delayRest[2]) + " " + globs.params.timeFormat
 
     print "f_worstcase is thus: " + str((1.0/ (criticalPath.delay[2] * globs.params.timeScale)) * 1/1000000 ) + " MHz"
@@ -570,21 +522,26 @@ def performTimingAnalysis():
 
     sources, sinks = findSinksAndSources()
 
-    paths, edgesWoDelay = trackPathsBackwards(sources,sinks)
-    print str(edgesWoDelay) + " edges had no delay during the analysis."
+    #searc all paths
+    paths = trackPathsBackwards(sources,sinks)
+
+    #update the delay and edgesWithoutDelay attribut for every path
+    calcPathDelays(paths)
+
+    for path in paths:
+        if path.edgesWithoutDelay > 0:
+            print "Path has " + str(path.edgesWithoutDelay) + " edges had no delay during the analysis."
+            printPath(path)
 
     criticalPath = findCriticalPath(paths)
+
     if criticalPath == None:
         print "Error: No critical path found"
     else:
         print "Critical path found with " + str(criticalPath.pathlength) + " hops"
 
         #print the nodes of the critical path
-        pathIDs = []
-        print "Path:"
-        for node in criticalPath.path:
-            pathIDs.append(str(node.name))
-        print " -> ".join(pathIDs)
+        printPath(criticalPath)
 
         #print the delay
         printCriticalPathDelay(criticalPath)
