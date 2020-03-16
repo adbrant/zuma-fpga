@@ -62,11 +62,12 @@ def annotateBack():
 
         #also skip timing delay caused by the ordered layer nodes
         #we don't know which input will be chosen.
-        #therfore we add only the iopath to edges from a layer node to an opin
-        #and skip completly edges from an ipin to a layer node
+        #we can not only forget about the read port delay and still use the iopath
+        #because a opin can be implement by several luts and therefore havge different
+        # io path delays depending which input was chosen
 
-        #skip the edges from ipins to layer nodes
-        if sinkNode.type == 10:
+        #skip the edges from ipins to layer nodes or layer nodes to opins
+        if sinkNode.type == 10 or sourceNode.type == 10:
             continue
 
         #update the switch Id in the edge
@@ -82,7 +83,7 @@ def annotateBack():
             #print "Error: no timing"
 
         #skip the read port dealy for opins connected to the ordered layer
-        if (sinkNode.readPortDelay is not None) and (sourceNode.type != 10):
+        if sinkNode.readPortDelay is not None:
             readPortDelay = sinkNode.readPortDelay[int(sourceId)]
         #else:
             #print "Error: no timing"

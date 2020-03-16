@@ -258,26 +258,27 @@ def calcPathDelay(path):
         nodeDelay = numpy.add(readPortDelay,ioPathDelay)
 
         #update the edge counter
-        if readPortDelay == [0.0,0.0,0.0]:
+        if readPortDelay == [0.0,0.0,0.0] and (not node.passTrough):
             print "connection " + node.name +" to " +  destNode.name + " has no delay"
             path.edgesWithoutDelay += 1
 
 
-        #search for a global opin in the path (imux to opins will be otimized)
-        #or imux connected to global inputs
-        if ((sourceNode is None) and (node.source > -1) and (node.type == 3)) or ((sourceNode is not None) and (node.type == 10) and (node.source > -1) and (sourceNode.type == 4)):
+        # search for a global opin in the path (imux to opins will be otimized)
+        # or imux connected to global inputs
+        # cluster opins are passtrough and were filtered
+        if ((node.source > -1) and (node.type == 3) and (not node.passTrough)) or ((sourceNode is not None) and (node.type == 10)):
 
-                print 'Found global opin/ipin iomux ' + str(node.name)
-                #add the node delay to the ordered layer attribut
-                path.orderedDelay = numpy.add(nodeDelay,path.orderedDelay)
+            if node.type == 3:
+                print 'Found global opin' + str(node.name)
+            else:
+                print 'Found global output iomux ' + str(node.name)
 
-                #don't add the delay to the result when without OrderedLayer is turned on
-                if globs.params.skipOrderedLayerTiming:
+            #add the node delay to the ordered layer attribut
+            path.orderedDelay = numpy.add(nodeDelay,path.orderedDelay)
 
-                    #update the sourceNode
-                    sourceNode = node
-
-                    continue
+            #don't add the delay to the result when without OrderedLayer is turned on
+            if globs.params.skipOrderedLayerTiming:
+                nodeDelay = [0.0,0.0,0.0]
 
         #add the delay to the result
         delay = numpy.add(delay,nodeDelay)
