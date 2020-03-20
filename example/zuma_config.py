@@ -37,7 +37,7 @@ params.orderedIO = True
 #check the equivalence of the generated overlay with the user circuit
 #need a path to yosys in the toolpath.py
 #WARNING: is only supported for vpr version 8
-params.verifyOverlay = False
+params.verifyOverlay = True
 
 #if you want to use a packed overlay for verification and build
 params.packedOverlay = True
@@ -51,9 +51,12 @@ params.graphviz = False
 #provide a list of unconfigured nodes with their verilog names
 params.dumpUnconfiguredNodes = True
 
+#a generation of a black box verilog file where the clusters are not specified.
+#Ued to reorganize things with rapidWrite
+params.blackBox = True
 
 #activate the timing analysis. See ../TIMING README
-params.sdf = True
+params.sdf = False
 #path of the two sdf files needed for timing analysis. see ../TIMING README
 #the second one sdfFlipflopFileName is only needed when ise is used for the sdf export
 #but not vivado
@@ -83,4 +86,4 @@ params.skipOrderedLayerTiming = False
 
 #use vpr8 in a second run to place and route in vpr8 with the timing from the sdf file
 #back annotated to the vpr files
-params.vprAnnotation = True
+params.vprAnnotation = False

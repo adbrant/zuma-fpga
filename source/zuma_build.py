@@ -115,9 +115,14 @@ def Zuma(verilog_file,
         #output a verification verilog file
         if globs.params.packedOverlay:
             #build the first for verification and the second as an output overlay
-            buildPackedOverlay.buildVerificationOverlay("verificationOverlay.v",True)
-            buildPackedOverlay.buildVerificationOverlay("packedOverlay.v",False)
+            buildPackedOverlay.buildVerificationOverlay("verificationOverlay.v",True,False)
+            buildPackedOverlay.buildVerificationOverlay("packedOverlay.v",False,False)
+
+            if globs.params.blackBox:
+                buildPackedOverlay.buildVerificationOverlay("packedOverlayBlackBox.v",False,True)
+
             buildVerificationOverlay.buildVerificationOverlay("verificationOverlayUnfolded.v")
+
         else:
             buildVerificationOverlay.buildVerificationOverlay("verificationOverlay.v")
 

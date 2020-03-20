@@ -486,7 +486,7 @@ def buildClusterInterfaces(f):
         f.write( '    );\n')
 
 #build a special verilog cluster module for each cluster
-def buildClusterDescriptions(f):
+def buildClusterDescriptions(f,blackBox):
 
 
     #step through ipins and opins of each cluster and grep the coressponding technolog mapped nodes.
@@ -549,7 +549,8 @@ def buildClusterDescriptions(f):
 
         #now we have finished the interface. build the content
         #iterate through all nodes and build those with the right location
-        buildInnerRouting(f,location)
+        if not blackBox:
+            buildInnerRouting(f,location)
 
         #write the footer
         f.write( 'endmodule\n')
@@ -557,7 +558,7 @@ def buildClusterDescriptions(f):
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
 #@param verificationalBuild flags that the file is used for verification
-def buildVerificationOverlay(fileName,verificationalBuild):
+def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
 
     #write a configuration to the mapped nodes
     generateMappedNodesConfiguration()
@@ -590,7 +591,7 @@ def buildVerificationOverlay(fileName,verificationalBuild):
         BuildVerilog.writeFooter(file)
 
     #generate the clb modules
-    buildClusterDescriptions(file)
+    buildClusterDescriptions(file,blackBox)
 
     file.close()
 

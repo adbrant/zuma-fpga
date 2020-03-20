@@ -17,6 +17,8 @@ $VTR_DIR/vpr/vpr ARCH_vpr8_timing.xml zuma \
 --route_file route.r \
 --circuit_file abc_out.blif \
 --timing_analysis on \
+--full_stats on \
+--timing_report_detail debug \
 --disp off \
 --route_chan_width ZUMA_CHAN_W \
 --echo_file on \
