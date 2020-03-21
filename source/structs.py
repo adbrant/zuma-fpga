@@ -91,6 +91,9 @@ class Node():
         self.ioPathDelay = None
         self.readPortDelay = None
 
+        #indicate that this node have only a mapped passtrough node as a child
+        self.passTrough = False
+
 ## describe a node of the technology mapped node graph
 class TechnologyMappedNode():
 
@@ -329,7 +332,7 @@ class Cluster:
         ##timing back annotation for various tracks
 
         ## delay dict for the path from the lut output to the mux output.
-        ## key is the (bleIndex, 'registered'/'unregistered') 
+        ## key is the (bleIndex, 'registered'/'unregistered')
         self.delayBleOutToMuxOut = None
 
 

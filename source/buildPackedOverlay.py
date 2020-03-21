@@ -354,7 +354,7 @@ def generateMappedNodesConfiguration():
 #generate lutrams for every node except the ones on a cluster which are elut ffmux opin and interconnect nodes.
 def buildOuterRouting(file):
 
-    for node in globs.technologyMappedNodes.getNodes():
+    for node in globs.nodes:
 
         #source and sinks were skipped. They are not used as lutrams yet.
         if node.type < 3:
@@ -373,31 +373,22 @@ def buildOuterRouting(file):
         if node.type  >= 7 and node.type  <= 9:
             continue
 
-        #write a wire for the node output.
-        #because every node has only one unique output
-        writeWire(file,node)
-
         #for an iomux of the fpga inputs we only generate the output wire
-        #but not a configuration.
+        #but not a configuration. See ConnectIO()
         if (node.type == 10) and (len(node.inputs) == 0):
+            #the node have only one mapped node
+            mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[0])
+            writeWire(file,mappedNode)
             continue
 
-        #if the node is a passtrough node just use the assign optimization
-        #these are nodes with only one input except an lut,ffmux or ipin which
-        #are a special case
-        if node.passTrough:
-            writePassTroughNode(file,node)
-            continue
-
-        #this node is a part of a routing mux,lut,ffmux or ipin -> write a lutram
-        else:
-            writeLUTRAM(file,node)
+        #else print all mapped child nodes and their wires to the file
+        writeMappedNodes(file,node,False)
 
 #buld the lutrams and wires for nodes in a clb for a given location.
 #generate lutrams for every elut ffmux opin and interconnect node.
 def buildInnerRouting(file,location):
 
-    for node in globs.technologyMappedNodes.getNodes():
+    for node in globs.nodes:
 
         #source and sinks were skipped. They are not used as lutrams yet.
         if node.type < 3:
@@ -415,23 +406,42 @@ def buildInnerRouting(file,location):
         if node.location != location:
             continue
 
-        #write a wire for the node output.
-        #because every node has only one unique output
-        writeWire(file,node)
+        #else print all mapped child nodes and their wires to the file
+        writeMappedNodes(file,node,True)
 
-        #if the node is a passtrough node just use the assign optimization
-        #these are nodes with only one input except an lut,ffmux or ipin which
-        #are a special case
-        if node.passTrough:
-            writePassTroughNode(file,node)
-            continue
+#print the wire and lutram instance
+def writeMappedNode(file,node,isOnCluster):
 
-        #this node is a part of a routing mux,lut,ffmux or ipin -> write a lutram
-        else:
-            #signal that this node is chosen to be in a cluster module
-            node.isOnCluster = True
-            #now write the lut code
-            writeLUTRAM(file,node)
+    #write a wire for the node output.
+    #because every node has only one unique output
+    writeWire(file,node)
+
+    #if the node is a passtrough node just use the assign optimization
+    #these are nodes with only one input except an lut,ffmux or ipin which
+    #are a special case
+    if node.passTrough:
+        writePassTroughNode(file,node)
+
+    #this node is a part of a routing mux,lut,ffmux or ipin -> write a lutram
+    else:
+        #signal that this node is chosen to be in a cluster module
+        node.isOnCluster = isOnCluster
+        #now write the lut code
+        writeLUTRAM(file,node)
+
+#write all wires and the mapped node instances of a nodegraph node in the verilog file
+def writeMappedNodes(file,node,isOnCluster):
+
+    #switches heck if interface or not
+    #write Node Interface
+    #add nodes in the modules list
+    #optinal: print wire
+
+    #else: print it directly
+    for mappedNodeName in node.mappedNodes:
+
+        mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
+        writeMappedNode(file,mappedNode,isOnCluster)
 
 
 #build the connection between the clbs and the outer routing
@@ -555,10 +565,32 @@ def buildClusterDescriptions(f,blackBox):
         #write the footer
         f.write( 'endmodule\n')
 
+#mark nodes of the nodegraph cosisting of only one mapped passtrough node as
+#a nodegraph passtrough
+def markPassTroughNodes():
+
+    for node in globs.nodes:
+
+        #skip deleted and source and sink nodes
+        if node.type > 3:
+
+            #have only one mapped passtrough node as a child->mark it
+            if (len(node.inputs) == 1):
+
+                mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[0])
+
+                if mappedNode.passTrough:
+                    node.passTrough = True
+
+
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
 #@param verificationalBuild flags that the file is used for verification
 def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
+
+
+    #check the nodegraph for passtrough nodes
+    #markPassTroughNodes()
 
     #write a configuration to the mapped nodes
     generateMappedNodesConfiguration()
