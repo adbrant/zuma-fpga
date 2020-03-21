@@ -1,13 +1,15 @@
 import sys
 from plumbum import local
 
-def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir):
+def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,packedOverlay):
 
     from plumbum.cmd import cp
 
     #copy the verification files
     cp("abc_out_v.blif", str(zumaDir / "verilog/verification/VerificationTestsuite"))
     cp("verificationOverlay.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
+    if packedOverlay:
+        cp("modulesverificationOverlay.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
     cp("top_module.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
 
     #set the used env variables

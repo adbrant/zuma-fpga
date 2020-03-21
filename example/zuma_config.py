@@ -42,6 +42,11 @@ params.verifyOverlay = True
 #if you want to use a packed overlay for verification and build
 params.packedOverlay = True
 
+#for each nodegraph node we can enable if we use a module instation instead
+#of printing just the mapped nodes in the verilog file
+params.outerNodesModules = True
+params.interconnectModules = True
+
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.
 #WARNING:graphviz could freeze the build process if the graph is too big.

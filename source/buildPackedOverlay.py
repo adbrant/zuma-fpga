@@ -352,7 +352,7 @@ def generateMappedNodesConfiguration():
 
 #buld the lutrams and wires for the outer routing.
 #generate lutrams for every node except the ones on a cluster which are elut ffmux opin and interconnect nodes.
-def buildOuterRouting(file):
+def buildOuterRouting(file,modulesFile):
 
     for node in globs.nodes:
 
@@ -382,11 +382,11 @@ def buildOuterRouting(file):
             continue
 
         #else print all mapped child nodes and their wires to the file
-        writeMappedNodes(file,node,False)
+        writeNode(file,modulesFile,node,False)
 
 #buld the lutrams and wires for nodes in a clb for a given location.
 #generate lutrams for every elut ffmux opin and interconnect node.
-def buildInnerRouting(file,location):
+def buildInnerRouting(file,modulesFile,location):
 
     for node in globs.nodes:
 
@@ -407,7 +407,7 @@ def buildInnerRouting(file,location):
             continue
 
         #else print all mapped child nodes and their wires to the file
-        writeMappedNodes(file,node,True)
+        writeNode(file,modulesFile,node,True)
 
 #print the wire and lutram instance
 def writeMappedNode(file,node,isOnCluster):
@@ -429,19 +429,82 @@ def writeMappedNode(file,node,isOnCluster):
         #now write the lut code
         writeLUTRAM(file,node)
 
+#write the module instantiation to the file and the module description to the modulesFile
+def writeNodeGraphNode(file,modulesFile,node,isOnCluster):
+
+    #write the output wire of this node to the file.
+    #therfore we use the last mapped node which output is the same as the
+    #nodegraph node output
+    mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[-1])
+    writeWire(file,mappedNode)
+
+    #write the node module instantiation + the start of the description in one strike
+
+    #first the interface name
+    interfaceString = 'Mod_node_' + str(node.id) + ' mod_node_' + str(node.id) + '(\n'
+    moduleInterfaceString  = 'module Mod_node_' + str(node.id) + '(\n'
+    file.write( interfaceString )
+    modulesFile.write( moduleInterfaceString)
+
+    # inputs and output
+    for inputNodeId in node.inputs:
+        inputNodeName = 'node_' + str(inputNodeId)
+        inputNodeString = '.' + inputNodeName + '(' + inputNodeName + '),\n'
+        moduleInputNodeString = inputNodeName + ',\n'
+        file.write( inputNodeString )
+        modulesFile.write( moduleInputNodeString )
+
+    #the output is just the node id
+    nodeName = 'node_' + str(node.id)
+    outputNodeString = '.' + nodeName + '(' + nodeName + ')\n'
+    moduleOuputString =  nodeName
+    file.write( outputNodeString )
+    modulesFile.write( moduleOuputString )
+
+    #end the module instantiation
+    file.write( ');\n')
+    modulesFile.write( ');\n')
+
+    #now print the rest of the module desctiption to the module file
+
+    # inputs and output
+    for inputNodeId in node.inputs:
+        inputNodeName = 'node_' + str(inputNodeId)
+        inputNodeString = 'input ' + inputNodeName + ';\n'
+        modulesFile.write( inputNodeString )
+
+    nodeName = 'node_' + str(node.id)
+    outputNodeString = 'output ' + nodeName + ';\n'
+    modulesFile.write( outputNodeString )
+
+    #now the mapped nodes as content
+    for mappedNodeName in node.mappedNodes:
+
+        mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
+        writeMappedNode(modulesFile,mappedNode,isOnCluster)
+
+    #finally the end of the module
+    modulesFile.write( 'endmodule\n')
+
 #write all wires and the mapped node instances of a nodegraph node in the verilog file
-def writeMappedNodes(file,node,isOnCluster):
+def writeNode(file,modulesFile,node,isOnCluster):
 
     #switches heck if interface or not
     #write Node Interface
     #add nodes in the modules list
     #optinal: print wire
+    if globs.params.outerNodesModules and not isOnCluster:
+        writeNodeGraphNode(file,modulesFile,node,isOnCluster)
 
-    #else: print it directly
-    for mappedNodeName in node.mappedNodes:
+    elif globs.params.interconnectModules and node.type == 7:
+        writeNodeGraphNode(file,modulesFile,node,isOnCluster)
 
-        mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
-        writeMappedNode(file,mappedNode,isOnCluster)
+    else:
+        #else: print it directly
+        for mappedNodeName in node.mappedNodes:
+
+            mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
+            writeMappedNode(file,mappedNode,isOnCluster)
 
 
 #build the connection between the clbs and the outer routing
@@ -496,7 +559,7 @@ def buildClusterInterfaces(f):
         f.write( '    );\n')
 
 #build a special verilog cluster module for each cluster
-def buildClusterDescriptions(f,blackBox):
+def buildClusterDescriptions(f,modulesFile,blackBox):
 
 
     #step through ipins and opins of each cluster and grep the coressponding technolog mapped nodes.
@@ -560,12 +623,12 @@ def buildClusterDescriptions(f,blackBox):
         #now we have finished the interface. build the content
         #iterate through all nodes and build those with the right location
         if not blackBox:
-            buildInnerRouting(f,location)
+            buildInnerRouting(f,modulesFile,location)
 
         #write the footer
         f.write( 'endmodule\n')
 
-#mark nodes of the nodegraph cosisting of only one mapped passtrough node as
+#mark nodes of the nodegraph consisting of only one mapped passtrough node as
 #a nodegraph passtrough
 def markPassTroughNodes():
 
@@ -588,7 +651,6 @@ def markPassTroughNodes():
 #@param verificationalBuild flags that the file is used for verification
 def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
 
-
     #check the nodegraph for passtrough nodes
     #markPassTroughNodes()
 
@@ -598,9 +660,11 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
     #generate a topmodule file for this verification overlay
     generateTopModule()
 
-    #write the verilog file
-    #start with the header
+    #create the verilog file and a seperate module instantiation file if needed
     file = open(fileName, 'w')
+    modulesFile = open('modules' + fileName, 'w')
+
+    #start with the header
     BuildVerilog.writeHeader(file)
 
     #to make things easier in the testsuite
@@ -609,7 +673,7 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
 
     #build in two steps: first the outer routing. then connect the clb module interface to the outer routing.
     #later we genearte these used clb modules
-    buildOuterRouting(file)
+    buildOuterRouting(file,modulesFile)
     buildClusterInterfaces(file)
 
     #conncet the opins/ipins with the fpga outputs/inputs
@@ -623,9 +687,10 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
         BuildVerilog.writeFooter(file)
 
     #generate the clb modules
-    buildClusterDescriptions(file,blackBox)
+    buildClusterDescriptions(file,modulesFile,blackBox)
 
     file.close()
+    modulesFile.close()
 
     #rewrite the abc output file for equivalnce checks
     if verificationalBuild:

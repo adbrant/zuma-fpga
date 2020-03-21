@@ -121,8 +121,6 @@ def Zuma(verilog_file,
             if globs.params.blackBox:
                 buildPackedOverlay.buildVerificationOverlay("packedOverlayBlackBox.v",False,True)
 
-            buildVerificationOverlay.buildVerificationOverlay("verificationOverlayUnfolded.v")
-
         else:
             buildVerificationOverlay.buildVerificationOverlay("verificationOverlay.v")
 
