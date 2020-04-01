@@ -1,6 +1,8 @@
 import BuildVerilog
 import BuildBitstream
 import globs
+from functools import partial
+
 
 #replace the input/ouput names with fpga_input[]/fpga_output in abc_out.blif
 #and write it to a new file
@@ -352,7 +354,8 @@ def generateMappedNodesConfiguration():
 
 #buld the lutrams and wires for the outer routing.
 #generate lutrams for every node except the ones on a cluster which are elut ffmux opin and interconnect nodes.
-def buildOuterRouting(file,modulesFile):
+#done
+def buildOuterRouting(file,unprocessed):
 
     for node in globs.nodes:
 
@@ -382,32 +385,10 @@ def buildOuterRouting(file,modulesFile):
             continue
 
         #else print all mapped child nodes and their wires to the file
-        writeNode(file,modulesFile,node,False)
-
-#buld the lutrams and wires for nodes in a clb for a given location.
-#generate lutrams for every elut ffmux opin and interconnect node.
-def buildInnerRouting(file,modulesFile,location):
-
-    for node in globs.nodes:
-
-        #source and sinks were skipped. They are not used as lutrams yet.
-        if node.type < 3:
-            continue
-
-        #skip ipins and channels
-        if node.type  >= 4 and node.type  <= 6:
-            continue
-
-        #skip iomuxes
-        if node.type == 10:
-            continue
-
-        #skip nodes not part of this cluster
-        if node.location != location:
-            continue
-
-        #else print all mapped child nodes and their wires to the file
-        writeNode(file,modulesFile,node,True)
+        #while printing the instantiation to the main
+        writeNodeGraphNodeInterface('instantiation',node,file)
+        call = partial(writeNodeGraphNodeDescription,file= file,node = node,isOnCluster = False)
+        unprocessed.append(call)
 
 #print the wire and lutram instance
 def writeMappedNode(file,node,isOnCluster):
@@ -429,204 +410,394 @@ def writeMappedNode(file,node,isOnCluster):
         #now write the lut code
         writeLUTRAM(file,node)
 
-#write the module instantiation to the file and the module description to the modulesFile
-def writeNodeGraphNode(file,modulesFile,node,isOnCluster):
 
-    #write the output wire of this node to the file.
-    #therfore we use the last mapped node which output is the same as the
-    #nodegraph node output
-    mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[-1])
-    writeWire(file,mappedNode)
+###-----------------------------------------------------------------------------
+###--------------general printer ---------------------------------------------------
+###-----------------------------------------------------------------------------
 
-    #write the node module instantiation + the start of the description in one strike
+#done
+def generalInterface(type,file,moduleName,instanceName,inputNames,outputNames):
 
     #first the interface name
-    interfaceString = 'Mod_node_' + str(node.id) + ' mod_node_' + str(node.id) + '(\n'
-    moduleInterfaceString  = 'module Mod_node_' + str(node.id) + '(\n'
-    file.write( interfaceString )
-    modulesFile.write( moduleInterfaceString)
+    interfaceString = moduleName + " " + instanceName + ' (\n'
+    moduleInterfaceString  = 'module ' + moduleName + ' (\n'
+
+    if type == 'instantiation':
+        file.write( interfaceString )
+    else:
+        file.write( moduleInterfaceString)
 
     # inputs and output
-    for inputNodeId in node.inputs:
-        inputNodeName = 'node_' + str(inputNodeId)
-        inputNodeString = '.' + inputNodeName + '(' + inputNodeName + '),\n'
-        moduleInputNodeString = inputNodeName + ',\n'
-        file.write( inputNodeString )
-        modulesFile.write( moduleInputNodeString )
+    for inputName in inputNames:
+
+        if isinstance(inputName,str):
+            inputString = '.' + inputName + '(' + inputName + '),\n'
+            moduleInputString = inputName + ',\n'
+        elif isinstance(inputName,tuple):
+            inputString = '.' + inputName[0] + '(' + inputName[0] + '),\n'
+            moduleInputString = inputName[0] + ',\n'
+
+        if type == 'instantiation':
+            file.write( inputString )
+        else:
+            file.write( moduleInputString)
+
 
     #the output is just the node id
-    nodeName = 'node_' + str(node.id)
-    outputNodeString = '.' + nodeName + '(' + nodeName + ')\n'
-    moduleOuputString =  nodeName
-    file.write( outputNodeString )
-    modulesFile.write( moduleOuputString )
+    for index,outputName in enumerate(outputNames):
+
+        #isnt the last element
+        if index < len(outputNames) -1:
+            outputString = '.' + outputName + '(' + outputName + '),\n'
+            moduleOuputString = outputName + ',\n'
+
+        else:
+            outputString = '.' + outputName + '(' + outputName + ')\n'
+            moduleOuputString =  outputName
+
+        if type == 'instantiation':
+            file.write( outputString )
+        else:
+            file.write( moduleOuputString)
+
 
     #end the module instantiation
     file.write( ');\n')
-    modulesFile.write( ');\n')
 
     #now print the rest of the module desctiption to the module file
+    if type == 'description':
+
+        # inputs and output
+        for inputName in inputNames:
+
+            if isinstance(inputName,str):
+                inputNodeString = 'input ' + inputName + ';\n'
+            #tuple has name, size str
+            elif isinstance(inputName,tuple):
+                inputNodeString = 'input ' + inputName[1] + ' ' + inputName[0] + ';\n'
+            file.write( inputNodeString )
+
+        for outputName in outputNames:
+            outputNodeString = 'output ' + outputName + ';\n'
+            file.write( outputNodeString )
+
+###-----------------------------------------------------------------------------
+###--------------node graph printer --------------------------------------------
+###-----------------------------------------------------------------------------
+#done
+def writeNodeGraphNodeInterface(type,node,file):
+
+    #first the interface name
+    moduleName = 'Mod_node_' + str(node.id)
+    instanceName = 'mod_node_' + str(node.id)
 
     # inputs and output
+    inputNames = []
     for inputNodeId in node.inputs:
         inputNodeName = 'node_' + str(inputNodeId)
-        inputNodeString = 'input ' + inputNodeName + ';\n'
-        modulesFile.write( inputNodeString )
+        inputNames.append(inputNodeName)
 
+    #the output is just the node id
     nodeName = 'node_' + str(node.id)
-    outputNodeString = 'output ' + nodeName + ';\n'
-    modulesFile.write( outputNodeString )
+    outputNames = [ nodeName ]
+
+    generalInterface(type,file,moduleName,instanceName,inputNames,outputNames)
+
+    #if the node was instantiate we write an output wire
+    if type == 'instantiation':
+
+        #write the output wire of this node to the file.
+        #therfore we use the last mapped node which output is the same as the
+        #nodegraph node output
+        mappedNode = globs.technologyMappedNodes.getNodeByName(node.mappedNodes[-1])
+        writeWire(file,mappedNode)
+
+#done
+def writeNodeGraphNodeBody(node,file,isOnCluster):
 
     #now the mapped nodes as content
     for mappedNodeName in node.mappedNodes:
 
         mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
-        writeMappedNode(modulesFile,mappedNode,isOnCluster)
+        writeMappedNode(file,mappedNode,isOnCluster)
+
+#done
+#write the module description to the file
+def writeNodeGraphNodeDescription(file,node,isOnCluster):
+
+
+    #write the node module instantiation + the start of the description in one strike
+    writeNodeGraphNodeInterface('description',node,file)
+
+    #now the body
+    writeNodeGraphNodeBody(node,file,isOnCluster)
 
     #finally the end of the module
-    modulesFile.write( 'endmodule\n')
+    file.write( 'endmodule\n')
 
-#write all wires and the mapped node instances of a nodegraph node in the verilog file
-def writeNode(file,modulesFile,node,isOnCluster):
 
-    #switches heck if interface or not
-    #write Node Interface
-    #add nodes in the modules list
-    #optinal: print wire
-    if globs.params.outerNodesModules and not isOnCluster:
-        writeNodeGraphNode(file,modulesFile,node,isOnCluster)
+###-----------------------------------------------------------------------------
+###--------------interconnect printer ------------------------------------------
+###-----------------------------------------------------------------------------
 
-    elif globs.params.interconnectModules and node.type == 7:
-        writeNodeGraphNode(file,modulesFile,node,isOnCluster)
+#done
+def buildInterconInterface(type,file,cluster,location):
 
+    #first the interface name
+    x,y = location
+    moduleName = 'Mod_interconn_' + str(x) + '_' + str(y)
+    instanceName = 'mod_interconn_' + str(x) + '_' + str(y)
+
+    # inputs and output
+    inputNames = []
+    outputNames = []
+
+    # iterate through the drivers and grep the ipin nodes.
+    for ipinDriver in cluster.inputs:
+        #get the ipin node.
+        ipin = globs.nodes[ipinDriver.id]
+        ipinName = 'node_' + str(ipin.id)
+        inputNames.append(ipinName)
+
+    #also the muxes are inputs
+    for bleIndex in range(globs.params.N):
+        ffmuxId = cluster.LUT_FFMUX_nodes[bleIndex]
+        ipinName = 'node_' + str(ffmuxId)
+        inputNames.append(ipinName)
+
+    for bleIndex in range(globs.params.N):
+        for interconNodeId in cluster.LUT_input_nodes[bleIndex]:
+
+            outputNames.append('node_' + str(interconNodeId))
+
+
+    generalInterface(type,file,moduleName,instanceName,inputNames,outputNames)
+
+
+#instantiate all interconnect node for the given cluster
+#done
+def buildInterconBody(file,cluster,unprocessed,blackbox):
+
+    #if the blackBox should omit the genration
+    if (blackbox and globs.params.blackBoxInterconnect):
+        return
+
+    #insatiate the inner nodes
+    for bleIndex in range(globs.params.N):
+        for interconNodeId in cluster.LUT_input_nodes[bleIndex]:
+
+            #get the node
+            interconNode = globs.nodes[interconNodeId]
+
+            #write the node module instantiation and output wire
+            writeNodeGraphNodeInterface('instantiation',interconNode,file)
+
+            call = partial(writeNodeGraphNodeDescription,file= file ,node = interconNode,isOnCluster = True)
+            unprocessed.append(call)
+
+#done
+def buildInterconDescription(file,cluster,location,unprocessed,blackbox):
+
+    buildInterconInterface('description',file,cluster,location)
+    buildInterconBody(file,cluster,unprocessed,blackbox)
+
+    #finally the end of the module
+    file.write( 'endmodule\n')
+
+
+###-----------------------------------------------------------------------------
+###--------------ble printer ---------------------------------------------------
+###-----------------------------------------------------------------------------
+
+#done
+def buildBleInterface(type,file,cluster,location,bleIndex):
+
+    #first the interface name
+    x,y = location
+    moduleName = 'Mod_ble_' + str(x) + '_' + str(y) + '_'+ str(bleIndex)
+    instanceName = 'mod_ble_' + str(x) + '_' + str(y) + '_'+ str(bleIndex)
+
+    #get the lut and ffmux node
+    lutId = cluster.LUT_nodes[bleIndex]
+    lutNode = globs.nodes[lutId]
+
+    ffmuxId = cluster.LUT_FFMUX_nodes[bleIndex]
+    ffmuxNode = globs.nodes[ffmuxId]
+
+    # inputs and output
+    inputNames = []
+    outputNames = []
+
+    for inputId in lutNode.inputs:
+        inputNames.append('node_' + str(inputId))
+
+    outputNames.append('node_' + str(ffmuxId))
+
+
+    generalInterface(type,file,moduleName,instanceName,inputNames,outputNames)
+
+
+#instantiate all interconnect node for the given cluster
+#done
+def buildBleBody(file,cluster,bleIndex,unprocessed,blackbox):
+
+    #if the blackBox should omit the genration
+    if (blackbox and globs.params.blackBoxBle):
+        return
+
+    #get the lut and ffmux node
+    lutId = cluster.LUT_nodes[bleIndex]
+    lutNode = globs.nodes[lutId]
+
+    ffmuxId = cluster.LUT_FFMUX_nodes[bleIndex]
+    ffmuxNode = globs.nodes[ffmuxId]
+
+    #write the node module instantiation and output wire
+    #writeNodeGraphNodeInterface('instantiation',lutNode,file)
+    #call = partial(writeNodeGraphNodeDescription,file= file ,node = lutNode,isOnCluster = True)
+    #unprocessed.append(call)
+    writeNodeGraphNodeBody(lutNode,file,True)
+
+
+    #writeNodeGraphNodeInterface('instantiation',ffmuxNode,file)
+    #call = partial(writeNodeGraphNodeDescription,file= file ,node = ffmuxNode,isOnCluster = True)
+    #unprocessed.append(call)
+    writeNodeGraphNodeBody(ffmuxNode,file,True)
+
+
+#done
+def buildBleDescription(file,cluster,location,bleIndex,unprocessed,blackbox):
+
+    buildBleInterface('description',file,cluster,location,bleIndex)
+    buildBleBody(file,cluster,bleIndex,unprocessed,blackbox)
+
+    #finally the end of the module
+    file.write( 'endmodule\n')
+
+###-----------------------------------------------------------------------------
+###--------------cluster printer ---------------------------------------------------
+###-----------------------------------------------------------------------------
+
+#done
+def buildClusterInterface(type,file,cluster,location):
+
+    #first write a cluster header:
+    (x,y) = location
+
+    moduleName = 'Cluster_' + str(x) + '_' + str(y)
+    instanceName = 'cluster_'+ str(x) + '_' + str(y)
+
+    inputNames = [('wr_addr','[5:0]'),('wr_data','[32-1:0]'),('wren','[4096:0]'),'clk','clk2','ffrst']
+    outputNames = []
+
+    # iterate through the drivers and grep the ipin nodes.
+    for ipinDriver in cluster.inputs:
+        #get the ipin node.
+        ipin = globs.nodes[ipinDriver.id]
+        ipinName = 'node_' + str(ipin.id)
+        inputNames.append(ipinName)
+
+    # iterate through the drivers and grep the opin nodes.
+    for index,opinDriver in enumerate(cluster.outputs,1):
+        #get the ipin node.
+        opin = globs.nodes[opinDriver.id]
+        outputName = 'node_' + str(opin.id)
+        outputNames.append(outputName)
+
+    generalInterface(type,file,moduleName,instanceName,inputNames,outputNames)
+
+#done
+def buildClusterBody(file,cluster,location,unprocessed,blackbox):
+
+    #if the blackBox should be the cluster we omit the genration
+    if (blackbox and globs.params.blackBoxCluster):
+        return
+
+    #first build the interconnect
+    if globs.params.hierarchyInterConnect:
+        buildInterconInterface('instantiation',file,cluster,location)
+        call = partial(buildInterconDescription,file,cluster,location,unprocessed,blackbox)
+        unprocessed.append(call)
     else:
-        #else: print it directly
-        for mappedNodeName in node.mappedNodes:
+        buildInterconBody(file,cluster,unprocessed,blackbox)
 
-            mappedNode = globs.technologyMappedNodes.getNodeByName(mappedNodeName)
-            writeMappedNode(file,mappedNode,isOnCluster)
+    #then the bles
+    for bleIndex in range(globs.params.N):
+
+        if globs.params.hierarchyBle:
+            buildBleInterface('instantiation',file,cluster,location,bleIndex)
+            call = partial(buildBleDescription,file,cluster,location,bleIndex,unprocessed,blackbox)
+            unprocessed.append(call)
+        else:
+            buildBleBody(file,cluster,bleIndex,unprocessed,blackbox)
+
+    #then the output nodes
+    for opinDriver in cluster.outputs:
+        #get the ipin node.
+        opin = globs.nodes[opinDriver.id]
+
+        writeNodeGraphNodeInterface('instantiation',opin,file)
+        call = partial(writeNodeGraphNodeDescription,file= file ,node = opin,isOnCluster = True)
+        unprocessed.append(call)
 
 
+#done
+def buildClusterDescription(file,cluster,location,unprocessed,blackbox):
+
+    buildClusterInterface('description',file,cluster,location)
+    buildClusterBody(file,cluster,location,unprocessed,blackbox)
+
+    #write the footer
+    file.write( 'endmodule\n')
+
+###-----------------------------------------------------------------------------
+###--------------end printer ---------------------------------------------------
+###-----------------------------------------------------------------------------
+
+#done
 #build the connection between the clbs and the outer routing
 #therfore connect the cluster ipin and opin outputs with the interface
 #Note: ipins are part of the outer routing and not part of the generated cluster.
 #for opins we generate a wire for the connection with the outer routing
-def buildClusterInterfaces(f):
+def buildClusterInterfaces(type,file):
 
-    #for the opins of a cluster we generate a wire for the connection with the cluster module.
-    for location in globs.clusters:
-        cluster = globs.clusters[location]
+    if type == 'instantiation':
+        #for the opins of a cluster we generate a wire for the connection with the cluster module.
+        for location in globs.clusters:
+            cluster = globs.clusters[location]
 
-        # iterate through the drivers and grep the opin nodes.
-        for opinDriver in cluster.outputs:
-            #get the ipin node.
-            opin = globs.nodes[opinDriver.id]
-            #write the wire
-            f.write('wire ' + 'node_' + str(opin.id) + ';\n')
+            # iterate through the drivers and grep the opin nodes.
+            for opinDriver in cluster.outputs:
+                #get the ipin node.
+                opin = globs.nodes[opinDriver.id]
+                #write the wire
+                file.write('wire ' + 'node_' + str(opin.id) + ';\n')
 
     #step through ipins and opins of a cluster and grep the coressponding technolog mapped nodes.
     #then write a connection for the interface
     for location in globs.clusters:
         cluster = globs.clusters[location]
 
-        #first write a cluster header:
-        (x,y) = location
-        f.write( '    Cluster_' + str(x) + '_' + str(y) + ' cluster_'+ str(x) + '_' + str(y) + '(\n')
-        f.write( '    .wr_addr(wr_addr),\n' )
-        f.write( '    .wr_data(wr_data),\n' )
-        f.write( '    .wren(wren),\n' )
-        f.write( '    .clk(clk),\n' )
-        f.write( '    .clk2(clk2),\n' )
-        f.write( '    .ffrst(ffrst),\n' )
-
-        # iterate through the drivers and grep the ipin nodes.
-        for ipinDriver in cluster.inputs:
-            #get the ipin node.
-            ipin = globs.nodes[ipinDriver.id]
-            #connect it with the interface
-            f.write( '    .node_' + str(ipin.id) +'(' + 'node_' + str(ipin.id) + '),\n')
-
-        # iterate through the drivers and grep the opin nodes.
-        for index,opinDriver in enumerate(cluster.outputs,1):
-            #get the ipin node.
-            opin = globs.nodes[opinDriver.id]
-            #connect it with the interface
-            f.write( '    .node_' + str(opin.id) +'(' + 'node_' + str(opin.id) + ')')
-            if index != len(cluster.outputs):
-                f.write( ',\n')
-
-        #write the footer
-        f.write( '    );\n')
+        buildClusterInterface(type,file,cluster,location)
 
 #build a special verilog cluster module for each cluster
-def buildClusterDescriptions(f,modulesFile,blackBox):
+#done
+def buildClusterDescriptions(file,unprocessed,blackbox):
 
 
     #step through ipins and opins of each cluster and grep the coressponding technolog mapped nodes.
     #then write the corresponding interface
     for location in globs.clusters:
         cluster = globs.clusters[location]
+        buildClusterDescription(file,cluster,location,unprocessed,blackbox)
+#done
+def buildClusterBodys(file,unprocessed,blackbox):
 
-        #first write a cluster header:
-        (x,y) = location
-        f.write( 'module  Cluster_' + str(x) + '_' + str(y) + '(\n')
-        f.write( '    wr_addr,\n' )
-        f.write( '    wr_data,\n' )
-        f.write( '    wren,\n' )
-        f.write( '    clk,\n' )
-        f.write( '    clk2,\n' )
-        f.write( '    ffrst,\n' )
+    for location in globs.clusters:
+        cluster = globs.clusters[location]
+        buildClusterBody(file,cluster,location,unprocessed,blackbox)
 
-        # iterate through the drivers and grep the ipin nodes.
-        for ipinDriver in cluster.inputs:
-            #get the ipin node.
-            ipin = globs.nodes[ipinDriver.id]
-            #connect it with the interface
-            f.write( '    node_' + str(ipin.id) + ',\n')
 
-        # iterate through the drivers and grep the opin nodes.
-        for index,opinDriver in enumerate(cluster.outputs,1):
-            #get the ipin node.
-            opin = globs.nodes[opinDriver.id]
-            #connect it with the interface
-            f.write( '    node_' + str(opin.id))
-            #the last entry got no delimiter
-            if index != len(cluster.outputs):
-                f.write( ',\n')
-
-        #write the input footer
-        f.write( '    );\n')
-
-        #now repeat the same pattern
-        #TODO: use parameter config with
-        f.write( '    input [5:0] wr_addr;\n' )
-        f.write( '    input [32-1:0] wr_data;\n' )
-        f.write( '    input [4096:0] wren;\n' )
-        f.write( '    input clk;\n' )
-        f.write( '    input clk2;\n' )
-        f.write( '    input ffrst;\n' )
-
-        # iterate through the drivers and grep the ipin nodes.
-        for ipinDriver in cluster.inputs:
-            #get the ipin node.
-            ipin = globs.nodes[ipinDriver.id]
-            #connect it with the interface
-            f.write( '    input node_' + str(ipin.id) + ';\n')
-
-        # iterate through the drivers and grep the opin nodes.
-        for opinDriver in cluster.outputs:
-            #get the ipin node.
-            opin = globs.nodes[opinDriver.id]
-            #connect it with the interface
-            f.write( '    output node_' + str(opin.id) + ';\n')
-
-        #now we have finished the interface. build the content
-        #iterate through all nodes and build those with the right location
-        if not blackBox:
-            buildInnerRouting(f,modulesFile,location)
-
-        #write the footer
-        f.write( 'endmodule\n')
 
 #mark nodes of the nodegraph consisting of only one mapped passtrough node as
 #a nodegraph passtrough
@@ -646,10 +817,41 @@ def markPassTroughNodes():
                     node.passTrough = True
 
 
+#process all delay build decscription function. This could spawn
+#new description functions again, so we process the list until all functions
+#are finished
+def processQuededDesctiptions(unprocessed):
+
+    #process the list until now more calls are spawned
+    while len(unprocessed) > 0:
+
+        #pop the first element and process it
+        call = unprocessed.pop(0)
+        call()
+
+
 #build a verilog file with fixed configured LUTs and muxes to verficate the
 #equivalence of the hardware overlay and the circuit
 #@param verificationalBuild flags that the file is used for verification
 def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
+
+    #To allow to configurate which parts of the fpga should be wrapped
+    #by a module and which not, we have the following architecture:
+    #each module element in the hirachy, e.g. the ble module provide two functions:
+    #   - a build module interface function, which will be called for an instantiation
+    #     of the module.
+    #   - build module description function which should be called when the module
+    #     description will be build. To build the module description it call
+    #     the interface function (because the code is nearly the same as for the instantiation)
+    #     and a body function where the content of the module is written.
+    # the build module description functions often will be called delayed when the previous
+    # modules (which are higher in the module hirachy) are finished their build.
+    # to make this delayed call easier we have a list of unprocessed description functions
+    # which are processed by the processQuededDesctiptions function until now more
+    # description function has spawned.
+
+    #the list of unprocessed description calls
+    unprocessed= []
 
     #check the nodegraph for passtrough nodes
     #markPassTroughNodes()
@@ -662,7 +864,6 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
 
     #create the verilog file and a seperate module instantiation file if needed
     file = open(fileName, 'w')
-    modulesFile = open('modules' + fileName, 'w')
 
     #start with the header
     BuildVerilog.writeHeader(file)
@@ -672,9 +873,15 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
         writeTestsuitePatch(file)
 
     #build in two steps: first the outer routing. then connect the clb module interface to the outer routing.
-    #later we genearte these used clb modules
-    buildOuterRouting(file,modulesFile)
-    buildClusterInterfaces(file)
+    #later we generate these used clb modules by processing the description calls
+    buildOuterRouting(file,unprocessed)
+
+    if globs.params.hierarchyCluster:
+        buildClusterInterfaces('instantiation',file)
+        call = partial(buildClusterDescriptions,file,unprocessed,blackBox)
+        unprocessed.append(call)
+    else:
+        buildClusterBodys(file,unprocessed,blackBox)
 
     #conncet the opins/ipins with the fpga outputs/inputs
     ConnectIO(file)
@@ -686,11 +893,10 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
     else:
         BuildVerilog.writeFooter(file)
 
-    #generate the clb modules
-    buildClusterDescriptions(file,modulesFile,blackBox)
+    #process all queded desription calls
+    processQuededDesctiptions(unprocessed)
 
     file.close()
-    modulesFile.close()
 
     #rewrite the abc output file for equivalnce checks
     if verificationalBuild:

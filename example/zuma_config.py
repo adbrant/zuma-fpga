@@ -44,8 +44,17 @@ params.packedOverlay = True
 
 #for each nodegraph node we can enable if we use a module instation instead
 #of printing just the mapped nodes in the verilog file
-params.outerNodesModules = True
-params.interconnectModules = True
+
+params.hierarchyInterConnect = False
+params.hierarchyBle = False
+params.hierarchyCluster = True
+
+#a generation of a black box verilog file where the clusters are not specified.
+#Used to reorganize things with rapidWrite
+params.blackBox = True
+params.blackBoxBle = True
+params.blackBoxCluster = True
+params.blackBoxInterconnect = True
 
 #if you want to dump the node graph and mapped node graph in a readable format.
 #EXPERIMENTAL:If graphviz is turned on there is also a graphical dump of the node graph.
@@ -56,9 +65,7 @@ params.graphviz = False
 #provide a list of unconfigured nodes with their verilog names
 params.dumpUnconfiguredNodes = True
 
-#a generation of a black box verilog file where the clusters are not specified.
-#Ued to reorganize things with rapidWrite
-params.blackBox = True
+
 
 #activate the timing analysis. See ../TIMING README
 params.sdf = False
