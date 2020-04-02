@@ -45,8 +45,8 @@ params.packedOverlay = True
 #for each nodegraph node we can enable if we use a module instation instead
 #of printing just the mapped nodes in the verilog file
 
-params.hierarchyInterConnect = False
-params.hierarchyBle = False
+params.hierarchyInterConnect = True
+params.hierarchyBle = True
 params.hierarchyCluster = True
 
 #a generation of a black box verilog file where the clusters are not specified.
