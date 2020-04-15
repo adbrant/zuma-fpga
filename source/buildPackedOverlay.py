@@ -492,7 +492,7 @@ def writeNodeGraphNodeInterface(type,node,file):
     instanceName = 'mod_node_' + str(node.id)
 
     # inputs and output
-    inputNames = []
+    inputNames = [('wr_addr','[5:0]'),('wr_data','[32-1:0]'),('wren','[4096:0]'),'clk','clk2','ffrst']
     for inputNodeId in node.inputs:
         inputNodeName = 'node_' + str(inputNodeId)
         inputNames.append(inputNodeName)
@@ -549,7 +549,7 @@ def buildInterconInterface(type,file,cluster,location):
     instanceName = 'mod_interconn_' + str(x) + '_' + str(y)
 
     # inputs and output
-    inputNames = []
+    inputNames = [('wr_addr','[5:0]'),('wr_data','[32-1:0]'),('wren','[4096:0]'),'clk','clk2','ffrst']
     outputNames = []
 
     # iterate through the drivers and grep the ipin nodes.
@@ -625,7 +625,7 @@ def buildBleInterface(type,file,cluster,location,bleIndex):
     ffmuxNode = globs.nodes[ffmuxId]
 
     # inputs and output
-    inputNames = []
+    inputNames = [('wr_addr','[5:0]'),('wr_data','[32-1:0]'),('wren','[4096:0]'),'clk','clk2','ffrst']
     outputNames = []
 
     for inputId in lutNode.inputs:
