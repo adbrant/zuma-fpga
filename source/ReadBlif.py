@@ -62,7 +62,7 @@ def read_BLIF(filename):
 
         newLatch = structs.latch()
         newLatch.input = latch.inputNet
-        newLatch.output = latch.ouputNet
+        newLatch.output = latch.outputNet
 
         globs.latches[newLatch.output] = newLatch
 
@@ -72,7 +72,7 @@ def read_BLIF(filename):
         #create a lut instance
         newLUT = structs.LUT()
         #assign the input and output blif names
-        newLUT.output = name.ouputNet
+        newLUT.output = name.outputNet
         newLUT.inputs = name.inputNets
         newLUT.contents = name.content
 

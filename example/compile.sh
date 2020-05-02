@@ -3,11 +3,12 @@
 
 import sys
 from plumbum import local
-
+import imp
+import argparse
 
 ##compile a ZUMA overlay and a bitstream for the given circuit.
 #@param circuitFileName Path to the user circuit file
-def compileZUMA(circuitFileName):
+def compileZUMA(circuitFileName,zumaConfigFileName,clockName):
 
     #load the user circuit path
     circuitPath = local.path(circuitFileName)
@@ -30,8 +31,12 @@ def compileZUMA(circuitFileName):
     import toolpaths
     vtrDir = local.path(toolpaths.vtrDir)
 
-    #import the cwd zuma config
-    import zuma_config
+    #if the zuma config file is not given just import one from the first
+    #match in the sys path. cwd is also in there
+    if zumaConfigFileName is None:
+        import zuma_config
+    else:
+        zuma_config = imp.load_source('zuma_config', zumaConfigFileName)
 
     #start Synthesizing
     print 'Synthesizing ' + str(circuitPath) + ' to ZUMA'
@@ -40,7 +45,7 @@ def compileZUMA(circuitFileName):
 
     #create the build forlder,copy necessary scripts, then
     #run odin, abc and vpr
-    CompileUtils.createBuildDirAndRunVpr(vtrDir,libDir,circuitPath,zuma_config.params.vprVersion)
+    CompileUtils.createBuildDirAndRunVpr(vtrDir,libDir,circuitPath,zuma_config.params.vprVersion,clockName)
 
     #run zuma
     CompileUtils.runZUMA(zuma_config.params.vprVersion,False)
@@ -62,14 +67,38 @@ def compileZUMA(circuitFileName):
 
 def main():
 
-    #check which user circuit file to compile
-    if len(sys.argv) > 1:
-        fileName =  sys.argv[1]
-    else:
-        fileName = "test.v"
+
+    #parse the arguments
+
+    argumentParser = argparse.ArgumentParser(prog='compile',
+                                             usage='%(prog)s [options] circuit.v',
+                                             description='The ZUMA circuit compiler. Compiles a ZUMA overlay and a bitstream for the given circuit')
+
+    argumentParser.add_argument('circuitFileName',
+                                metavar='circuit.v',
+                                type=str,
+                                help='The path to verilog circuit file you want to compile a configuration for your virtual fpga')
+
+    argumentParser.add_argument('-config',
+                                '--config',
+                                action='store',
+                                type=str,
+                                help='The path to a zuma config file. If not given ZUMA search in your current location')
+
+    argumentParser.add_argument('-clock',
+                                '--clock',
+                                action='store',
+                                type=str,
+                                help='The name of the clock in the circuit file')
+
+    arguments = argumentParser.parse_args()
+
+    circuitFileName = arguments.circuitFileName
+    clockName = arguments.clock
+    configFileName = arguments.config
 
     #start the compilation
-    compileZUMA(fileName)
+    compileZUMA(circuitFileName,configFileName,clockName)
 
 if __name__ == '__main__':
     main()

@@ -1,5 +1,17 @@
 import sys
 from plumbum import local
+import os
+import inspect
+
+# use this if you want to include modules from a subforder
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+#to exract the model name
+import BlifParser
+
 
 def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,packedOverlay):
 
@@ -42,7 +54,7 @@ def checkEquivalence(vtrDir,vprVersion):
     #count latches
     from plumbum.cmd import grep
     #grep returns exit code 2 if an error occured. ignore other codes
-    (returnCode,output,stderr)=grep["-c","-m","1","\"^.names\"",str(blif_file)].run(retcode=(0,1))
+    (returnCode,output,stderr)=grep["-c","-m","1","^.latch",str(blif_file)].run(retcode=(0,1))
     count = int(output.rstrip())
 
 
@@ -76,14 +88,16 @@ def displayRessourceUsage():
           " routing/MUX LUTs, so " +str(lutrams) + " LUTRAMs in total."
 
 
-def createBuildDirAndRunVpr(vtrDir,libDir,fileName,vprVersion):
+def createBuildDirAndRunVpr(vtrDir,libDir,fileName,vprVersion,clockName):
 
     #first create a build dir an copy the necessary build files(scripts + config)
-    createBuildFolderAndChDir(libDir)
+    createBuildFolderAndChDir(libDir,clockName)
 
     #now run odin abc and vpr scripts in the build file
+    #fix the clock in the abc output if necessary.
     runOdinAndAbc(vtrDir,fileName,vprVersion)
-    runVpr(vtrDir,vprVersion,False)
+    fixClock(clockName,vtrDir,vprVersion)
+    runVpr(vtrDir,vprVersion,False,clockName)
 
 
 def runOdinAndAbc(vtrDir,fileName,vprVersion):
@@ -115,7 +129,7 @@ def runOdinAndAbc(vtrDir,fileName,vprVersion):
 
 #@ param timingRun indicate that vpr8 use built in timing analysis
 #                  via the vpr8_timing script
-def runVpr(vtrDir,vprVersion,timingRun):
+def runVpr(vtrDir,vprVersion,timingRun,clockName):
 
     print 'vtrdDir: ' + str(vtrDir)
 
@@ -151,7 +165,7 @@ def runVpr(vtrDir,vprVersion,timingRun):
     print vpr()
 
 #create the build folder and copy necessary scripts
-def createBuildFolderAndChDir(libDir):
+def createBuildFolderAndChDir(libDir,clockName):
 
     cwd = local.cwd
 
@@ -166,7 +180,7 @@ def createBuildFolderAndChDir(libDir):
     import generate_buildfiles
 
     templateDir = libDir / "templates"
-    generate_buildfiles.make_files(str(buildPath), str(templateDir))
+    generate_buildfiles.make_files(str(buildPath), str(templateDir),clockName)
 
 
 def createMif(zumaExampleDir):
@@ -175,6 +189,40 @@ def createMif(zumaExampleDir):
     hexToMif = local[hexToMifPath]
     out = (hexToMif["../output.hex"] > "../output.hex.mif").run()
     #sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
+
+def fixClock(clockName,vtrDir,vprVersion):
+
+    #for earlier versions a generic clockfix was done in the vpr scripts.
+    if vprVersion != 8 :
+        return
+
+    #get the cwd. Note that we should be in the build dir
+    cwd = local.cwd
+
+    #the blif file we want to fix the latches
+    blif_file = cwd / 'abc_out.blif'
+    #fixed clock file
+    fixed_blif = cwd / 'clock_fixed.blif'
+    fixed_blif_temp = cwd / 'clock_fixed_temp.blif'
+
+    #if we don't have a clock to fix just copy the abc file
+    if clockName is None:
+
+        from plumbum.cmd import cp
+        cp(str(blif_file), str(fixed_blif))
+        return
+
+    #get the modelname of the blif file. need for the fix
+    modelName = BlifParser.extractModelName(str(blif_file))
+
+    #run the fix. the first run add the re attribut. the second remove some empty added models
+    fixCommand = "latch_^_re_^_"  + modelName + "^" + clockName + "_^_0"
+    fixLatchesPath = vtrDir / "vtr_flow/scripts/blackbox_latches.pl"
+    fixLatches = local[fixLatchesPath]
+
+    print fixLatches("--input",str(blif_file),"--output", str(fixed_blif_temp),"--restore",fixCommand)
+    print fixLatches("--input",str(fixed_blif_temp),"--output",str(fixed_blif), "--vanilla")
+
 
 def runZUMA(vprVersion,timingRun):
 

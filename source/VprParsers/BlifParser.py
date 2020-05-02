@@ -5,24 +5,24 @@ class BlifIO:
         ##blif name of the input
         self.blifName = name
         ##io index: a clock get index -1.
-        ##It is assumend that when the reset signal top^reset is used it
+        ##It is assumend that when the reset signal modelname^reset is used it
         #gets index 0 and the rest of inputs get an index increased by 1.
         #otherwise the rest of input names start by index 0.
         self.ioIndex = index
 
 class BlifLatch:
-    def __init__(self,inputNet,ouputNet):
+    def __init__(self,inputNet,outputNet):
         ##the blif name of the input net
         self.inputNet = inputNet
         ##the blif name of the ouput net
         self.outputNet = outputNet
 
 class BlifNames:
-    def __init__(self,inputNets,ouputNet,content):
+    def __init__(self,inputNets,outputNet,content):
         ##list of blif input net names
         self.inputNets = inputNets
         ##the blif name of the ouput net
-        self.ouputNet = ouputNet
+        self.outputNet = outputNet
         #ABC format of the content of a logic gate:
         #1) if the content consist of only a 1 or 0, then we have
         #   a constant 1 or 0 as the output
@@ -49,6 +49,33 @@ class BlifFile:
         ##a list of BlifNames objects
         self.names = []
 
+        #the blif model name of the circuit.
+        self.circuitName = ""
+
+##need py vpr: extract only the modelname of a blif file
+#@return the modelname
+def extractModelName(filename):
+
+    fh = open(filename,"r")
+    line = fh.readline()
+
+    # Parse the source blif file
+    # search the model entry
+    while len(line) > 0:
+
+        if line.find(".model") > -1:
+
+            #extract the modelname and save it in the blif struct
+            items = line.strip().split(' ')
+            modelName = items[1]
+
+            return modelName
+
+        else:
+            #read the next line
+            line = fh.readline()
+
+    return None
 
 ##parser the blif file
 #@return a Blif File object
@@ -65,6 +92,10 @@ def parseBlif(filename):
     while len(line) > 0:
 
         if line.find(".model") > -1:
+
+            #extract the modelname and save it in the blif struct
+            items = line.strip().split(' ')
+            blifFile.circuitName = items[1]
 
             #read the next line
             line = fh.readline()
@@ -87,16 +118,16 @@ def parseBlif(filename):
                 name = item.strip()
                 index = -1
 
-                if name == 'top^clock':
+                if name == blifFile.circuitName + '^clock':
                     #add the input to the blif file
                     index = -1
 
-                if name == 'top^reset':
+                elif name == blifFile.circuitName + '^reset':
                     # set reset to the first input pin
                     index = 0
                     inputoffset += 1
 
-                elif name == 'top^in':
+                elif name == blifFile.circuitName + '^in':
                     # just one input
                     index = 0
 
@@ -128,7 +159,7 @@ def parseBlif(filename):
                 # append the blif name to the global output list
                 name = item.strip()
 
-                if name == 'top^out':
+                if name == blifFile.circuitName + '^out':
                     # just one output
                     index = 0
 
@@ -237,11 +268,11 @@ def simpleTest():
 
     print "\n latchces \n"
     for latch in blif.latches:
-        print str(latch.inputNet) +" "+ str(latch.ouputNet) + "\n"
+        print str(latch.inputNet) +" "+ str(latch.outputNet) + "\n"
 
     print "\n names \n"
     for name in blif.names:
-        print str(name.inputNets) +" "+ str(name.ouputNet) + "\n"
+        print str(name.inputNets) +" "+ str(name.outputNet) + "\n"
         print str(name.content)
 
 def main():

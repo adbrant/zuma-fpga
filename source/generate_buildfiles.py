@@ -182,7 +182,7 @@ def buildTimingArchFile(directory, template_directory,sourceFileName,targetFileN
     o.close()
 
 
-def make_files(directory, template_directory):
+def make_files(directory, template_directory,clockName):
     print "MAKEFILE:" + str(directory)
 
     #which vpr version
@@ -208,6 +208,12 @@ def make_files(directory, template_directory):
         rep.append(['ZUMA_ARRAY_WIDTH',str(zuma_config.params.X)])
         rep.append(['ZUMA_ARRAY_HEIGHT',str(zuma_config.params.Y)])
 
+    #support of a custom clock name
+    #if no clock is given the standard name clock is used
+    if clockName is not None:
+        rep.append(['ZUMA_CLOCK_NAME',clockName])
+    else:
+        rep.append(['ZUMA_CLOCK_NAME',"clock"])
 
     rep.append(['ZUMA_FCIN_TYPE',str(zuma_config.params.fc_in_type)])
     rep.append(['ZUMA_FCOUT_TYPE',str(zuma_config.params.fc_out_type)])
@@ -237,4 +243,4 @@ def make_files(directory, template_directory):
                             rep)
 
 if __name__ == '__main__':
-    make_files(sys.argv[1], sys.argv[2])
+    make_files(sys.argv[1], sys.argv[2],sys.argv[3])

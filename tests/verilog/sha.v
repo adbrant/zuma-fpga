@@ -130,7 +130,9 @@ module sha1 (clk_i, rst_i, text_i, text_o, cmd_i, cmd_w_i, cmd_o);
 	
 	assign SHA1_ft_BCD = (round < 7'b0100101) ? SHA1_f1_BCD : (round < 7'b101001) ? SHA1_f2_BCD : (round < 7'b1111101) ? SHA1_f3_BCD : SHA1_f2_BCD;
 	
-    	assign SHA1_Wt_1 = {W13 ^ W8 ^ W2 ^ W0};
+	// Odin II doesn't support binary operations inside concatenations presently. 
+	//assign SHA1_Wt_1 = {W13 ^ W8 ^ W2 ^ W0};
+	assign SHA1_Wt_1 = W13 ^ W8 ^ W2 ^ W0;
 
 	assign next_Wt = {SHA1_Wt_1[30:0],SHA1_Wt_1[31]};	// NSA fix added
 	assign next_A = {A[26:0],A[31:27]} + SHA1_ft_BCD + E + Kt + Wt;

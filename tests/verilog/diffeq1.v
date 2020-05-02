@@ -1,10 +1,10 @@
- module diffeq_paj_convert (Xinport, Yinport, Uinport, Aport, DXport, Xoutport, Youtport, Uoutport, CLK, reset);
+ module diffeq_paj_convert (Xinport, Yinport, Uinport, Aport, DXport, Xoutport, Youtport, Uoutport, clk, reset);
     input[31:0] Xinport; 
     input[31:0] Yinport; 
     input[31:0] Uinport; 
     input[31:0] Aport; 
     input[31:0] DXport; 
-    input CLK; 
+    input clk; 
     input reset; 
     output[31:0] Xoutport; 
     output[31:0] Youtport; 
@@ -20,7 +20,7 @@
        reg looping; 
  
 assign temp = u_var * DXport;
-    always @(posedge CLK)
+    always @(posedge clk)
     begin
 		if (reset == 1'b1)
 		begin

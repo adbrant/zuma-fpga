@@ -1,4 +1,4 @@
 read_blif test_unopt.blif
 opt_clean -purge
 rmports
-write_blif test.blif
+write_blif test_opt.blif

@@ -14,13 +14,13 @@
       </equivalent_sites>
       <input name="outpad" num_pins="1"/>
       <output name="inpad" num_pins="1"/>
-      <clock name="clock" num_pins="1"/>
+      <clock name="ZUMA_CLOCK_NAME" num_pins="1"/>
       <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
       <pinlocations pattern="custom">
-        <loc side="left">io.outpad io.inpad io.clock</loc>
-        <loc side="top">io.outpad io.inpad io.clock</loc>
-        <loc side="right">io.outpad io.inpad io.clock</loc>
-        <loc side="bottom">io.outpad io.inpad io.clock</loc>
+        <loc side="left">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
+        <loc side="top">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
+        <loc side="right">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
+        <loc side="bottom">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
       </pinlocations>
     </tile>
     <tile name="clb">
@@ -73,7 +73,7 @@
 
         <input name="outpad" num_pins="1"/> <!--equivalent="false" -->
         <output name="inpad" num_pins="1"/>
-        <clock name="clock" num_pins="1"/>
+        <clock name="ZUMA_CLOCK_NAME" num_pins="1"/>
 
         <!-- IOs can operate as either inputs or outputs -->
         <mode name="inpad">
