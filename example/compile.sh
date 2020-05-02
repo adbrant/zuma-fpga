@@ -50,7 +50,10 @@ def compileZUMA(circuitFileName,zumaConfigFileName,clockName):
     #run zuma
     CompileUtils.runZUMA(zuma_config.params.vprVersion,False)
     CompileUtils.createMif(zumaExampleDir)
-    CompileUtils.checkEquivalence(vtrDir,zuma_config.params.vprVersion)
+
+    if CompileUtils.checkEquivalence(vtrDir,zuma_config.params.vprVersion) != True:
+        sys.exit(1)
+
     CompileUtils.displayRessourceUsage()
 
     #verify the generated verilog description
@@ -63,7 +66,6 @@ def compileZUMA(circuitFileName,zumaConfigFileName,clockName):
     if zuma_config.params.vprAnnotation:
         CompileUtils.runVpr(vtrDir,zuma_config.params.vprVersion,True)
         CompileUtils.runZUMA(zuma_config.params.vprVersion,True)
-
 
 def main():
 
@@ -85,16 +87,21 @@ def main():
                                 type=str,
                                 help='The path to a zuma config file. If not given ZUMA search in your current location')
 
-    argumentParser.add_argument('-clock',
-                                '--clock',
-                                action='store',
-                                type=str,
-                                help='The name of the clock in the circuit file')
+    #argumentParser.add_argument('-clock',
+    #                            '--clock',
+    #                            action='store',
+    #                            type=str,
+    #                            help='The name of the clock in the circuit file')
 
     arguments = argumentParser.parse_args()
 
     circuitFileName = arguments.circuitFileName
-    clockName = arguments.clock
+
+    #clockName = arguments.clock
+    #currently we only support a clock named clock
+    #because the blif parser needs to be updated to support other clock names
+    clockName = 'clock'
+
     configFileName = arguments.config
 
     #start the compilation

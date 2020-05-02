@@ -32,6 +32,7 @@ def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,packedOverlay):
     check = local[zumaDir / "verilog/verification/VerificationTestsuite/check_equivalence.sh"]
     print check()
 
+#return True or False depending if the circuits are equvalent or not
 def checkEquivalence(vtrDir,vprVersion):
 
     #choose the right tool path, depending on the vpr version
@@ -63,14 +64,24 @@ def checkEquivalence(vtrDir,vprVersion):
         print "Found no latches in input circuit: Circuit is combinational\n"
         print "Checking for combinational equivalence with ODINs result:"
 
-        print abc("-c","cec " + str(blif_file) + " zuma_out.blif")
+        (returnCode,output,stderr) = abc["-c","cec " + str(blif_file) + " zuma_out.blif"].run()
+        print output
+
     #has latches -> sequential circuit
     else:
         print "Found latches in input circuit: Circuit is sequential\n"
         print "Checking for sequential equivalence with ODINs result:"
 
-        print abc("-c","dsec " + str(blif_file) + " zuma_out.blif")
+        (returnCode,output,stderr) = abc["-c","dsec " + str(blif_file) + " zuma_out.blif"].run()
+        print output
 
+    #because abc don't want to comunicate a failing miter check over return codes
+    #we have to search the fail string in its output...
+
+    if output.find("failed") > -1:
+        return False
+    else:
+        return True
 
 def displayRessourceUsage():
 
