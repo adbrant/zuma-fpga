@@ -60,7 +60,8 @@ def compileZUMA(circuitFileName,zumaConfigFileName,clockName):
     if zuma_config.params.verifyOverlay:
         #load the yosys path
         yosysDir = local.path(toolpaths.yosysDir)
-        CompileUtils.checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,zuma_config.params.packedOverlay)
+        if CompileUtils.checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,zuma_config.params.vprVersion) != True:
+            sys.exit(1)
 
     #if vpr8 timing back annotation is used, run a zuma second time
     if zuma_config.params.vprAnnotation:

@@ -37,14 +37,15 @@ params.orderedIO = True
 #check the equivalence of the generated overlay with the user circuit
 #need a path to yosys in the toolpath.py
 #WARNING: is only supported for vpr version 8
-params.verifyOverlay = False
-params.useClock = False
+params.verifyOverlay = True
+params.useClock = True
 
 #if you want to use a packed overlay for verification and build
 params.packedOverlay = False
 
 #for each nodegraph node we can enable if we use a module instation instead
 #of printing just the mapped nodes in the verilog file
+
 params.hierarchyNode = False
 params.hierarchyInterConnect = False
 params.hierarchyBle = False

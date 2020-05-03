@@ -13,24 +13,78 @@ if cmd_subfolder not in sys.path:
 import BlifParser
 
 
-def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,packedOverlay):
+def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,vprVersion):
+
+    if vprVersion == 8:
+        abcPath =  vtrDir / "abc/abc"
+        yosysPath = yosysDir / "yosys"
+    else:
+        print "ERROR: Unsupported vpr version for verilog verification: " + str(vprVersion)
+        sys.exit(1)
 
     from plumbum.cmd import cp
 
     #copy the verification files
     cp("abc_out_v.blif", str(zumaDir / "verilog/verification/VerificationTestsuite"))
     cp("verificationOverlay.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
-    #if packedOverlay:
-    #    cp("modulesverificationOverlay.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
     cp("top_module.v", str(zumaDir / "verilog/verification/VerificationTestsuite"))
 
-    #set the used env variables
-    local.env["VTR_DIR"] = str(vtrDir)
-    local.env["YOSYS_DIR"] = str(yosysDir)
+    #back up the curent cwd
+    oldcwd = str(local.cwd)
+
+    #change dir in the testsuite
+    local.cwd.chdir(zumaDir / "verilog/verification/VerificationTestsuite")
+
+    #run yosys
+    yosys = local[yosysPath]
+    print yosys("-s","specification.ys")
+    print yosys("-s","removeports.ys")
+    print yosys("-s","removeports_abc.ys")
 
     #run the equivalence check
-    check = local[zumaDir / "verilog/verification/VerificationTestsuite/check_equivalence.sh"]
-    print check()
+    result = runAbcEquivalenceCheck(abcPath,"abc_out_v_opt.blif","test_opt.blif")
+
+    #return to the old dir
+    local.cwd.chdir(oldcwd)
+
+    return result
+
+def runAbcEquivalenceCheck(abcPath,circuit1Path,circuit2Path):
+
+    #load the abc tool
+    abc = local[abcPath]
+
+    #count latches
+    from plumbum.cmd import grep
+    #grep returns exit code 2 if an error occured. ignore other codes
+    (returnCode,output,stderr)=grep["-c","-m","1","^.latch",str(circuit1Path)].run(retcode=(0,1))
+    count = int(output.rstrip())
+
+
+    #no latches were found --> combinatorial circuit
+    if count == 0:
+        print "Found no latches in input circuit: Circuit is combinational\n"
+        print "Checking for combinational equivalence with ODINs result:"
+
+        (returnCode,output,stderr) = abc["-c","cec " + str(circuit1Path) +" "+ str(circuit2Path)].run()
+        print output
+
+    #has latches -> sequential circuit
+    else:
+        print "Found latches in input circuit: Circuit is sequential\n"
+        print "Checking for sequential equivalence with ODINs result:"
+
+        (returnCode,output,stderr) = abc["-c","dsec " + str(circuit1Path) +" "+str(circuit2Path)].run()
+        print output
+
+    #because abc don't want to comunicate a failing miter check over return codes
+    #we have to search the fail string in its output...
+
+    if output.find("failed") > -1:
+        return False
+    else:
+        return True
+
 
 #return True or False depending if the circuits are equvalent or not
 def checkEquivalence(vtrDir,vprVersion):
@@ -49,39 +103,7 @@ def checkEquivalence(vtrDir,vprVersion):
         print "ERROR: Unsupported vpr version: " + str(vprVersion)
         sys.exit(1)
 
-    #load the abc tool
-    abc = local[abcPath]
-
-    #count latches
-    from plumbum.cmd import grep
-    #grep returns exit code 2 if an error occured. ignore other codes
-    (returnCode,output,stderr)=grep["-c","-m","1","^.latch",str(blif_file)].run(retcode=(0,1))
-    count = int(output.rstrip())
-
-
-    #no latches were found --> combinatorial circuit
-    if count == 0:
-        print "Found no latches in input circuit: Circuit is combinational\n"
-        print "Checking for combinational equivalence with ODINs result:"
-
-        (returnCode,output,stderr) = abc["-c","cec " + str(blif_file) + " zuma_out.blif"].run()
-        print output
-
-    #has latches -> sequential circuit
-    else:
-        print "Found latches in input circuit: Circuit is sequential\n"
-        print "Checking for sequential equivalence with ODINs result:"
-
-        (returnCode,output,stderr) = abc["-c","dsec " + str(blif_file) + " zuma_out.blif"].run()
-        print output
-
-    #because abc don't want to comunicate a failing miter check over return codes
-    #we have to search the fail string in its output...
-
-    if output.find("failed") > -1:
-        return False
-    else:
-        return True
+    return runAbcEquivalenceCheck(abcPath,blif_file,"zuma_out.blif")
 
 def displayRessourceUsage():
 
