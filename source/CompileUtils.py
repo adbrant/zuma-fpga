@@ -80,7 +80,7 @@ def runAbcEquivalenceCheck(abcPath,circuit1Path,circuit2Path):
     #because abc don't want to comunicate a failing miter check over return codes
     #we have to search the fail string in its output...
 
-    if output.find("failed") > -1:
+    if (output.find("failed") > -1) or (output.find("Error") > -1):
         return False
     else:
         return True
