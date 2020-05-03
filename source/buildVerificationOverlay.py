@@ -19,7 +19,7 @@ def writeCircuitVerificationBlif():
     for index,outputName in enumerate(globs.outputs):
         replaceList.insert(0,[outputName,'fpga_outputs[' + str(index) +  ']'])
 
-    inputFile = open('abc_out_rest.blif','r')
+    inputFile = open('clock_fixed.blif','r')
     outputFile = open('abc_out_v.blif','w')
 
     for line in inputFile:

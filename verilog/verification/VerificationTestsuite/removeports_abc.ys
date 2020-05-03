@@ -1,4 +1,7 @@
 read_blif abc_out_v.blif
+techmap -autoproc -map +/xilinx/cells_sim.v
+techmap -map +/adff2dff.v
+synth
 opt_clean -purge
 rmports
 write_blif abc_out_v_opt.blif

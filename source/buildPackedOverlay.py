@@ -16,12 +16,19 @@ def writeCircuitVerificationBlif():
     #add in reverse order so long names would win over short.
     #important when an name is a prefix of another
     for index,inputName in enumerate(globs.inputs):
-        replaceList.insert(0,[inputName,'fpga_inputs[' + str(index) +  ']'])
+
+        #search for the clock. it gets a special naming
+        #but only we specified that a clock is used by the circuit.
+        #if not specified its just a regular input signal nevertheless its name
+        if (inputName.find('^clock') > -1) and globs.params.useClock:
+            replaceList.insert(0,[inputName,'clock'])
+        else:
+            replaceList.insert(0,[inputName,'fpga_inputs[' + str(index) +  ']'])
 
     for index,outputName in enumerate(globs.outputs):
         replaceList.insert(0,[outputName,'fpga_outputs[' + str(index) +  ']'])
 
-    inputFile = open('abc_out_rest.blif','r')
+    inputFile = open('clock_fixed.blif','r')
     outputFile = open('abc_out_v.blif','w')
 
     for line in inputFile:
@@ -50,26 +57,48 @@ def generateTopModule():
 
     topFile.write('''
     module top_module
-    (
+    (''')
+
+    #if a clock is used we add a clock signal
+    if globs.params.useClock:
+        topFile.write('\n clock,\n ')
+
+    topFile.write ('''
         fpga_inputs,
         fpga_outputs
     );
     ''')
+
+    if globs.params.useClock:
+        topFile.write('input clock;\n ')
 
     topFile.write("input [" + str(numinputs) + "-1:0] fpga_inputs;\n")
     topFile.write("output [" + str(numoutputs) + "-1:0] fpga_outputs;")
 
     topFile.write('''
     ZUMA_custom_generated #() zuma
-    (
-    .clk(1'b0),
+    (.clk(1'b0),''')
+
+    #if globs.params.useClock:
+    #    topFile.write(".clk(clock),\n")
+    #else:
+    #    topFile.write(".clk(1'b0),\n")
+
+    topFile.write('''
     .fpga_inputs(fpga_inputs),
     .fpga_outputs(fpga_outputs),
     .config_data({''' + str(globs.params.config_width) + '''{1'b0}}),
     .config_en(1'b0),
     //.progress(),
     .config_addr({''' + str(globs.params.config_width) + '''{1'b0}}),
-    .clk2(1'b0),
+    ''')
+
+    if globs.params.useClock:
+        topFile.write(".clk2(clock),\n")
+    else:
+        topFile.write(".clk2(1'b0),\n")
+
+    topFile.write('''
     .ffrst(1'b0)
     );
 
@@ -386,9 +415,7 @@ def buildOuterRouting(file,unprocessed):
 
         #else print all mapped child nodes and their wires to the file
         #while printing the instantiation to the main
-        writeNodeGraphNodeInterface('instantiation',node,file)
-        call = partial(writeNodeGraphNodeDescription,file= file,node = node,isOnCluster = False)
-        unprocessed.append(call)
+        writeNode(file,node,False)
 
 #print the wire and lutram instance
 def writeMappedNode(file,node,isOnCluster):
@@ -484,6 +511,16 @@ def generalInterface(type,file,moduleName,instanceName,inputNames,outputNames):
 ###-----------------------------------------------------------------------------
 ###--------------node graph printer --------------------------------------------
 ###-----------------------------------------------------------------------------
+def writeNode(file,node,isOnCluster):
+
+    if globs.params.hierarchyNode:
+        writeNodeGraphNodeInterface('instantiation',opin,file)
+        call = partial(writeNodeGraphNodeDescription,file= file ,node = opin,isOnCluster = isOnCluster)
+        unprocessed.append(call)
+    else:
+        writeNodeGraphNodeBody(node,file,isOnCluster)
+
+
 #done
 def writeNodeGraphNodeInterface(type,node,file):
 
@@ -540,6 +577,15 @@ def writeNodeGraphNodeDescription(file,node,isOnCluster):
 ###--------------interconnect printer ------------------------------------------
 ###-----------------------------------------------------------------------------
 
+def writeIntercon(file,cluster,location,unprocessed,blackbox):
+    if globs.params.hierarchyInterConnect:
+        buildInterconInterface('instantiation',file,cluster,location)
+        call = partial(buildInterconDescription,file,cluster,location,unprocessed,blackbox)
+        unprocessed.append(call)
+    else:
+        buildInterconBody(file,cluster,unprocessed,blackbox)
+
+
 #done
 def buildInterconInterface(type,file,cluster,location):
 
@@ -590,10 +636,7 @@ def buildInterconBody(file,cluster,unprocessed,blackbox):
             interconNode = globs.nodes[interconNodeId]
 
             #write the node module instantiation and output wire
-            writeNodeGraphNodeInterface('instantiation',interconNode,file)
-
-            call = partial(writeNodeGraphNodeDescription,file= file ,node = interconNode,isOnCluster = True)
-            unprocessed.append(call)
+            writeNode(file,interconNode,True)
 
 #done
 def buildInterconDescription(file,cluster,location,unprocessed,blackbox):
@@ -608,6 +651,17 @@ def buildInterconDescription(file,cluster,location,unprocessed,blackbox):
 ###-----------------------------------------------------------------------------
 ###--------------ble printer ---------------------------------------------------
 ###-----------------------------------------------------------------------------
+
+def writeBle(file,cluster,location,bleIndex,unprocessed,blackbox):
+
+    if globs.params.hierarchyBle:
+        buildBleInterface('instantiation',file,cluster,location,bleIndex)
+        call = partial(buildBleDescription,file,cluster,location,bleIndex,unprocessed,blackbox)
+        unprocessed.append(call)
+    else:
+        buildBleBody(file,cluster,bleIndex,unprocessed,blackbox)
+
+
 
 #done
 def buildBleInterface(type,file,cluster,location,bleIndex):
@@ -652,16 +706,11 @@ def buildBleBody(file,cluster,bleIndex,unprocessed,blackbox):
     ffmuxId = cluster.LUT_FFMUX_nodes[bleIndex]
     ffmuxNode = globs.nodes[ffmuxId]
 
-    #write the node module instantiation and output wire
-    #writeNodeGraphNodeInterface('instantiation',lutNode,file)
-    #call = partial(writeNodeGraphNodeDescription,file= file ,node = lutNode,isOnCluster = True)
-    #unprocessed.append(call)
+    #because the elut node has special output wires( two outputs)
+    #we cant wrap them into a normal module(just one output)
+    #so we just print them without instantiation.
+
     writeNodeGraphNodeBody(lutNode,file,True)
-
-
-    #writeNodeGraphNodeInterface('instantiation',ffmuxNode,file)
-    #call = partial(writeNodeGraphNodeDescription,file= file ,node = ffmuxNode,isOnCluster = True)
-    #unprocessed.append(call)
     writeNodeGraphNodeBody(ffmuxNode,file,True)
 
 
@@ -677,6 +726,14 @@ def buildBleDescription(file,cluster,location,bleIndex,unprocessed,blackbox):
 ###-----------------------------------------------------------------------------
 ###--------------cluster printer ---------------------------------------------------
 ###-----------------------------------------------------------------------------
+def writeCluster(file,cluster,location,unprocessed,blackBox):
+    if globs.params.hierarchyCluster:
+        buildClusterInterface('instantiation',file,cluster,location)
+        call = partial(buildClusterDescriptions,file,cluster,location,unprocessed,blackbox)
+        unprocessed.append(call)
+    else:
+        buildClusterBody(file,cluster,location,unprocessed,blackbox)
+
 
 #done
 def buildClusterInterface(type,file,cluster,location):
@@ -714,31 +771,17 @@ def buildClusterBody(file,cluster,location,unprocessed,blackbox):
         return
 
     #first build the interconnect
-    if globs.params.hierarchyInterConnect:
-        buildInterconInterface('instantiation',file,cluster,location)
-        call = partial(buildInterconDescription,file,cluster,location,unprocessed,blackbox)
-        unprocessed.append(call)
-    else:
-        buildInterconBody(file,cluster,unprocessed,blackbox)
+    writeIntercon(file,cluster,location,unprocessed,blackbox)
 
     #then the bles
     for bleIndex in range(globs.params.N):
-
-        if globs.params.hierarchyBle:
-            buildBleInterface('instantiation',file,cluster,location,bleIndex)
-            call = partial(buildBleDescription,file,cluster,location,bleIndex,unprocessed,blackbox)
-            unprocessed.append(call)
-        else:
-            buildBleBody(file,cluster,bleIndex,unprocessed,blackbox)
+        writeBle(file,cluster,location,bleIndex,unprocessed,blackbox)
 
     #then the output nodes
     for opinDriver in cluster.outputs:
         #get the ipin node.
         opin = globs.nodes[opinDriver.id]
-
-        writeNodeGraphNodeInterface('instantiation',opin,file)
-        call = partial(writeNodeGraphNodeDescription,file= file ,node = opin,isOnCluster = True)
-        unprocessed.append(call)
+        writeNode(file,opin,True)
 
 
 #done
