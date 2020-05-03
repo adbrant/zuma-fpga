@@ -726,10 +726,10 @@ def buildBleDescription(file,cluster,location,bleIndex,unprocessed,blackbox):
 ###-----------------------------------------------------------------------------
 ###--------------cluster printer ---------------------------------------------------
 ###-----------------------------------------------------------------------------
-def writeCluster(file,cluster,location,unprocessed,blackBox):
+def writeCluster(file,cluster,location,unprocessed,blackbox):
     if globs.params.hierarchyCluster:
         buildClusterInterface('instantiation',file,cluster,location)
-        call = partial(buildClusterDescriptions,file,cluster,location,unprocessed,blackbox)
+        call = partial(buildClusterDescription,file,cluster,location,unprocessed,blackbox)
         unprocessed.append(call)
     else:
         buildClusterBody(file,cluster,location,unprocessed,blackbox)
@@ -738,7 +738,21 @@ def writeCluster(file,cluster,location,unprocessed,blackBox):
 #done
 def buildClusterInterface(type,file,cluster,location):
 
-    #first write a cluster header:
+    #build the connection between the clbs and the outer routing
+    #therfore connect the cluster ipin and opin outputs with the interface
+    #Note: ipins are part of the outer routing and not part of the generated cluster.
+    #for opins we generate a wire for the connection with the outer routing
+    if type == 'instantiation':
+        #for the opins of a cluster we generate a wire for the connection with the cluster module.
+
+        # iterate through the drivers and grep the opin nodes.
+        for opinDriver in cluster.outputs:
+            #get the ipin node.
+            opin = globs.nodes[opinDriver.id]
+            #write the wire
+            file.write('wire ' + 'node_' + str(opin.id) + ';\n')
+
+    #now write a cluster header:
     (x,y) = location
 
     moduleName = 'Cluster_' + str(x) + '_' + str(y)
@@ -797,49 +811,10 @@ def buildClusterDescription(file,cluster,location,unprocessed,blackbox):
 ###--------------end printer ---------------------------------------------------
 ###-----------------------------------------------------------------------------
 
-#done
-#build the connection between the clbs and the outer routing
-#therfore connect the cluster ipin and opin outputs with the interface
-#Note: ipins are part of the outer routing and not part of the generated cluster.
-#for opins we generate a wire for the connection with the outer routing
-def buildClusterInterfaces(type,file):
-
-    if type == 'instantiation':
-        #for the opins of a cluster we generate a wire for the connection with the cluster module.
-        for location in globs.clusters:
-            cluster = globs.clusters[location]
-
-            # iterate through the drivers and grep the opin nodes.
-            for opinDriver in cluster.outputs:
-                #get the ipin node.
-                opin = globs.nodes[opinDriver.id]
-                #write the wire
-                file.write('wire ' + 'node_' + str(opin.id) + ';\n')
-
-    #step through ipins and opins of a cluster and grep the coressponding technolog mapped nodes.
-    #then write a connection for the interface
+def writeClusters(file,unprocessed,blackbox):
     for location in globs.clusters:
         cluster = globs.clusters[location]
-
-        buildClusterInterface(type,file,cluster,location)
-
-#build a special verilog cluster module for each cluster
-#done
-def buildClusterDescriptions(file,unprocessed,blackbox):
-
-
-    #step through ipins and opins of each cluster and grep the coressponding technolog mapped nodes.
-    #then write the corresponding interface
-    for location in globs.clusters:
-        cluster = globs.clusters[location]
-        buildClusterDescription(file,cluster,location,unprocessed,blackbox)
-#done
-def buildClusterBodys(file,unprocessed,blackbox):
-
-    for location in globs.clusters:
-        cluster = globs.clusters[location]
-        buildClusterBody(file,cluster,location,unprocessed,blackbox)
-
+        writeCluster(file,cluster,location,unprocessed,blackbox)
 
 
 #mark nodes of the nodegraph consisting of only one mapped passtrough node as
@@ -919,12 +894,7 @@ def buildVerificationOverlay(fileName,verificationalBuild,blackBox):
     #later we generate these used clb modules by processing the description calls
     buildOuterRouting(file,unprocessed)
 
-    if globs.params.hierarchyCluster:
-        buildClusterInterfaces('instantiation',file)
-        call = partial(buildClusterDescriptions,file,unprocessed,blackBox)
-        unprocessed.append(call)
-    else:
-        buildClusterBodys(file,unprocessed,blackBox)
+    writeClusters(file,unprocessed,blackBox)
 
     #conncet the opins/ipins with the fpga outputs/inputs
     ConnectIO(file)
