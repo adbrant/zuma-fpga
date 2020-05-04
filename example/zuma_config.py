@@ -38,20 +38,21 @@ params.orderedIO = True
 #need a path to yosys in the toolpath.py
 #WARNING: is only supported for vpr version 8
 params.verifyOverlay = False
+params.useClock = False
 
 #if you want to use a packed overlay for verification and build
 params.packedOverlay = True
 
 #for each nodegraph node we can enable if we use a module instation instead
 #of printing just the mapped nodes in the verilog file
-
-params.hierarchyInterConnect = True
-params.hierarchyBle = True
+params.hierarchyNode = False
+params.hierarchyInterConnect = False
+params.hierarchyBle = False
 params.hierarchyCluster = True
 
 #a generation of a black box verilog file where the clusters are not specified.
 #Used to reorganize things with rapidWrite
-params.blackBox = True
+params.blackBox = False
 params.blackBoxBle = True
 params.blackBoxCluster = False
 params.blackBoxInterconnect = True
