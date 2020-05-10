@@ -8,20 +8,22 @@
 
   <!-- Physical descriptions begin (area optimized for N8-K6-L4 -->
   <tiles>
-    <tile name="io" capacity="2">
-      <equivalent_sites>
-        <site pb_type="io"/>
-      </equivalent_sites>
-      <input name="outpad" num_pins="1"/>
-      <output name="inpad" num_pins="1"/>
-      <clock name="ZUMA_CLOCK_NAME" num_pins="1"/>
-      <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
-      <pinlocations pattern="custom">
-        <loc side="left">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
-        <loc side="top">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
-        <loc side="right">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
-        <loc side="bottom">io.outpad io.inpad io.ZUMA_CLOCK_NAME</loc>
-      </pinlocations>
+    <tile name="io">
+      <sub_tile name="IO_TILE" capacity="2">
+        <equivalent_sites>
+          <site pb_type="io"/>
+        </equivalent_sites>
+        <input name="outpad" num_pins="1"/>
+        <output name="inpad" num_pins="1"/>
+        <clock name="ZUMA_CLOCK_NAME" num_pins="1"/>
+        <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
+        <pinlocations pattern="custom">
+          <loc side="left">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+          <loc side="top">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+          <loc side="right">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+          <loc side="bottom">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+        </pinlocations>
+      </sub_tile>
     </tile>
     CLBTILES
   </tiles>

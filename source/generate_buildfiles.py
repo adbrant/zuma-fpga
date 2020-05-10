@@ -13,14 +13,16 @@ def buildClbTilePattern(rep):
 
             tilePattern += \
             '''<tile name="clb''' + location + '''">
-              <equivalent_sites>
-                <site pb_type="clb''' + location + '''"/>
-              </equivalent_sites>
-            <input name="I" num_pins="ZUMA_I"/>
-            <output name="O" num_pins="ZUMA_N"/>
-            <clock name="clk" num_pins="1"/>
-            <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
-            <pinlocations pattern="spread"/>
+              <sub_tile name="CLB_TILE" capacity="1">
+                <equivalent_sites>
+                    <site pb_type="clb''' + location + '''"/>
+                </equivalent_sites>
+                <input name="I" num_pins="ZUMA_I"/>
+                <output name="O" num_pins="ZUMA_N"/>
+                <clock name="clk" num_pins="1"/>
+                <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
+                <pinlocations pattern="spread"/>
+              </sub_tile>
             </tile>
             '''
 

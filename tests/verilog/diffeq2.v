@@ -9,7 +9,7 @@
 --	Date Created	: June 1991.
 --	Introduction	: Behavioral description of a differential equation
 --			  solver written in a synthesizable subset of VHDL.
---	Source		: Written in HardwareC by Rajesh Gupta, Stanford Univ. 
+--	Source		: Written in HardwareC by Rajesh Gupta, Stanford Univ.
 --			  Obtained from the Highlevel Synthesis Workshop
 --                        Repository.
 --
@@ -19,17 +19,17 @@
 --	Disclaimer	: This comes with absolutely no guarantees of any
 --			  kind (just stating the obvious ...)
 --
---      Acknowledgement : The Distributed Synthesis Systems research at 
+--      Acknowledgement : The Distributed Synthesis Systems research at
 --                        the Laboratory for Digital Design Environments,
---                        University of Cincinnati, is sponsored in part 
---                        by the Defense Advanced Research Projects Agency 
---                        under order number 7056 monitored by the Federal 
---                        Bureau of Investigation under contract number 
+--                        University of Cincinnati, is sponsored in part
+--                        by the Defense Advanced Research Projects Agency
+--                        under order number 7056 monitored by the Federal
+--                        Bureau of Investigation under contract number
 --                        J-FBI-89-094.
 --
 --------------------------------------------------------------------------
 -------------------------------------------------------------------------*/
-module diffeq_f_systemC(aport, dxport, xport, yport, uport, clk, reset);
+module diffeq_f_systemC(clk, reset, aport, dxport, xport, yport, uport);
 
 input clk;
 input reset;
@@ -53,7 +53,7 @@ begin
 		uport <= 0;
 	end
 else
-  	if (xport < aport) 
+  	if (xport < aport)
 	begin
 		xport <= xport + dxport;
 		yport <= yport + temp;//(uport * dxport);
