@@ -130,7 +130,7 @@ def createBuildDirAndRunVpr(vtrDir,libDir,fileName,vprVersion,clockName):
     #fix the clock in the abc output if necessary.
     runOdinAndAbc(vtrDir,fileName,vprVersion)
     fixClock(clockName,vtrDir,vprVersion)
-    runVpr(vtrDir,vprVersion,False,clockName)
+    runVpr(vtrDir,vprVersion,False)
 
 
 def runOdinAndAbc(vtrDir,fileName,vprVersion):
@@ -162,7 +162,7 @@ def runOdinAndAbc(vtrDir,fileName,vprVersion):
 
 #@ param timingRun indicate that vpr8 use built in timing analysis
 #                  via the vpr8_timing script
-def runVpr(vtrDir,vprVersion,timingRun,clockName):
+def runVpr(vtrDir,vprVersion,timingRun):
 
     print 'vtrdDir: ' + str(vtrDir)
 

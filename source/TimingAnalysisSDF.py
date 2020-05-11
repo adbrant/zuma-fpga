@@ -236,6 +236,49 @@ def calcPathDelays(paths):
         #calc the path delay and the number of edges without a delay
         calcPathDelay(path)
 
+
+#check if a node is a node from corresponding to the global ordering layer.
+#The timing of this nodes can't be annotated correctly so maybe you want to exclude them
+#from the timing calculation
+#The nodes filtered here are global opin nodes(iomux to opins will be otimized) or a global iomux connected to global input
+#cluster opins are passtrough and were filtered
+def correspondToOrderedLayer(sourceNode,node):
+
+    #the first check is for global opins and the second for the imomuxes connected to an global input
+    #the passtrough check garantues that the opin is not on a cluster.
+    if ((node.source > -1) and (node.type == 3) and (not node.passTrough)) or ((sourceNode is not None) and (node.type == 10)):
+
+        if node.type == 3:
+            print 'Found global opin ' + str(node.name)
+        else:
+            print 'Found global output iomux ' + str(node.name)
+
+        return True
+
+    else:
+        return False
+
+
+#check if the node is a node of the a cluster
+#was taken from buildPackedOverlay.buildOuterRouting
+def isInnerRoutingNode(node):
+
+    #skip opins of clusters, but not those of IOs.
+    if node.type == 3:
+        #check if it is not on an edge of the fpga.
+        if (node.location[0] != 0) and \
+           (node.location[1] != 0) and \
+           (node.location[0] != globs.clusterx) and \
+           (node.location[1] != globs.clustery):
+           return True
+
+    #skip elut ffmux and interconnect nodes
+    if node.type  >= 7 and node.type  <= 9:
+        return True
+
+    #else it is on the outer routing
+    return False
+
 #calc and set the delay for a given path
 def calcPathDelay(path):
 
@@ -265,13 +308,7 @@ def calcPathDelay(path):
 
         # search for a global opin in the path (imux to opins will be otimized)
         # or imux connected to global inputs
-        # cluster opins are passtrough and were filtered
-        if ((node.source > -1) and (node.type == 3) and (not node.passTrough)) or ((sourceNode is not None) and (node.type == 10)):
-
-            if node.type == 3:
-                print 'Found global opin' + str(node.name)
-            else:
-                print 'Found global output iomux ' + str(node.name)
+        if correspondToOrderedLayer(sourceNode,node):
 
             #add the node delay to the ordered layer attribut
             path.orderedDelay = numpy.add(nodeDelay,path.orderedDelay)
@@ -279,6 +316,13 @@ def calcPathDelay(path):
             #don't add the delay to the result when without OrderedLayer is turned on
             if globs.params.skipOrderedLayerTiming:
                 nodeDelay = [0.0,0.0,0.0]
+
+        #if configured we skip some nodes for the critical path
+        if globs.params.skipOuterRoutingTiming and (not isInnerRoutingNode(node)):
+            nodeDelay = [0.0,0.0,0.0]
+
+        if globs.params.skipInnerRoutingTiming and isInnerRoutingNode(node):
+            nodeDelay = [0.0,0.0,0.0]
 
         #add the delay to the result
         delay = numpy.add(delay,nodeDelay)
@@ -471,10 +515,15 @@ def getDelayForNode(sourceNode,node,destNode):
 
 
 #dump every delay in detail
+#TODO: merge this with calcPathDelay. save the information calculated there somewhere
+#and just print it here.
 def dumpAllDelays(path):
 
     sourceNode = None
     destNode = None
+
+    delay = [0.0,0.0,0.0]
+
     for index,node in enumerate(path.path):
 
         #node is not at the end, update th4e destNode
@@ -485,9 +534,24 @@ def dumpAllDelays(path):
 
         #get the delay and add it
         (readPortDelay,ioPathDelay) = getDelayForNode(sourceNode,node,destNode)
+        nodeDelay = numpy.add(readPortDelay,ioPathDelay)
+
+        if correspondToOrderedLayer(sourceNode,node):
+            if globs.params.skipOrderedLayerTiming:
+                nodeDelay = [0.0,0.0,0.0]
+
+        #if configured we skip some nodes for the critical path
+        if globs.params.skipOuterRoutingTiming and (not isInnerRoutingNode(node)):
+            nodeDelay = [0.0,0.0,0.0]
+
+        if globs.params.skipInnerRoutingTiming and isInnerRoutingNode(node):
+            nodeDelay = [0.0,0.0,0.0]
+
+        #add the delay to the result
+        delay = numpy.add(delay,nodeDelay)
 
         print 'node name: ' + str(node.name) + ' readport: ' + str(readPortDelay[2]) + ' iopath: '+ str(ioPathDelay[2]) + \
-              ' sum: ' + str(readPortDelay[2] + ioPathDelay[2])
+              ' sum: ' + str(readPortDelay[2] + ioPathDelay[2]) + " current overall Delay: " + str(delay[2])
 
         #update the sourceNode
         sourceNode = node

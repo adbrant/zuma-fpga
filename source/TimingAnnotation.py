@@ -25,20 +25,10 @@ def addRRSwitch(edge,switchesElement,newId,switchName,delay):
     ET.SubElement(switchElement, 'timing', {'Cin':"0", 'Cinternal':"0", 'Cout':"0", 'R':"0","Tdel":strdelay})
     ET.SubElement(switchElement, 'sizing', {"buf_size":'0',"mux_trans_size":'0'})
 
-
-def annotateBack():
-
-    tree = ET.parse('rr_graph.xml')
-    root = tree.getroot()
-
-    treeVpr = ET.parse('ARCH_vpr8.xml')
-    rootVpr = treeVpr.getroot()
-
-    switchesElement = root.find("./switches")
-    edges = root.findall("./rr_edges/edge")
-
-    switchesElementVpr = rootVpr.find("./switchlist")
-
+#the outer timing annotation is done by adding virtual delay muxes for each edge in the node graph.
+#to add these virtual switches we must add them in the rr_graph file as well in the aritecture description.
+#need the edges xml node of the rr_graph, the switch tag of the rr_graph and of the architecture file.
+def annotateOuterTiming(edges,switchesElement,switchesElementVpr):
 
     for newId,edge in enumerate(edges,2) :
 
@@ -96,9 +86,7 @@ def annotateBack():
         addRRSwitch(edge,switchesElement,newId,switchName,delay)
         addVprSwitch(edge,switchesElementVpr,newId,switchName,delay)
 
-
-    #now propagate the lut timing
-    cmplxBlockElement = rootVpr.find("./complexblocklist")
+def annotateInnerTiming(cmplxBlockElement):
 
     for location,clb in globs.clusters.items():
         x,y = location
@@ -158,6 +146,29 @@ def annotateBack():
             newTime = str(clb.delayBleOutToMuxOut[(bleIndex,'registered')][2]) + "e-12"
 
             directDelayElement.set('max', newTime)
+
+def annotateBack():
+
+    tree = ET.parse('rr_graph.xml')
+    root = tree.getroot()
+
+    treeVpr = ET.parse('ARCH_vpr8.xml')
+    rootVpr = treeVpr.getroot()
+
+    switchesElement = root.find("./switches")
+    edges = root.findall("./rr_edges/edge")
+
+    switchesElementVpr = rootVpr.find("./switchlist")
+
+    if globs.params.annotateOuterRouting:
+        annotateOuterTiming(edges,switchesElement,switchesElementVpr)
+
+
+    #now propagate the lut timing
+    cmplxBlockElement = rootVpr.find("./complexblocklist")
+
+    if globs.params.annotateInnerRouting:
+        annotateInnerTiming(cmplxBlockElement)
 
     #write the modificaion back to the file
     tree.write('rr_graph_timing.xml')
