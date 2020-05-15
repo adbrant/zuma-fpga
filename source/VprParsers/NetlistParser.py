@@ -156,6 +156,9 @@ def parseBleInput(bleNode,netlistBle):
 
                 #get an input from a ble of this cluster.
                 #get the index of the ble instance
+
+                #Note: When using the vpr annotation
+                #it use the number behind the name instead of the instance number
                 if (netlistInput[0:3] == 'ble'):
                     netlistBle.inputs.append( ('ble', int(nums[0])))
 
