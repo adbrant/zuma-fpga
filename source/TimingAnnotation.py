@@ -97,7 +97,12 @@ def annotateInnerTiming(cmplxBlockElement):
         ffmuxDelayElementsLut = clusterElement.findall(".//delay_constant[@in_port='soft_logic.out']")
         ffmuxDelayElementsFF =  clusterElement.findall(".//delay_constant[@in_port='ff.Q']")
         completeDelayElementsClb = clusterElement.findall(".//delay_matrix[@in_port='clb"+ strlocation +".I']")
-        completeDelayElementsBle = clusterElement.findall(".//delay_matrix[@in_port='ble[" + str(globs.params.N -1) + ":0].out']")
+
+        bleOutputs = 'ble0.out'
+        for bleIndex in range(1,globs.params.N):
+            bleOutputs += " ble" + str(bleIndex) + '.out'
+
+        completeDelayElementsBle = clusterElement.findall(".//delay_matrix[@in_port='"+ bleOutputs + "']")
         #directDelayElements =  clusterElement.findall('.//direct/delay_constant')
 
         for bleIndex,lutDelayElement in enumerate(lutDelayElements):
