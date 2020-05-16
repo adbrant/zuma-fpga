@@ -301,7 +301,7 @@ def calcPathDelay(path):
         nodeDelay = numpy.add(readPortDelay,ioPathDelay)
 
         #update the edge counter
-        if readPortDelay == [0.0,0.0,0.0] and (not node.passTrough):
+        if all(portDelay == '0.0' for portDelay in readPortDelay) and (not node.passTrough):
             print "connection " + node.name +" to " +  destNode.name + " has no delay"
             path.edgesWithoutDelay += 1
 

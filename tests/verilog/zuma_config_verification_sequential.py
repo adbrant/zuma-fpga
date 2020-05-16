@@ -97,7 +97,12 @@ params.instancePrefix = "XUM/"
 #signals if the timing of the ordered layer should be used for the critical path calculation
 # this makes only sense when params.orderedIO is turned True
 params.skipOrderedLayerTiming = False
+params.skipOuterRoutingTiming = False
+params.skipInnerRoutingTiming = False
 
 #use vpr8 in a second run to place and route in vpr8 with the timing from the sdf file
 #back annotated to the vpr files
 params.vprAnnotation = False
+#to have a finder control of the timing annotation:
+params.annotateOuterRouting = False
+params.annotateInnerRouting = False
