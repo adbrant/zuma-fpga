@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 #uses a clock file see: http://code.google.com/p/vtr-verilog-to-routing/wiki/ClocksFile
 if [ ! -f user_clocks.clock ]; then

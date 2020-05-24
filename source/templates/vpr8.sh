@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 
   # --echo_file on ## echo_file is for VPR 7 only

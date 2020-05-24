@@ -1,4 +1,14 @@
+# use this if you want to include modules from a subforder.
+# used for the unit tests to import the globs module
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"../")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+
 import re
+import globs
 
 class BlifIO:
     def __init__(self,name,index):
@@ -52,7 +62,7 @@ class BlifFile:
         #the blif model name of the circuit.
         self.circuitName = ""
 
-##need py vpr: extract only the modelname of a blif file
+##need by vpr > 8: extract only the modelname of a blif file
 #@return the modelname
 def extractModelName(filename):
 
@@ -95,7 +105,14 @@ def parseBlif(filename):
 
             #extract the modelname and save it in the blif struct
             items = line.strip().split(' ')
-            blifFile.circuitName = items[1]
+
+            #if vpr < 8 was used, the model has a name but only top is used
+            #as a prefix for every signal instead the modelname
+            #so we use top as the modulename here
+            if globs.params.vprVersion == 8:
+                blifFile.circuitName = items[1]
+            else:
+                blifFile.circuitName = "top"
 
             #read the next line
             line = fh.readline()
@@ -256,6 +273,10 @@ def parseBlif(filename):
 
 def simpleTest():
 
+    globs.init()
+    globs.load_params()
+
+    globs.params.vprVersion = 7
     blif = parseBlif('abc_out.blif')
 
     print "\ninputs \n"
