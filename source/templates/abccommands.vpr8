@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #This script accepts the specification.blif file as input and performs Synthesis and Technology Mapping. The final implemented(Synthesized and mapped) output is written into a .blif file.
 

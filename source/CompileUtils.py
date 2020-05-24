@@ -18,6 +18,9 @@ def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,vprVersion):
     if vprVersion == 8:
         abcPath =  vtrDir / "abc/abc"
         yosysPath = yosysDir / "yosys"
+    elif vprVersion == 7:
+        abcPath =  vtrDir / "abc_with_bb_support/abc"
+        yosysPath = yosysDir / "yosys"
     else:
         print "ERROR: Unsupported vpr version for verilog verification: " + str(vprVersion)
         sys.exit(1)
@@ -92,10 +95,10 @@ def checkEquivalence(vtrDir,vprVersion):
     #choose the right tool path, depending on the vpr version
     if vprVersion == 8:
         abcPath =  vtrDir / "abc/abc"
-        blif_file = "abc_out.blif"
+        blif_file = "clock_fixed.blif"
     elif vprVersion == 7:
         abcPath =  vtrDir / "abc_with_bb_support/abc"
-        blif_file = "abc_out.blif"
+        blif_file = "clock_fixed.blif"
     elif vprVersion == 6:
         abcPath =  vtrDir / "abc_with_bb_support/abc"
         blif_file = "clock_fixed.blif"
@@ -265,10 +268,15 @@ def runZUMA(vprVersion,timingRun):
         blif_file = 'clock_fixed.blif'
         graph_file = 'rr_graph.echo'
     elif vprVersion == 7:
-        blif_file = 'abc_out.blif'
+        blif_file = 'clock_fixed.blif'
         graph_file = 'rr_graph.echo'
     else:
+        #WORKAROUND: the blif parser seems to have problems with the fixed file clock_fixed
+        #caused by the vpr8 fix script
+        #so we use the original abc_out as a workaround for now.
+        #the additional informations of the fixed file are not used by zuma so this is ok.
         blif_file = 'abc_out.blif'
+        #blif_file = 'clock_fixed.blif'
         graph_file = 'rr_graph.xml'
 
     if timingRun:
