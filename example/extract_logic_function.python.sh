@@ -1,5 +1,6 @@
 #!/usr/bin/python2.7
 from plumbum import local
+import sys
 
 def extractLogicFuntion(bitstreamFile,outputBlifFile,hasClock,hasReset):
 
@@ -14,8 +15,17 @@ def extractLogicFuntion(bitstreamFile,outputBlifFile,hasClock,hasReset):
     sys.path.insert(0, str(zumaDir))
     sys.path.insert(0, str(local.cwd))
 
+
+    #get the absolut full path of the parameters before we change the current dir
+    bitstreamFilePath = local.path(bitstreamFile)
+    outputBlifFilePath = local.path(outputBlifFile)
+
     #import the cwd zuma config
     import zuma_config
+
+    if zuma_config.params.vprVersion > 7:
+        print 'Unsupported vpr version: ' + str(zuma_config.params.vprVersion)
+        sys.exit(1)
 
     #load the vtr dir (and optinal yosys dir)
     import toolpaths
@@ -23,7 +33,7 @@ def extractLogicFuntion(bitstreamFile,outputBlifFile,hasClock,hasReset):
 
     #create the build folder and copy necessary scripts
     import CompileUtils
-    CompileUtils.createBuildFolderAndChDir(libDir)
+    CompileUtils.createBuildFolderAndChDir(libDir,"clock")
 
     #apply a patch needed because of the reverse build
     #the first one is vor vpr > 6 and the second for vpr == 6
@@ -32,18 +42,18 @@ def extractLogicFuntion(bitstreamFile,outputBlifFile,hasClock,hasReset):
     cp(str(zumaExampleDir / "dummy_for_extraction.blif"), "./clock_fixed.blif")
 
     #run vpr to create graph.echo
-    CompileUtils.runVpr(vtrDir,vprVersion)
+    CompileUtils.runVpr(vtrDir,zuma_config.params.vprVersion,False)
 
 
     #now run zuma in reverse mode
-
     graph_file = 'rr_graph.echo'
+
     verilog_file = 'ZUMA_custom_generated.v'
-    blif_file = outputBlifFile
+    blif_file = outputBlifFilePath
     place_file = 'place.p'
     route_file = 'route.r'
     net_file = 'netlist.net'
-    mif_file = bitstreamFile
+    mif_file = bitstreamFilePath
 
     maxInputNum = -1
 
@@ -57,8 +67,7 @@ def extractLogicFuntion(bitstreamFile,outputBlifFile,hasClock,hasReset):
               mif_file,
               maxInputNum,
               hasClock,
-              hasReset):
-
+              hasReset)
 
 def main():
 

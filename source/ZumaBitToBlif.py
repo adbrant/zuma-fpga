@@ -64,7 +64,7 @@ def main():
               mif_file,
               maxInputNum,
               useClock,
-              useReset):
+              useReset)
 
 def bitToBlif(graph_file,
               verilog_file,
@@ -98,6 +98,8 @@ def bitToBlif(graph_file,
     Dump.dumpGraph('revereseGraph')
     #output a BLIF of the design
     OutputBlif.output_blif(blif_file)
+
+
 
 if __name__ == '__main__':
     main()
