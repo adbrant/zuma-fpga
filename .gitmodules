@@ -1,3 +1,6 @@
 [submodule "external/vtr"]
 	path = external/vtr
 	url = https://github.com/verilog-to-routing/vtr-verilog-to-routing.git
+[submodule "external/yosys"]
+	path = external/yosys
+	url = https://github.com/YosysHQ/yosys.git
