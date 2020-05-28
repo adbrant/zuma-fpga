@@ -1,0 +1,3 @@
+[submodule "external/vtr"]
+	path = external/vtr
+	url = https://github.com/verilog-to-routing/vtr-verilog-to-routing.git
