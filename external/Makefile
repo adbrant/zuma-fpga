@@ -22,17 +22,17 @@ clean:
 vtr/Makefile yosys/Makefile:
 	cd $$(git rev-parse --show-toplevel) && git submodule update --init --recursive
 
-# ABC itself, depends on VTR
-$(ABC_EXE): vtr
+# # ABC itself, depends on VTR
+# $(ABC_EXE): vtr
 
-# Odin II itself, depends on VTR
-$(ODIN_EXE): vtr
+# # Odin II itself, depends on VTR
+# $(ODIN_EXE): vtr
 
-# VPR itself, depends on VTR
-$(VPR): vtr
+# # VPR itself, depends on VTR
+# $(VPR_EXE): vtr
 
 # Complete VTR flow, depends on being downloaded
-vtr: vtr/Makefile
+$(ABC_EXE) $(ODIN_EXE) $(VPR_EXE) vtr: vtr/Makefile
 	@echo "Building VTR"
 	cd vtr && make
 	@echo "Done building VTR"
