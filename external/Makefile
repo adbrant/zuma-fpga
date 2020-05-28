@@ -37,8 +37,8 @@ vtr: vtr/Makefile
 	cd vtr && make
 	@echo "Done building VTR"
 
-# Yosys itself, depends on being patched
-$(YOSYS_EXE): yosys/Makefile_patched.flag
+# Yosys itself, depends on being downloaded
+$(YOSYS_EXE): yosys/Makefile
 	@echo "Building Yosys"
 	cd yosys && make config-gcc && make
 	@echo "Done building Yosys"
