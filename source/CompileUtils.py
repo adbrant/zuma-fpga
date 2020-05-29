@@ -12,18 +12,29 @@ if cmd_subfolder not in sys.path:
 #to exract the model name
 import BlifParser
 
+def getVTRToolpath(toolname,vtrDir,vprVersion):
+    #choose the right tool path, depending on the vpr version
+    if vprVersion == 8:
+        if (toolname == 'odin'): return (vtrDir / "build/ODIN_II/odin_II")
+        if (toolname == 'abc'):  return (vtrDir / "build/abc/abc")
+        if (toolname == 'vpr'):  return (vtrDir / "build/vpr/vpr")
+    elif vprVersion == 7:
+        if (toolname == 'odin'): return (vtrDir / "ODIN_II/odin_II.exe")
+        if (toolname == 'abc'):  return (vtrDir / "abc_with_bb_support/abc")
+        if (toolname == 'vpr'):  return (vtrDir / "vpr/vpr")
+    elif vprVersion == 6:
+        if (toolname == 'odin'): return (vtrDir / "ODIN_II/odin_II.exe")
+        if (toolname == 'abc'):  return (vtrDir / "abc_with_bb_support/abc")
+        if (toolname == 'vpr'):  return (vtrDir / "vpr/vpr")
+    else:
+        print "ERROR: Unsupported vpr version: " + str(vprVersion)
+        sys.exit(1)
+
 
 def checkOverlayEquivalence(zumaDir,yosysDir,vtrDir,vprVersion):
 
-    if vprVersion == 8:
-        abcPath =  vtrDir / "abc/abc"
-        yosysPath = yosysDir / "yosys"
-    elif vprVersion == 7:
-        abcPath =  vtrDir / "abc_with_bb_support/abc"
-        yosysPath = yosysDir / "yosys"
-    else:
-        print "ERROR: Unsupported vpr version for verilog verification: " + str(vprVersion)
-        sys.exit(1)
+    abcPath = getVTRToolpath('abc',vtrDir,vprVersion)
+    yosysPath = yosysDir / "yosys"
 
     from plumbum.cmd import cp
 
@@ -93,18 +104,8 @@ def runAbcEquivalenceCheck(abcPath,circuit1Path,circuit2Path):
 def checkEquivalence(vtrDir,vprVersion):
 
     #choose the right tool path, depending on the vpr version
-    if vprVersion == 8:
-        abcPath =  vtrDir / "abc/abc"
-        blif_file = "clock_fixed.blif"
-    elif vprVersion == 7:
-        abcPath =  vtrDir / "abc_with_bb_support/abc"
-        blif_file = "clock_fixed.blif"
-    elif vprVersion == 6:
-        abcPath =  vtrDir / "abc_with_bb_support/abc"
-        blif_file = "clock_fixed.blif"
-    else:
-        print "ERROR: Unsupported vpr version: " + str(vprVersion)
-        sys.exit(1)
+    abcPath = getVTRToolpath('abc',vtrDir,vprVersion)
+    blif_file = "clock_fixed.blif"
 
     return runAbcEquivalenceCheck(abcPath,blif_file,"zuma_out.blif")
 
@@ -139,21 +140,12 @@ def createBuildDirAndRunVpr(vtrDir,libDir,fileName,vprVersion,clockName):
 def runOdinAndAbc(vtrDir,fileName,vprVersion):
 
     #choose the right tool path, depending on the vpr version
+    abcPath  = getVTRToolpath('abc',vtrDir,vprVersion)
+    odinPath = getVTRToolpath('odin',vtrDir,vprVersion)
     if vprVersion == 8:
-        odinPath = vtrDir / "ODIN_II/odin_II"
-        abcPath =  vtrDir / "abc/abc"
         abcCommands = "abccommands.vpr8"
-    elif vprVersion == 7:
-        odinPath = vtrDir / "ODIN_II/odin_II.exe"
-        abcPath =  vtrDir / "abc_with_bb_support/abc"
-        abcCommands = "abccommands"
-    elif vprVersion == 6:
-        odinPath = vtrDir / "ODIN_II/odin_II.exe"
-        abcPath =  vtrDir / "abc_with_bb_support/abc"
-        abcCommands = "abccommands"
     else:
-        print "ERROR: Unsupported vpr version: " + str(vprVersion)
-        sys.exit(1)
+        abcCommands = "abccommands"
 
     #load the odin and abc command
     odin = local[odinPath]
