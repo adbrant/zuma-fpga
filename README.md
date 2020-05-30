@@ -51,6 +51,7 @@ as well as examples and tests.
 
 ## Building
 You will need a Linux installation with a working Python 2.7 installation.
+You will also need the python libraries plumbum and numpy and optional graphviz when you want to plot some internal graphs.
 Then just run ```make``` from the root directory.
 
 For more details see the user's manual, [Section 2](doc/ZUMA.pdf).
