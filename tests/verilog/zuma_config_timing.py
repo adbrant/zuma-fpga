@@ -102,8 +102,8 @@ params.skipInnerRoutingTiming = False
 #use vpr8 in a second run to place and route in vpr8 with the timing from the sdf file
 #back annotated to the vpr files
 params.vprAnnotation = True
-params.setupTime = "-45.0e-12"
-params.holdTime = "198.0e-12"
+params.setupTime = "4e-12"
+params.holdTime = "2.0e-9"
 
 #to have a finder control of the timing annotation:
 params.annotateOuterRouting = True

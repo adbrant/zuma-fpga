@@ -10,6 +10,10 @@ $VTR_DIR/vpr/vpr ARCH_vpr8_timing.xml zuma \
 --timing_analysis on \
 --full_stats on \
 --timing_report_detail debug \
+--routing_budgets_algorithm minimax \
+--timing_report_skew on \
+--post_place_timing_report postplacetiming \
+--save_routing_per_iteration on \
 --disp off \
 --route_chan_width ZUMA_CHAN_W \
 --echo_file on \
