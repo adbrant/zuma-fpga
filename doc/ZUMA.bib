@@ -1,0 +1,50 @@
+% Encoding: UTF-8
+
+@InProceedings{brantlemieux2012ZUMA,
+  Title                    = {{ZUMA}: An Open {FPGA} Overlay Architecture},
+  Author                   = {Brant, Alexander D. and Lemieux, Guy G. F.},
+  Booktitle                = {International Symposium on Field-Programmable Custom Computing Machines (FCCM)},
+  DOI                      = {10.1109/FCCM.2012.25},
+  Pages                    = {93--96},
+  Publisher                = {{IEEE}},
+  year                     = {2012},
+}
+
+@Masterthesis{brant2013MT,
+  Title       = {Coarse and Fine Grain Programmable Overlay Architectures for {FPGA}s},
+  Author      = {Alexander Dunlop Brant},
+  Month       = {2},
+  Institution = {The University Of British Columbia (Vancouver)},
+  Language    = {English},
+  URL         = {http://hdl.handle.net/2429/43918},
+  year        = {2013},
+  Abstract    = {Overlay architectures are programmable logic systems that are compiled on top of a traditional FPGA. These architectures give designers flexibility, and have a number of benefits, such as being designed or optimized for specific application domains, making it easier or more efficient to implement solutions, being independent of platform, allowing the ability to do partial reconfiguration regardless of the underlying architecture, and allowing compilation without using vendor tools, in some cases with fully open source tool chains. This thesis describes the implementation of two FPGA overlay architectures, ZUMA and CARBON. These overlay implementations include optimizations to reduce area and increase speed which may be applicable to many other FPGAs and also ASIC systems. ZUMA is a fine-grain overlay which resembles a modern commercial FPGA, and is compatible with the VTR open source compilation tools. The implementation includes a number of novel features tailored to efficient FPGA implementation, including the utilization of reprogrammable LUTRAMs, a novel two-stage local routing crossbar, and an area efficient configuration controller. CARBON is a coarse-grain, time-multiplexed architecture, that directly implements the coarse-grain portion of the MALIBU architecture. MALIBU is a hybrid fine-grain and coarse-grain FPGA architecture that can be built using the combination of both CARBON and ZUMA, but this thesis focuses on their individual implementations. Time-multiplexing in CARBON greatly reduces performance, so it is vital to be optimized for delay. To push the speed of CARBON beyond the normal bound predicted by static timing analysis tools, this thesis has applied the Razor dynamic timing error tolerance system inside CARBON. This can dynamically push the clock frequency yet maintain correct operation. This required developing an extension of the Razor system from its original 1D feed-forward pipeline to a 2D bidirectional pipeline. Together the ZUMA and CARBON implementations demonstrate new types of area and delay enhancements being applied to FPGA overlays.},
+}
+
+@InProceedings{wiersemaBP2014ZUMAReconOS,
+  Title                    = {Embedding {FPGA} Overlays into Configurable Systems-on-Chip: {ReconOS} meets {ZUMA}},
+  Author                   = {Tobias Wiersema AND Arne Bockhorn AND Marco Platzner},
+  Booktitle                = {2014 International Conference on ReConFigurable Computing and FPGAs},
+  eventtitle               = {{ReConFig'14}},
+  eventdate                = {2014-12-08/2014-12-10},
+  venue                    = {Cancun, Mexico},
+  DOI                      = {10.1109/ReConFig.2014.7032514},
+  Month                    = {12},
+  Pages                    = {1--6},
+  Publisher                = {{IEEE}},
+  year                     = {2014},
+  Abstract                 = {Virtual FPGAs are overlay architectures realized on top of physical FPGAs. They are proposed to enhance or abstract away from the physical FPGA for experimenting with novel architectures and design tool flows. In this paper, we present an embedding of a ZUMA-based virtual FPGA fabric into a complete configurable system-on-chip. Such an embedding is required to fully harness the potential of virtual FPGAs, in particular to give the virtual circuits access to main memory and operating system services, and to enable a concurrent operation of virtualized and non-virtualized circuitry. We discuss our extension to ZUMA and its embedding into the ReconOS operating system for hardware/software systems. Furthermore, we present an open source tool flow to synthesize configurations for the virtual FPGA.},
+}
+
+@Article{wiersemaBP2016ZUMAReconOS,
+  Title                    = {An Architecture and Design Tool Flow for Embedding a Virtual {FPGA} into a Reconfigurable System-on-Chip},
+  Author                   = {Tobias Wiersema and Arne Bockhorn and Marco Platzner},
+  Journal                  = {Computers and Electrical Engineering},
+  year                     = {2016},
+  volume                   = {55},
+  pages                    = {112--122},
+  DOI                      = {10.1016/j.compeleceng.2016.04.005},
+  Editor                   = {Manu Malek},
+  publisher                = {Elsevier},
+}
+
