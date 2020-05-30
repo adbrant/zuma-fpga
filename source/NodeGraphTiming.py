@@ -113,6 +113,19 @@ def AnnotateTiming():
 
             continue
 
+        if node.eLUT:
+
+            #get the mapped node
+            name = node.mappedNodes[-1]
+            mappedNode = globs.technologyMappedNodes.getNodeByName(name)
+
+            #transfer the ff delays
+            node.ffIODelay = mappedNode.ffIODelay
+            node.ffReadPortDelay = mappedNode.ffReadPortDelay
+
+
+        #TODO:works also for elut but we should handle the inputs in the section above
+
         #for every input get the path delay started
         #from the first lvl nodes to the last mapped node
         #and use these first lvl nodes for the port delay

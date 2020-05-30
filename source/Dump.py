@@ -143,6 +143,12 @@ def dumpGraph(filename):
             f.write( '\noutput name: \n')
             f.write( str(node.LUT.output) + ",\n")
 
+        if (node.type == 8) and globs.params.vprAnnotation:
+            if node.ffReadPortDelay is not None:
+                f.write( 'ffReadPortDelay: '     + str( node.ffReadPortDelay)+ '\n')
+            if node.ffIODelay is not None:
+                f.write( 'ffIODelay: '     + str( node.ffIODelay)+ '\n')
+
         if globs.params.graphviz:
 
 

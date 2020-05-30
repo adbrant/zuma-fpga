@@ -43,11 +43,14 @@ def buildBles(tempArchFile):
               <input name="D" num_pins="1" port_class="D"/>
               <output name="Q" num_pins="1" port_class="Q"/>
               <clock name="clk" num_pins="1" port_class="clock"/>
-              <T_setup value="0" port="ff.D" clock="clk"/>
+              <T_setup value="ZUMA_SETUP" port="ff.D" clock="clk"/>
+              <T_hold value="ZUMA_HOLD" port="ff.D" clock="clk"/>
               <T_clock_to_Q max="0" port="ff.Q" clock="clk"/>
             </pb_type>
             <interconnect>
-              <direct name="direct1" input="soft_logic.out[0:0]" output="ff.D"/>
+              <direct name="direct1" input="soft_logic.out[0:0]" output="ff.D">
+                <delay_constant in_port="soft_logic.out[0:0]" max="0" out_port="ff.D" />
+              </direct>
               <direct name="direct2" input="''' + bleName + '''.in" output="soft_logic.in"/>
               <direct name="direct3" input="''' + bleName + '''.clk" output="ff.clk"/>
               <mux name="mux1" input="ff.Q soft_logic.out[0:0]" output="''' + bleName + '''.out[0:0]">
@@ -301,6 +304,8 @@ def buildTimingArchFile(tempFileName,targetFileName,rep):
 
     tempArchFile.close()
 
+    rep.append(['ZUMA_SETUP',str(zuma_config.params.setupTime)])
+    rep.append(['ZUMA_HOLD',str(zuma_config.params.holdTime)])
 
     replacePlaceholders(tempFileName,targetFileName,rep)
 

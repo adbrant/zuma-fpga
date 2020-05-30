@@ -91,6 +91,10 @@ class Node():
         self.ioPathDelay = None
         self.readPortDelay = None
 
+        #elut have the ff timing as well
+        self.ffIODelay = None
+        self.ffReadPortDelay = None
+
         #indicate that this node have only a mapped passtrough node as a child
         self.passTrough = False
 

@@ -100,6 +100,7 @@ def addFlipflopCellDelayToMappedNode(name,cell):
 
             if port.name == 'C':
                 ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
+                #print("Clk delay" + mappedNode.name + str(port.fallingDelay))
 
             if port.name == 'D':
                 ffReadPortDelay = numpy.add(port.fallingDelay,ffReadPortDelay)
@@ -107,9 +108,11 @@ def addFlipflopCellDelayToMappedNode(name,cell):
     for pathName,ioPath in cell.ioPaths.items():
 
         if globs.params.sdfUsedTool == "ise" and ioPath.name == 'CLK':
-            ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
+            ffIODelay = numpy.add(ioPath.fallingDelay,ffIODelay)
+
         elif globs.params.sdfUsedTool == "vivado" and ioPath.name == 'C':
-            ffIODelay = numpy.add(port.fallingDelay,ffIODelay)
+            ffIODelay = numpy.add(ioPath.fallingDelay,ffIODelay)
+            #print("io delay" + mappedNode.name + str(ioPath.fallingDelay))
 
     #if ffReadPortDelay == [0.0,0.0,0.0]:
     if all(delay == '0.0' for delay in ffReadPortDelay):

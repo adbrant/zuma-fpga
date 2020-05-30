@@ -94,8 +94,13 @@ def annotateInnerTiming(cmplxBlockElement):
         clusterElement = cmplxBlockElement.find("./pb_type[@name='clb"+ strlocation + "']")
         #no find the delays
         lutDelayElements = clusterElement.findall(".//delay_matrix[@in_port='lut6.in']")
-        ffmuxDelayElementsLut = clusterElement.findall(".//delay_constant[@in_port='soft_logic.out']")
-        ffmuxDelayElementsFF =  clusterElement.findall(".//delay_constant[@in_port='ff.Q']")
+
+        latcheslutToFF = clusterElement.findall(".//delay_constant[@in_port='soft_logic.out[0:0]']")
+        latchesClockToQ = clusterElement.findall(".//T_clock_to_Q")
+
+        ffmuxDelayElementsLut = clusterElement.findall(".//mux/delay_constant[@in_port='soft_logic.out']")
+        ffmuxDelayElementsFF =  clusterElement.findall(".//mux/delay_constant[@in_port='ff.Q']")
+
         completeDelayElementsClb = clusterElement.findall(".//delay_matrix[@in_port='clb"+ strlocation +".I']")
 
         bleOutputs = 'ble0.out'
@@ -109,7 +114,9 @@ def annotateInnerTiming(cmplxBlockElement):
 
             newText = ''
             for blePinPosition in range(globs.params.K):
-                newText += str(clb.delayBle[(bleIndex,blePinPosition)][2]) + "e-12 "
+                delayLut = clb.delayBle[(bleIndex,blePinPosition)]
+
+                newText += str(delayLut[2]) + "e-12 "
                 newText += '\n'
 
             lutDelayElement.text = newText
@@ -151,6 +158,19 @@ def annotateInnerTiming(cmplxBlockElement):
             newTime = str(clb.delayBleOutToMuxOut[(bleIndex,'registered')][2]) + "e-12"
 
             directDelayElement.set('max', newTime)
+        #----------------------
+        for bleIndex,latch in enumerate(latcheslutToFF):
+
+            (lutToFF,clockToQ) = clb.delayLatch[bleIndex]
+            newTime = str(lutToFF[2]) + "e-12"
+            latch.set('max', newTime)
+        #----------------------
+        for bleIndex,latch in enumerate(latchesClockToQ):
+
+            (lutToFF,clockToQ) = clb.delayLatch[bleIndex]
+            newTime = str(clockToQ[2]) + "e-12"
+            latch.set('max', newTime)
+
 
 def annotateBack():
 
@@ -186,7 +206,7 @@ def annotateBleOutToMuxOut(clb):
     delay = {}
 
     #iterate thorugh the ffmux and clac the delays.
-    #note that a ffmux has two inputs from a lut (unregisterd/registered).
+    #note that a ffmux has two inputs from a lut (unregistered/registered).
     #one combinatorial input and one from the flipflop
     for bleIndex,ffmuxId in enumerate(clb.LUT_FFMUX_nodes):
 
@@ -269,29 +289,45 @@ def annotateClbInToBleIn(clb):
     clb.delayClbInToBleIn = delay
 
 #annotate the lut delay (port delay and io path) for every lut
+#the ble save the following information: (delayLut,lutToFF,clocktoq)
+#  -delayLut ist the readport delay and the iopath of the lut
+#  -lutToFF is is the delay of the connection from the lut to the ff
+#  -clocktoq is the delay from the clock to the ff output
 def annotateBle(clb):
 
     delay = {}
+    latchDelay = {}
 
     for bleIndex in range(globs.params.N):
-        for blePinPosition in range(globs.params.K):
 
-            #get the elut node
-            elutId = clb.LUT_nodes[bleIndex]
-            elutNode = globs.nodes[elutId]
+        #get the elut node
+        elutId = clb.LUT_nodes[bleIndex]
+        elutNode = globs.nodes[elutId]
+
+        for blePinPosition in range(globs.params.K):
 
             #get the input id for accessing port delay
             inputId = elutNode.inputs[blePinPosition]
 
             #now get the delay
-            delayElut = numpy.add(elutNode.ioPathDelay[inputId],elutNode.readPortDelay[inputId])
+            delayLut = numpy.add(elutNode.ioPathDelay[inputId],elutNode.readPortDelay[inputId])
 
             #add the delay to the dict
             key = (bleIndex,blePinPosition)
-            delay[key] = delayElut
+            delay[key] = delayLut
+
+        #now get the flip flop timing:
+        lutToFF = elutNode.ffReadPortDelay
+        clockToQ = elutNode.ffIODelay
+        #lutToFF = [0.0,0.0,0.0]
+        #clockToQ = [0.0,0.0,0.0]
+
+        latchDelay[bleIndex] = (lutToFF,clockToQ)
+
 
     #append the delay to the cluster
     clb.delayBle = delay
+    clb.delayLatch = latchDelay
 
 ##annotate each cluster with a couple of delay dictionaries to represent the internal delays.
 # we used the same method as for the global routing graph

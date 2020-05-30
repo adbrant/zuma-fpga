@@ -448,20 +448,21 @@ def getDelayForNode(sourceNode,node,destNode):
 
     if node.isElut():
 
-        if node.UseItsFlipflop():
-
-            #end with a flipflop: destnode is a lut node and
-            #we must include the read delay of the ff
-            if (destNode is None):
-                return (node.ffReadPortDelay,[0.0,0.0,0.0])
+        #if the path start here we have an exception:
+        #we just use the iopath which is the clk delay and the internal io delay
+        #from the flipflop saved together in ffIODelay
+        if node.UseItsFlipflop() and (destNode is not None):
 
             #start with a flipflop. current node is a lut
-            if (destNode is not None):
-                return ([0.0,0.0,0.0],node.ffIODelay)
+            #and we have no read port delay
+            #the clk delay was saved in the iopath by ReadSDF.addFlipflopCellDelayToMappedNode()
+            return ([0.0,0.0,0.0],node.ffIODelay)
 
-        #timing for a elut which use its unregistered output:
+        #else we could have the lut alone using the unregistered output
+        #or the two together on the registered output
+
         #the source node will never be None, because path don't start
-        #by a unregistered used lut.
+        #by a unregistered or registered used lut in this branch.
         else:
             portIndex = node.inputs.index(sourceNode.name)
 
@@ -471,6 +472,12 @@ def getDelayForNode(sourceNode,node,destNode):
 
             readPortDelay = node.readPortDelay[portIndex]
             ioPathDelay = node.ioPathDelay[portIndex]
+
+            #end with a flipflop: destnode is a lut node and
+            #we must include the read delay of the ff
+            #which is the delay of the connection of the lut and the ff
+            if (destNode is None):
+                ioPathDelay = numpy.add(ioPathDelay,node.ffReadPortDelay)
 
             return (readPortDelay,ioPathDelay)
 
