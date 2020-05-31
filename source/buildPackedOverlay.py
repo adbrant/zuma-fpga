@@ -415,7 +415,7 @@ def buildOuterRouting(file,unprocessed):
 
         #else print all mapped child nodes and their wires to the file
         #while printing the instantiation to the main
-        writeNode(file,node,False)
+        writeNode(file,node,False,unprocessed)
 
 #print the wire and lutram instance
 def writeMappedNode(file,node,isOnCluster):
@@ -511,11 +511,11 @@ def generalInterface(type,file,moduleName,instanceName,inputNames,outputNames):
 ###-----------------------------------------------------------------------------
 ###--------------node graph printer --------------------------------------------
 ###-----------------------------------------------------------------------------
-def writeNode(file,node,isOnCluster):
+def writeNode(file,node,isOnCluster,unprocessed):
 
     if globs.params.hierarchyNode:
-        writeNodeGraphNodeInterface('instantiation',opin,file)
-        call = partial(writeNodeGraphNodeDescription,file= file ,node = opin,isOnCluster = isOnCluster)
+        writeNodeGraphNodeInterface('instantiation',node,file)
+        call = partial(writeNodeGraphNodeDescription,file= file ,node = node,isOnCluster = isOnCluster)
         unprocessed.append(call)
     else:
         writeNodeGraphNodeBody(node,file,isOnCluster)
@@ -636,7 +636,7 @@ def buildInterconBody(file,cluster,unprocessed,blackbox):
             interconNode = globs.nodes[interconNodeId]
 
             #write the node module instantiation and output wire
-            writeNode(file,interconNode,True)
+            writeNode(file,interconNode,True,unprocessed)
 
 #done
 def buildInterconDescription(file,cluster,location,unprocessed,blackbox):
@@ -795,7 +795,7 @@ def buildClusterBody(file,cluster,location,unprocessed,blackbox):
     for opinDriver in cluster.outputs:
         #get the ipin node.
         opin = globs.nodes[opinDriver.id]
-        writeNode(file,opin,True)
+        writeNode(file,opin,True,unprocessed)
 
 
 #done

@@ -6,6 +6,7 @@ import os
 import inspect
 import sys
 import numpy
+import re
 
 # use this if you want to include modules from a subforder
 cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
@@ -37,7 +38,7 @@ def isFlipFlopCell(cell):
 
     return False
 
-## Extract the lut name out of the cell name
+## Extract the lut name out of the cell name which is the node id
 # return the lut name
 def getLutName(cell):
 
@@ -51,7 +52,9 @@ def getLutName(cell):
                 globs.params.instancePrefix,
                 divider + "LUT/" )
 
+
     #delete the prefix. support various versions of zuma
+    #(only the else branch is for the new vpr8 version)
     if lutName[0:4] == "mux_":
         lutName = lutName[4:]
     elif lutName[0:6] == "c_mux_":
@@ -61,15 +64,30 @@ def getLutName(cell):
     elif lutName[0:4] == "LUT_":
         lutName = lutName[4:]
     else:
-        #have a cluster prefix
-        for x in range(0,globs.clusterx):
-            for y in range(0,globs.clustery):
-                if lutName[0:16] == ("cluster_" + str(x) + "_" + str(y) + "/MUX_") or \
-                   lutName[0:16] == ("cluster_"+ str(x) + "_"+ str(y) + "/LUT_"):
 
-                    lutName = lutName[16:]
-                    return lutName
+        #have a cluster prefix : cluster_\d_\d or a hirachy node prefix: mod_node + node id
+        #a name could be then have only the prefix MUX_ or LUT_
+        #only extract the id and reassign it to lutname
+        #maybe we change the cluster and mode node modifier )? with a group
+        #if the flags turn on to have a more strict parsing
+        regexp = r"(cluster_\d+_\d+/)?(mod_node_\d+/)?(MUX_|LUT_)(?P<id>\w*)"
+        pattern =re.compile(regexp)
+        res = pattern.search(lutName)
+        extractedName = ''
 
+        if res is not None:
+            extractedName = res.group("id")
+        else:
+            print "ERROR: can't apply pattern on string:" + str(lutName)
+            sys.exit(1)
+
+        if (extractedName is not '') and (extractedName is not None):
+            return extractedName
+        else:
+            print "ERROR: can't extract lut name of string:" + str(lutName)
+            sys.exit(1)
+
+    #for the old vpr versions return the new lutname(id)
     return lutName
 
 
