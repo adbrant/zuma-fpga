@@ -10,6 +10,7 @@
 \usepackage{subcaption}
 \usepackage{tabularx}
 \usepackage[numbers]{natbib}
+\usepackage{placeins}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=red,urlcolor=blue]{hyperref}
 \usepackage{doi}
 \graphicspath{{./Figures/}} 
@@ -41,6 +42,27 @@
     {\it #1}%
 }
 
+% Relax some LaTeX defaults for better treatment of figures:
+    % See p.105 of "TeX Unbound" for suggested values.
+    % See pp. 199-200 of Lamport's "LaTeX" book for details.
+    %   General parameters, for ALL pages:
+    \renewcommand{\topfraction}{0.95}  % max fraction of floats at top
+    \renewcommand{\bottomfraction}{0.9} % max fraction of floats at bottom
+    %   Parameters for TEXT pages (not float pages):
+    \setcounter{topnumber}{2}
+    \setcounter{bottomnumber}{2}
+    \setcounter{totalnumber}{4}     % 2 may work better
+    \setcounter{dbltopnumber}{2}    % for 2-column pages
+    \renewcommand{\dbltopfraction}{0.9} % fit big float above 2-col. text
+    \renewcommand{\textfraction}{0.07}  % allow minimal text w. figs
+    %   Parameters for FLOAT pages (not text pages):
+    \renewcommand{\floatpagefraction}{0.7}  % require fuller float pages
+    % N.B.: floatpagefraction MUST be less than topfraction !!
+    \renewcommand{\dblfloatpagefraction}{0.7} % require fuller float pages
+
+  % remember to use [htp] or [htpb] for placement
+
+
 \begin{document}
 
 \title{ZUMA User's Manual}
@@ -53,9 +75,20 @@
 \section{Introduction}
 This repository contains the ZUMA FPGA overlay architecture system that was introduced by 
 \begin{NoHyper}\citeauthor{brantlemieux2012ZUMA} in \citeyear{brantlemieux2012ZUMA}\end{NoHyper}~\cite{brantlemieux2012ZUMA,brant2013MT} and later extended by Wiersema, Bockhorn and Platzner~\cite{wiersemaBP2014ZUMAReconOS,wiersemaBP2016ZUMAReconOS} and several students of Paderborn University.
+ZUMA is an open-source, cross-compatible embedded FPGA architecture that is intended as an overlay on top of an existing FPGA, in essence an ``FPGA-on-an-FPGA.''
+This approach of a virtual FPGA has a number of benefits, including bitstream compatibility between different vendors and parts, compatibility with open FPGA tool flows, and the ability to embed some programmable logic into systems on FPGAs without the need for releasing or recompiling the master netlist.
 
 \clearpage
-\noindent The folders contain a number of components needed to use ZUMA, as well as examples and tests.
+This manual provides an overview of the ZUMA system and contains the following elements:
+\begin{enumerate}
+    \item Instructions on how to prepare the repository  and external tools to be able to run the overlay generation flow (Section~\ref{sec:installation}).
+    \item Instructions on how to operate the basic tool flow of ZUMA (Section~\ref{sec:runningtools}).
+    \item Instructions for including a generated overlay into a new or existing FPGA design (Section~\ref{sec:include_ZUMA_in_project}).
+    \item An in-depth description of the underlying FPGA model of the virtual FPGA and how it corresponds to the build parameters of the ZUMA system, as well as an overview of the generated output files and their layout (Section~\ref{sec:background}).
+    This should allow you to configure the virtual FPGA to your needs.
+\end{enumerate}
+
+\noindent The folders included in this repository contain a number of components needed to use ZUMA, as well as examples and tests.
 The directory structure is as follows:\\[1.5mm]
 \renewcommand{\arraystretch}{1.4}%
 \begin{tabularx}{\textwidth}{lX}
@@ -74,7 +107,19 @@ The directory structure is as follows:\\[1.5mm]
     \hline \\
 \end{tabularx}
 
+
+
+
+
+
+
+
+
+
+
+
 \section{Installation}
+\label{sec:installation}
 ZUMA scripts are written in Python, and require a valid Python install to run.
 The scripts are tested with Python 2.7. To just get started, just run
 \begin{verbatim}
@@ -116,7 +161,19 @@ Should you want to use an existing Yosys installation with theses scripts, you c
 To change it globally, update the file \inlinepath{toolpaths.py} in the base directory to point to your installation location.
 
 
-\section{Running the Tools}
+
+
+
+
+
+
+
+
+
+
+
+\section{Running the Tools}%
+\label{sec:runningtools}
 \subsection{Running the Example}
 Calling the Python script
 \begin{verbatim}
@@ -224,6 +281,18 @@ Also you have to reactivate the \parameter{params.sdf} flag and edit the instanc
 After performing these steps, you can run the ZUMA \inlinepath{compile.sh} script with any virtual circuit to get its critical path. The path and resulting frequency \(f_{max}\) will be printed on the command line.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Caveats and Restrictions}
 A constraint for the virtual circuit file is that the head of the model must have the following signature:
 \begin{verbatim}
@@ -237,6 +306,19 @@ The LUTRAMs used in the ZUMA architecture and contained in this repository are g
 
 Note that the Altera macros have not been maintained and that for the current ZUMA version thus only the Xilinx side is tested and guaranteed to work with current vendor tool flows.
 Especially support for sequential virtual circuits has so far only been implemented for Xilinx projects. 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %\clearpage
 \section{Including a ZUMA Overlay in a Project}
@@ -387,8 +469,160 @@ This problem can be solved by instantiating the LUTRAM modules from an .edif net
 Details of this solution can be found at \url{https://forums.xilinx.com/t5/Design-Entry/Adding-xilinx-IP-dcp-files-for-packaging-custom-IP-to-speed-up/td-p/603142} and\\ also at \url{https://www.xilinx.com/support/answers/54074.html}.
 
 
+
+
+
+
+
+
+
+\clearpage
+\section{Background}
+\label{sec:background}
+This section's purpose is to give you enough insight into the ZUMA overlay structure and the generated files, so that you can tweak the generated virtual FPGAs to best fit your needs.
+
+
+
+
+
+\subsection{Basic FPGA Model Used by ZUMA}
+Since ZUMA derives its FPGA model from architectures defined using the VTR tool flow, we will use their notions and general model division here.
+On the most abstract level, ZUMA thus uses an island-style FPGA layout as depicted in Figure~\ref{fig:island-style_fpga}, i.e., logic block islands floating on a sea of interconnect, which is also called the Toronto FPGA model.
+VTR usually denotes these logic blocks as as \emph{configurable logic blocks (CLBs)}, and within the ZUMA material they are often simply called \emph{clusters}.
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/island_style}%
+    \caption{General island-style FPGA layout. Source:~\cite{ComptonH2002Reconfigurablecomputingsurvey}.}
+    \label{fig:island-style_fpga}
+\end{figure}
+
+For our explanations, we consider the virtual FPGA structure on two different levels:
+\begin{enumerate}
+    \item The global structure and layout with all the interconnect between the CLBs.
+    \item The local structure and layout within each CLB.
+\end{enumerate}
+
+\subsubsection{Global Structure}
+The outer, global structure of the generated virtual FPGAs consists of an \(X \times Y\) array of CLBs as depicted in Figure~\ref{fig:global_zuma_structure}.
+The inputs and outputs of the virtual device are modeled on the edges of the grid, resulting in \({2 \cdot (X + Y)}\) IO pads.
+For ZUMA, each of these IO pads comprises two general purpose IOs, i.e., IOs which can be configured to be either a global input or a global output, such that the virtual device has \({\#GIOs = 4 \cdot (X + Y)}\).
+Thus, the overlay can divide the \(\#GIOs\) general purpose IOs between the global inputs and outputs as required by the current circuit.
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/structure.pdf}
+    \caption{Global structure of a \(2 \times 2\) virtual FPGA. Source: VPR manual.}
+    \label{fig:global_zuma_structure}
+\end{figure}
+
+\newpage
+The routing resources are organized as routing channels in \emph{x} or \emph{y} direction (\emph{Chanx} and \emph{Chany}), and they form a unidirectional interconnect network between the CLBs and the outer IOs.
+Each channel consists of a number of individual tracks that can carry one logical signal each.
+The channels and tracks are visualized in Figure~\ref{fig:channels}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/channels.pdf}
+    \caption{Tracks of different lengths and directions in channels: The purple track connects resources vertically and has a length of 2, while red ones are horizontal and the upper one has a length of 1. Source: VPR.}
+    \label{fig:channels}
+\end{figure}
+
+\FloatBarrier
+
+The channels are connected to each other via switchboxes,
+which are shown in Figure~\ref{fig:switchboxes}.
+Within these areas, a selection of tracks from each channel can be connected to a selection of other tracks of different channels.
+Since allowing the complete connection of any track to any other track would be too area consuming, ZUMA overlays, like many other FPGA devices, employ a crossbar pattern known as Wilton routing~\cite{wilton1997ArchitecturesandAlgorithms} here.
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Figures/switchbox.pdf}
+    \caption{Tracks of channels are connected by the switchboxes (green). Source: VPR.}
+    \label{fig:switchboxes}
+\end{figure}
+
+Each CLB connects to some of the tracks of the surrounding channels of the global routing resources -- these connection locations are typically called connect blocks (cp.~Figure~\ref{fig:island-style_fpga}).
+Each CLB element thus has its own connect block to connect itself to the global routing resources, and a switchbox to actually realize the global routing.
+Therefore the global outer structure of a ZUMA virtual FPGA consists of the global routing network (channels, connect blocks, and switchboxes), CLBs (or clusters), and IO pads.
+
+\FloatBarrier
+\subsubsection{Local Structure}
+Each CLB, or cluster, consists of an input interconnect block (IIB) for its intra-cluster input routing and \(N\) basic logic elements (BLE).
+These BLEs in turn comprise one lookup table (LUT) with input width K, and one flip flop (FF) that is bypassable using a configurable MUX, see image \ref{fig:cluster}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/ZUMA_CLB}
+    \caption{The structure of a ZUMA CLB, or cluster.}
+    \label{fig:cluster}
+\end{figure}
+
+The \(N\)\,bit output of the whole cluster is the combined output of the \(N\) individual BLEs.
+The IIB is fed with the \(I\) inputs from the connect block, i.e., the connected input tracks from the global routing resources, and also with the \(N\) feedback outputs from the BLE elements.
+Each of these \({(I+N)}\) inputs must be routed to (almost) every pin of all \(N\) LUTs.
+Therefore the \({N \cdot K}\) outputs of the IIB are connected to the different input pins of the BLE elements.
+
+\newpage
+Currently the IIB is implemented using connected MUXes, and there are two different implementations available to choose from, each with a different MUX density:
+\begin{enumerate}
+    \item The first IIB is a straightforward fully-connected crossbar between the \({(I+N)}\) inputs and the \({N \cdot K}\) outputs, which requires a considerable amount of MUXes to realize, but cannot suffer from congestion and is thus guaranteed to find a local routing for any configuration.
+    \item The second one is based on Clos networks~\cite{Clos1953Studynonblocking} and uses fewer MUXes, 
+    but the local routing algorithm does not always find a valid interconnect routing, due to randomness in the current routing approach.
+\end{enumerate}
+
+\subsubsection{Structure Configuration Parameters}
+The structure-related ZUMA configuration parameters are thus as follows:\\[1.5mm]
+\renewcommand{\arraystretch}{1.2}%
+\begin{tabularx}{\textwidth}{lX}
+    \hline 
+    \multicolumn{2}{l}{\emph{Global structure}} \\
+    \hline 
+    X             & Grid size in \emph{x} dimension \\
+    Y             & Grid size in \emph{y} dimension \\
+    L             & Length of the routing channels \\
+    W             & Number of tracks per routing channel \\
+    \hline 
+    \multicolumn{2}{l}{\emph{Local structure}} \\
+    \hline 
+    I             & External cluster inputs (from connect block to IIB) \\
+    N             & LUTs per cluster \\
+    K             & LUT input width \\
+    UseClos       & Whether the IIB should be Clos network-based (otherwise it is a fully connected crossbar) \\
+    \cline{1-1} 
+    \multicolumn{2}{l}{\emph{Connect block}} \\
+    \cline{1-1} 
+    fc\_in        & From how many tracks of the connect block each of the \(I\) cluster inputs can be driven \\
+    fc\_in\_type  & Whether \emph{fc\_in} is an absolute number or relative value \\
+    fc\_out       & How many tracks of the connect block each of the \(N\) cluster outputs can drive\\
+    fc\_out\_type & Whether \emph{fc\_out} is an absolute number or relative value \\
+    \hline \\
+\end{tabularx}
+
+%\section{The ZUMA toolflow}
+%
+%The previous discussed model is used to configure the virtual FPGA,
+%created by the ZUMA toolflow. This toolflow is as follows:
+%\begin{enumerate}
+%   \item take a ZUMA configuration file, which is a parametrized description
+%         of the virtual FPGA. ZUMA creates a behavioral description
+%         of the overlay itself, to be synthesized to an actual FPGA.
+%         
+%   \item take a a behavioral description of a virtual circuit in Verilog, 
+%         to generate the configuration for the virtual FPGA. 
+%         ZUMA builds then a bitstream for this description.
+%\end{enumerate}
+%With these two files, the behavioral description of the virtual FPGA and the bitstream,
+%you can get the ZUMA system running on your FPGA by synthesize the description 
+%on the host FPGA and then configure the virtual FPGA with the bitstream.
+%The configuration of the virtual FPGA could be done by a template configurator, 
+%provide in the ZUMA package.\\
+%~\\
+%After this schematic view, the next section describe the parameters and handling 
+%of the most important tools and configurations for the ZUMA build process.
+
 \addcontentsline{toc}{section}{References}
-\bibliographystyle{plainnat}
+\bibliographystyle{unsrtnat}
 \bibliography{ZUMA}
 
 \end{document}
