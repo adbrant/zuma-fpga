@@ -2,8 +2,6 @@ import sys
 from plumbum import local
 import os
 import inspect
-import globs
-import zuma_config
 
 # use this if you want to include modules from a subforder
 cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
@@ -219,24 +217,6 @@ def createMif(zumaExampleDir):
     hexToMif = local[hexToMifPath]
     out = (hexToMif["../output.hex"] > "../output.hex.mif").run()
     #sh $ZUMA_DIR/example/hex2mif.sh output.hex > output.hex.mif
-
-def createDefGenerated(zumaExampleDir):
-    # Create the generated definition file
-    defGeneratedPath = zumaExampleDir / "def_generated.vh"
-
-    numinputs  = 0
-    numoutputs = 0
-    for key in globs.IOs:
-        numinputs  = numinputs  + len(globs.IOs[key].inputs)
-        numoutputs = numoutputs + len(globs.IOs[key].outputs)
-
-    defGeneratedFile = open(defGeneratedPath,"w")
-    defGeneratedFile.write('`define ZUMA_LUT_SIZE %d\n' % (zuma_config.params.K))
-    defGeneratedFile.write('`define NUM_INPUTS %d\n' % (numinputs))
-    defGeneratedFile.write('`define NUM_OUTPUTS %d\n' % (numoutputs))
-    defGeneratedFile.write('`define NUM_CONFIG_STAGES %d\n' % (len(globs.config_pattern)))
-    defGeneratedFile.write('`define CONFIG_WIDTH %d\n' % (globs.params.config_width))
-    defGeneratedFile.close()
 
 def fixClock(clockName,vtrDir,vprVersion):
 

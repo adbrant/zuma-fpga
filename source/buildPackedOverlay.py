@@ -3,6 +3,24 @@ import BuildBitstream
 import globs
 from functools import partial
 
+## Create the generated definition file
+def createDefGenerated():
+
+    defGeneratedPath = "../def_generated.vh"
+
+    numinputs  = 0
+    numoutputs = 0
+    for key in globs.IOs:
+        numinputs  = numinputs  + len(globs.IOs[key].inputs)
+        numoutputs = numoutputs + len(globs.IOs[key].outputs)
+
+    defGeneratedFile = open(defGeneratedPath,"w")
+    defGeneratedFile.write('`define ZUMA_LUT_SIZE %d\n' % (globs.params.K))
+    defGeneratedFile.write('`define NUM_INPUTS %d\n' % (numinputs))
+    defGeneratedFile.write('`define NUM_OUTPUTS %d\n' % (numoutputs))
+    defGeneratedFile.write('`define NUM_CONFIG_STAGES %d\n' % (len(globs.config_pattern)))
+    defGeneratedFile.write('`define CONFIG_WIDTH %d\n' % (globs.params.config_width))
+    defGeneratedFile.close()
 
 #replace the input/ouput names with fpga_input[]/fpga_output in abc_out.blif
 #and write it to a new file

@@ -50,7 +50,6 @@ def compileZUMA(circuitFileName,zumaConfigFileName,clockName):
     #run zuma
     CompileUtils.runZUMA(zuma_config.params.vprVersion,False)
     CompileUtils.createMif(zumaExampleDir)
-    CompileUtils.createDefGenerated(zumaExampleDir)
 
     if CompileUtils.checkEquivalence(vtrDir,zuma_config.params.vprVersion) != True:
         sys.exit(1)

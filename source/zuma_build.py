@@ -102,6 +102,8 @@ def Zuma(verilog_file,
         #Build the bitstream
         BuildBitstream.build_bitstream(bit_file)
 
+        buildPackedOverlay.createDefGenerated()
+
         #dump the node graph. textual and graphical
         if globs.params.dumpNodeGraph:
             Dump.dumpGraph('configuredGraph')
@@ -112,13 +114,14 @@ def Zuma(verilog_file,
         #output a BLIF of the design
         OutputBlif.output_blif(blif_out_file)
 
-        #output a verification verilog file
+        #build a packed overlay
         if globs.params.packedOverlay:
             buildPackedOverlay.buildVerificationOverlay("packedOverlay.v",False,False)
 
             if globs.params.blackBox:
                 buildPackedOverlay.buildVerificationOverlay("packedOverlayBlackBox.v",False,True)
 
+        #output a verification verilog file
         if  globs.params.verifyOverlay:
             buildPackedOverlay.buildVerificationOverlay("verificationOverlay.v",True,False)
 
