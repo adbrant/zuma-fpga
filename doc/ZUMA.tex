@@ -9,6 +9,7 @@
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{tabularx}
+\usepackage{xltabular}
 \usepackage[numbers]{natbib}
 \usepackage{placeins}
 \PassOptionsToPackage{hyphens}{url}
@@ -97,8 +98,13 @@
   morekeywords={assert, assume, property},
 }
 
-
-
+% Tabular helper
+\newcommand{\vcenterothercols}[1]{\noindent\parbox[c]{\hsize}{
+    \vspace{.25\baselineskip}
+    #1
+    \vspace{.25\baselineskip}
+    }}
+\newcolumntype{R}{>{\raggedright\arraybackslash}X}
 
 % Really long URLs
 \urldef{\VTRdocRRG}\url{https://docs.verilogtorouting.org/en/latest/vpr/file_formats/#routing-resource-graph-file-format-xml}
@@ -193,6 +199,7 @@ The patch instructs VPR to always dump its routing graph to the file \inlinepath
 If using a different version, defining CREATE\_ECHO\_FILES in \inlinepath{rr_graph.c} will enable this functionality. 
 
 \subsection{Yosys}
+\label{sub:Yosys}
 To enable an automatic verification of the functional equivalence between the generated overlay configuration and the original HDL specification, you additionally need Yosys\footnote{\url{http://www.clifford.at/yosys/}}.
 
 For convenience, a GIT submodule is located under \inlinepath{external/yosys} that points to a Yosys version of the official Yosys GitHub repository\footnote{\url{https://github.com/YosysHQ/yosys}} that is known to work with this ZUMA version.
@@ -457,7 +464,7 @@ Details of this solution can be found at \url{https://forums.xilinx.com/t5/Desig
 
 
 \clearpage
-\section{Advanced Usage}
+\section{Background and Advanced Usage}
 \label{sec:advancedusage}
 This section's purpose is to give you enough insight into the ZUMA overlay structure and the file generation, so that you can tweak the generated virtual FPGAs to best fit your needs.
 
@@ -658,22 +665,26 @@ For the steps that are already part of the details presented in Section~\ref{ssu
     \end{enumerate}
     \item Include the generated overlay in an FPGA design (cf.~Section~\ref{sec:include_ZUMA_in_project}).
     \item Run the device vendor's EDA tools.
-    \item Extract and copy the standard delay format (SDF) files describing the timing properties of the overlay.
+    \item Extract and copy the standard delay format (SDF) file(s) describing the timing properties of the overlay.
     \begin{itemize}
-        \item Assuming that your top-level design has the name \emph{Top}, generate the first SDF file that contains the the routing delay information by issuing:
+        \item For Vivado, generate the SDF file that contains the routing delay information by issuing the following command, assuming that your top-level design has the name \emph{Top}:
+\begin{verbatim}
+>???? Top_complete.v
+\end{verbatim}
+        \item For ISE, also assuming that your top-level design has the name \emph{Top}, generate the first SDF file that contains the the routing delay information by issuing:
 \begin{verbatim}
 >netgen -s 1  -pcf Top.pcf -sdf_anno true -sdf_path "netgen/par" \
 -ne -insert_glbl true -insert_pp_buffers false -w \
 -dir netgen/par -ofmt verilog -sim Top.ncd Top_no_buffer.v
 \end{verbatim}
-        \item Then generate the second SDF file that holds the flip flop delays (port delay + Tshcko):
+        And then generate the second SDF file that holds the flip flop delays (port delay + Tshcko) like this:
 \begin{verbatim}
 >netgen -s 1  -pcf Top.pcf -sdf_anno true -sdf_path "netgen/par" \
 -ne -insert_glbl true -insert_pp_buffers true -w \
 -dir netgen/par -ofmt verilog -sim Top.ncd Top_with_buffer.v
 \end{verbatim}
-        \item Copy the two generated files \inlinepath{Top_with_buffer.sdf} and \inlinepath{Top_no_buffer.sdf} to your \inlinepath{example/} directory.
-        \item Edit the parameters \configvalue{sdfFileName} and \configvalue{sdfFlipflopFileName} to these names and set \configvalue{sdf} = True in \inlinepath{zuma_config.py}.
+        \item Copy the generated file(s) \inlinepath{Top_complete.sdf} or the pair of \inlinepath{Top_with_buffer.sdf} and \inlinepath{Top_no_buffer.sdf}, if applicable, to your \inlinepath{example/} directory.
+        \item Edit the parameters \configvalue{sdfFileName}, and \configvalue{sdfFlipflopFileName} in case of an ISE flow, to these names and set \configvalue{sdf} = True in \inlinepath{zuma_config.py}.
     \end{itemize}
     \item \label{enum:last_td_pnr_new_overlay_subflow} Run the ZUMA flow for a second time (\inlinepath{compile.sh} with dummy\,/\,any virtual circuit).
     \begin{enumerate}
@@ -755,21 +766,8 @@ For the first step, Figure~\ref{fig:outer_structure_small} shows an example of s
     \caption{A small outer structure: We have 8 channels of length one (black arrows), 8 output pins (OPIN, red numbered blocks) on the IO pad which route the input of an fpga. We have 8 input pins(IPIN, blue numbered blocks) on the IO pads, which route to the output of the fpga. We have one used cluster input (IPIN, blue) and one output pin (OPIN,red). Also we have switchbox connections (green arrows).}
     \label{fig:outer_structure_small}
 \end{figure}
-To get such a structure the script parses the RRG file generated by VPR, which contains the outer structure visualized in Figure~\ref{fig:outer_structure_small} as a graph. %, like the one depicted in Figure~\ref{fig:load_graph}.
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[height=.9\textheight]{Figures/loadedGraphGraphviz.pdf}
-%     \caption{A routing resource graph (RRG)}
-%     \label{fig:load_graph}
-% \end{figure}
-% E.g the red OPIN with number 4 on (0,1) in Figure~\ref{fig:outer_structure_small}  is the node 10 in the RRG with connections to the channels nodes 58 and 59 (red arrows). ONE might notice that there are sinks and sources with only one undriven IPIN/OPIN on pads and on clusters as well. E.g. on cluster (0,1): node 11 \& 5, 8 \& 2 and on cluster (1,1) node 29 \& 26. These nodes were optimized away when we build the verilog file.
-% \\~\\
-% The main idea behind ZUMA is that we now try to save this ODG in a Verilog file which represents our unconfigured virtual FPGA, and parse a routing for every node (which input to which output) from VPR and save it in an configuration file.
-%Therefore we load the graph 
+To get such a structure the script parses the RRG file generated by VPR, which contains the outer structure visualized in Figure~\ref{fig:outer_structure_small} as a graph.
 We load this RRG in the function \command{load_graph(filename)} in the file \inlinepath{InitFpga.py}.
-%When \configvalue{orderedIO} = True is set in the \inlinepath{zuma_config.py} file we add permutation MUXes. Normally the later by the configuration used input and output sink/sources are spread over the whole FPGA and are only connected to one OPIN/IPIN.
-%We then alter the graph by connect every source and sink of a pad to every other OPIN/IPIN of every other pad.
-%Then we can later use the these source and sink nodes as MUXes to configure which input/output pad we want to use for the incoming/outcoming signals of the FPGA.
 %\subsubsubsection{build inner structure}
 Because we can only obtain the outer, global structure from it, we have to add the nodes for the inner, local structure ourselves. In our example this only affects the cluster location 1\_1.
 Figure~\ref{fig:cluster_loaded} shows the original cluster, while the updated cluster is shown in Figure~\ref{fig:cluster_added_nodes}.
@@ -1031,6 +1029,140 @@ These are assigned by the configuration controller module \module{config_control
 \end{lstlisting}
 \end{samepage}
 
+
+
+
+\clearpage
+\section{Comprehensive List of all Configuration Parameters} % (fold)
+\label{sec:comprehensive_list_of_all_configuration_parameters}
+%A list of all ZUMA configuration parameters with brief explanations:\\[1.5mm]
+\renewcommand{\arraystretch}{1.2}%
+\begin{xltabular}{\textwidth}{lcR}
+    \caption{A list of all ZUMA configuration parameters with brief explanations.} \label{tab:all_configuration_parameters} \\
+
+        \hline \multicolumn{1}{c}{\textbf{Parameter}} & \multicolumn{1}{c}{\textbf{Type}} & \multicolumn{1}{c}{\textbf{Description}} \\ \hline \hline 
+    \endfirsthead
+
+        \multicolumn{3}{c}%
+        {\tablename\ \thetable{} -- \textit{continued from previous page}} \\
+        \hline \multicolumn{1}{c}{\textbf{Parameter}} & \multicolumn{1}{c}{\textbf{Type}} & \multicolumn{1}{c}{\textbf{Description}} \\ \hline \hline 
+    \endhead
+
+        \hline \multicolumn{3}{r}{\textit{\small Continued on next page}} \\
+    \endfoot
+
+        \hline
+    \endlastfoot
+
+
+    % The table itself
+    \multicolumn{3}{c}{\emph{General parameters}} \\
+    \hline 
+    \configvalue{vprVersion} & Integer & Version of VPR included in installed VTR. Versions 6, 7, and 8 are supported (cp.~Section~\ref{sec:installation}). \\
+    \configvalue{verifyOverlay} & Boolean & Enables an equivalence check of the generated overlay with the initial user circuit. Requires VPR 8 and Yosys (cp.~Section~\ref{sec:installation}). \\
+    \configvalue{useClock} & Boolean & Needs to be correctly set for \configvalue{verifyOverlay} to inform it whether the virtual circuit uses a clock. \\
+    \configvalue{packedOverlay} & Boolean & Enables an additional packed version of the overlay, ready for verification and building. \\
+
+
+    \hline 
+    \multicolumn{3}{c}{\emph{Structural parameters}} \\
+    \hline 
+
+    \multicolumn{3}{l}{\emph{Global structure}} \\
+    \cline{1-2} 
+    \configvalue{X}             & Integer & Grid size in \emph{x} dimension \\
+    \configvalue{Y}             & Integer & Grid size in \emph{y} dimension \\
+    \configvalue{L}             & Integer & Length of the routing channels \\
+    \configvalue{W}             & Integer & Number of tracks per routing channel \\
+    \configvalue{orderedIO}     & Boolean & Whether or not to build large permutation MUXes around all IOs to fix their position in the \emph{fpga\_input\,/\,fpga\_output} arrays. \\
+
+    \cline{1-2} 
+    \multicolumn{3}{l}{\emph{Local structure}} \\
+    \cline{1-2} 
+    \configvalue{I}             & Integer & External cluster inputs (from connect block to IIB) \\
+    \configvalue{N}             & Integer & LUTs per cluster \\
+    \configvalue{K}             & Integer & LUT input width \\
+    \configvalue{UseClos}       & Boolean & Whether the IIB should be Clos network-based (otherwise it is a fully connected crossbar). \\
+
+    \cline{1-2} 
+    \multicolumn{3}{l}{\emph{Connect block}} \\
+    \cline{1-2} 
+    \configvalue{fc_in}        & Float & From how many tracks of the connect block each of the \(I\) cluster inputs can be driven. \\
+    \configvalue{fc_in_type}  & String & 'abs', or 'rel': Whether \configvalue{fc_in} is an absolute number or relative value. \\
+    \configvalue{fc_out}       & Float & How many tracks of the connect block each of the \(N\) cluster outputs can drive.\\
+    \configvalue{fc_out_type} & String & 'abs', or 'rel': Whether \configvalue{fc_out} is an absolute number or relative value. \\
+    
+
+    \hline
+    \multicolumn{3}{c}{\emph{Configuration parameters}} \\
+    \hline 
+    \configvalue{config_width}      & Integer & Width of the configuration port (in Bits). \\
+    \configvalue{config_addr_width} & Integer & Width of the configuration addresses (in Bits). \\
+
+
+    \hline 
+    \multicolumn{3}{c}{\emph{Parameters for hierarchical builds}} \\
+    \hline 
+
+    \multicolumn{2}{l}{\emph{Module Separation}} & \vcenterothercols{Whether the resources of that type should be implemented hierarchically in the overlay fabric (\inlinepath{ZUMA_custom_generated.v}).} \\
+    \cline{1-2} 
+    \configvalue{hierarchyNode} & Boolean & One module per ODG node. \\
+    \configvalue{hierarchyInterConnect} & Boolean & One module per ???. \\
+    \configvalue{hierarchyBle} & Boolean & One module per BLE. \\
+    \configvalue{hierarchyCluster} & Boolean & One module per cluster\,/\,CLB. \\
+
+    \cline{1-2} 
+    \multicolumn{2}{l}{\emph{Black box replacement}} & \vcenterothercols{Whether the resources of that type should be replaced by black boxes in the overlay fabric (\inlinepath{ZUMA_custom_generated.v}) -- useful later reorganization with tools such as RapidWright.} \\
+    \cline{1-2} 
+    \configvalue{blackBox} & Boolean & Enable black box replacement in general. \\
+    \configvalue{blackBoxBle} & Boolean & Replace BLEs with black boxes. \\
+    \configvalue{blackBoxCluster} & Boolean & Replace clusters\,/\,CLBs with black boxes. \\
+    \configvalue{blackBoxInterconnect} & Boolean & Replace ??? with black boxes. \\
+
+
+    \hline 
+    \multicolumn{3}{c}{\emph{Timing Analysis and Optimization parameters}} \\
+    \hline 
+
+    %\cline{1-2} 
+    \multicolumn{2}{l}{\emph{Timing Analysis}} & See Section~\ref{ssub:ZUMA_flow_details_timingdriven} \\
+    \cline{1-2} 
+    \configvalue{sdf} & Boolean & Whether to activate the timing analysis. \\
+    \configvalue{sdfFileName} & String & Path\,/\,Name of the first generated SDF file \inlinepath{Top_complete.sdf} (Vivado) or \inlinepath{Top_no_buffer.sdf} (ISE). \\
+    \configvalue{sdfFlipflopFileName} & String & In case of an ISE flow: Path\,/\,Name of the second generated SDF file \inlinepath{Top_with_buffer.sdf}. \\
+    \configvalue{timeScale}  & Float  & The time scale used in the provided SDF files as float, e.g., 1.0/1000000000000. \\
+    \configvalue{timeFormat} & String & The time scale used in the provided SDF files as string, e.g., "ps". \\
+    \configvalue{sdfUsedTool} & String & Indicator of the concrete SDF format. Implemented formats are the Xilinx flows ``ise'' and ``vivado''. \\
+    \configvalue{sdfInterconnectCellType} & String & Vivado adds all interconnect to the top ZUMA cell, and hence we need its name to extract the delays. Typically should be \hwport{zuma_wrapper}. \\
+    \configvalue{instancePrefix} & String & The path prefix that can be used to identify overlay components in the SDF files. For instance, the component \hwport{zuma_top/zuma_i} is translated to \hwport{zuma_top_zuma_i_} in the SDF file. For the standard TB wrapper, this would be \hwport{XUM/}. \\
+
+    \cline{1-2} 
+    \multicolumn{2}{l}{\emph{Timing-driven placement \& routing}} & \vcenterothercols{} \\
+    \cline{1-2} 
+    \configvalue{vprAnnotation} & Boolean & Whether VPR 8 should be used in timing-driven P\&R mode in a second run with the timing from the SDF file(s). Requires VPR 8 (cp.~Section~\ref{sec:installation}). \\
+    \configvalue{setupTime} & Numberstring & Currently, setup times are not read from the SDF file, but have to be manually entered here. Example: ``4e-12''. \\
+    \configvalue{holdTime}  & Numberstring & Currently, hold times are not read from the SDF file, but have to be manually entered here. Example: ``2.0e-9''. \\
+%to have a finder control of the timing annotation:
+    \configvalue{annotateOuterRouting} & Boolean & Whether the outer, global routing resources between CLBs should be annotated with their timing. \\
+    \configvalue{annotateInnerRouting} & Boolean & Whether the inner, local routing resources inside CLBs should be  nnotated with their timing. \\
+
+    \cline{1-2} 
+    \multicolumn{2}{l}{\emph{Timing analysis components}} & \vcenterothercols{Which parts of the virtual FPGA should contribute to the critical path and thus \(f_{max}\) calculation.} \\
+    \cline{1-2} 
+    \configvalue{skipOrderedLayerTiming} & Boolean & If the delays of the ordering layer should be considered. These are only meaningful if \configvalue{orderedIO} is set to True. \\
+    \configvalue{skipOuterRoutingTiming} & Boolean & Whether the outer, global routing resources between CLBs should be considered. \\
+    \configvalue{skipInnerRoutingTiming} & Boolean & Whether the inner, local routing resources inside CLBs should be considered. \\
+
+
+    \hline 
+    \multicolumn{3}{c}{\emph{Debugging and Visualization parameters}} \\
+    \hline 
+    \configvalue{dumpNodeGraph} & Boolean & If set, the ODG and the technology-mapped ODG will be dumped into files in a readable format. \\
+    \configvalue{graphviz} & Boolean & Makes \configvalue{dumpNodeGraph} also dump graphical versions of the ODGs -- \emph{WARNING}: Graphviz could freeze the build process if the graph is too big. \\
+    \configvalue{dumpUnconfiguredNodes} & Boolean & If set, a list of unconfigured nodes with their Verilog names will be generated. \\
+
+\end{xltabular}
+% section comprehensive_list_of_all_configuration_parameters (end)
 
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{unsrtnat}
