@@ -114,7 +114,7 @@
 \begin{document}
 
 \title{ZUMA User's Manual}
-\author{Alexander D. Brant, Tobias Wiersema, Arne Bockhorn,\\ Monica Keerthipati, and Nithin S. Sabu}
+\author{Tobias Wiersema, Arne Bockhorn, Alexander D. Brant,\\ Monica Keerthipati, Nithin S. Sabu, and Felix P. Jentzsch}
 \date{30.05.2020}
 \maketitle
 \tableofcontents
@@ -155,9 +155,24 @@ The directory structure is as follows:\\[1.5mm]
     \hline \\
 \end{tabularx}
 
+\clearpage
+\subsection{Contributors and Brief History}
+Many wonderful people have contributed to the ZUMA project. This section is a (very) brief history of how the project was shaped by them.
 
+In \textbf{2012}, Alexander D. Brant wrote the first version of the ZUMA generator scripts as a graduate student under the guidance of Guy G. F. Lemieux, with whom he published the first paper on ZUMA~\cite{brantlemieux2012ZUMA}.
 
+In \textbf{2013\,/\,2014}, Tobias Wiersema, as a research assistant to Marco Platzner, extended the implementation to also support sequential circuits, by extending the eLUT LUTRAM macro instantiation, added the optional permutation layer to the overlay, and embedded it into a ReconOS\footnote{\url{http://www.reconos.de}} hardware thread that can receive its configuration at runtime from a software thread through shared memory. Although this embedding is not bundled here, it was the basis for streamlining the configuration process within the test bench wrapper.
 
+In the years \textbf{2014 -- 2016}, Arne Bockhorn rewrote much of the ZUMA code as a student research assistant to Tobias Wiersema, and extended it with the timing analysis features, realized the initial description of the Clos network-based IIBs, made it compatible to VTR1\,/\,VPR7, wrote the Bitstream-to-BLIF back-translation tool, and helped with the ReconOS integration.
+In this period, Arne, Marco, and Tobias also published their two ZUMA papers~\cite{wiersemaBP2014ZUMAReconOS,wiersemaBP2016ZUMAReconOS}.
+
+In \textbf{2017\,/\,2018}, Nithin S. Sabu and Monica Keerthipati realized the first Xilinx Vivado version of ZUMA as graduate students together with their student project group ReCoTroy, supervised by Tobias Wiersema. They also contributed the corresponding guide in Section~\ref{sec:include_ZUMA_in_Xilinx_project}.
+
+In \textbf{2019}, Felix P. Jentzsch implemented the first Xilinx Vivado nested block design that contained a ZUMA overlay as a student research assistant to Tobias Wiersema. He contributed the corresponding instructions in Section~\ref{ssub:ZUMA_in_xilinx_troubleshooting}.
+
+In \textbf{2020}, Arne Bockhorn rewrote the generator scripts again to make it more maintainable and compatible to version 8 of VTR\,/\,VPR, extended the timing analysis to a full virtual timing-driven placement \& routing flow version, enabled a ZUMA overlay description in hierarchical HDL, and wrote integration tests to be able to ensure the correctness of features and to spot regressions.
+Tobias Wiersema aggregated all available ZUMA documentation and compiled the first versions of this user's manual, and enabled the integration of the external tools directly within the context of this GIT repository.
+Arne's and Tobias' goal was to provide the most modern, compatible, feature complete, and comprehensively documented ZUMA version to render its usage and adoption for future projects as easy as possible.
 
 
 
@@ -446,6 +461,7 @@ When following these steps, you should be able to synthesize a working, configur
 \end{enumerate}
 
 \subsubsection{Troubleshooting}
+\label{ssub:ZUMA_in_xilinx_troubleshooting}
 
 \trouble{Synthesis of the complete design is nearly impossible, since Vivado finds thousands of combinational loops.}
 This might happen when you have a project that is a Vivado block design containing several IP cores, where one of them acts as the wrapper and configuration controller for the ZUMA overlay, and your follow the guide in this section to instantiate the customized \emph{Distributed Memory Generator} IP within.

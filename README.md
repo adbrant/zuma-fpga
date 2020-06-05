@@ -72,6 +72,6 @@ For more details see the user's manual, [Section 5](doc/ZUMA.pdf).
 See the [license file](license.txt) for details.
 
 ## List of Contributors
-Listed alphabetically.
+Listed alphabetically. For details and a brief history see the [user's manual](doc/ZUMA.pdf).
 
-Arne Bockhorn, Alexander D. Brant, Guy G. F. Lemieux, Monica Keerthipati, Nithin S. Sabu, Tobias Wiersema
+Arne Bockhorn, Alexander D. Brant, Felix P. Jentzsch, Monica Keerthipati, Guy G. F. Lemieux, Nithin S. Sabu, Tobias Wiersema
