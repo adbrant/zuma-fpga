@@ -70,7 +70,7 @@ def getLutName(cell):
         #only extract the id and reassign it to lutname
         #maybe we change the cluster and mode node modifier )? with a group
         #if the flags turn on to have a more strict parsing
-        regexp = r"(cluster_\d+_\d+/)?(mod_node_\d+/)?(MUX_|LUT_)(?P<id>\w*)"
+        regexp = r"(cluster_\d+_\d+/)?(mod_ble_\d+_\d+_\d+/)?(mod_interconn_\d+_\d+/)?(mod_node_\d+/)?(MUX_|LUT_)(?P<id>\w*)"
         pattern =re.compile(regexp)
         res = pattern.search(lutName)
         extractedName = ''
