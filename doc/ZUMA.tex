@@ -668,14 +668,10 @@ The detailed steps to generate an overlay using the flow depicted in Figure~\ref
 For the steps that are already part of the details presented in Section~\ref{ssub:ZUMA_flow_details_basic}, we only give reduced details here, to focus on the differences (user interaction is again only required for top-level items, except for the SDF extraction):
 \begin{enumerate}
     \item \label{enum:first_td_pnr_new_overlay_subflow} Set all values in \inlinepath{zuma_config.py} to fit your needs.
-    \item Set \configvalue{vprAnnotation} = True and \configvalue{sdf} = False in \inlinepath{zuma_config.py}.
+    \item Set \configvalue{vprAnnotation} = False and \configvalue{sdf} = False in \inlinepath{zuma_config.py}.
     \item Run the ZUMA flow (\inlinepath{compile.sh} with dummy\,/\,any virtual circuit).
     \begin{enumerate}
         \item \inlinepath{generate_buildfiles.py}
-        \begin{itemize}
-            \item Generates \inlinepath{ARCH_vpr8.xml}, \inlinepath{abccommands.vpr8}, \inlinepath{vpr8.sh}, and \inlinepath{vpr8_timing.sh} in the \inlinepath{build} directory.
-            \item Within \inlinepath{ARCH_vpr8.xml}, every CLB and BLE are their own individual instance with zeroed timing.
-        \end{itemize}
         \item \command{VTR} (with timing analysis off)
         \item \inlinepath{zuma_build.py}
         \begin{itemize}
@@ -684,12 +680,14 @@ For the steps that are already part of the details presented in Section~\ref{ssu
     \end{enumerate}
     \item Include the generated overlay in an FPGA design (cf.~Section~\ref{sec:include_ZUMA_in_project}).
     \item Run the device vendor's EDA tools.
-    \item Extract and copy the standard delay format (SDF) file(s) describing the timing properties of the overlay.
+    \item \label{enum:last_td_pnr_new_overlay_subflow} Extract and copy the standard delay format (SDF) file(s) describing the timing properties of the overlay.
     \begin{itemize}
-        \item For Vivado, generate the SDF file that contains the routing delay information by issuing the following command, assuming that your top-level design has the name \emph{Top}:
+        \item For Vivado, generate the SDF file that contains the routing delay information by opening your top-level design and issuing the following command in the tcl console:
 \begin{verbatim}
->???? Top_complete.v
+>write_sdf Top_complete.sdf
 \end{verbatim}
+              Copy the generated file \inlinepath{Top_complete.sdf} to your \inlinepath{example/} directory.
+              Edit the parameter \configvalue{sdfFileName} to this name in \inlinepath{zuma_config.py} (The parameter \configvalue{sdfFlipflopFileName} is not used in the vivado flow).
         \item For ISE, also assuming that your top-level design has the name \emph{Top}, generate the first SDF file that contains the the routing delay information by issuing:
 \begin{verbatim}
 >netgen -s 1  -pcf Top.pcf -sdf_anno true -sdf_path "netgen/par" \
@@ -702,12 +700,19 @@ For the steps that are already part of the details presented in Section~\ref{ssu
 -ne -insert_glbl true -insert_pp_buffers true -w \
 -dir netgen/par -ofmt verilog -sim Top.ncd Top_with_buffer.v
 \end{verbatim}
-        \item Copy the generated file(s) \inlinepath{Top_complete.sdf} or the pair of \inlinepath{Top_with_buffer.sdf} and \inlinepath{Top_no_buffer.sdf}, if applicable, to your \inlinepath{example/} directory.
-        \item Edit the parameters \configvalue{sdfFileName}, and \configvalue{sdfFlipflopFileName} in case of an ISE flow, to these names and set \configvalue{sdf} = True in \inlinepath{zuma_config.py}.
+        Copy the generated file(s) \inlinepath{Top_with_buffer.sdf} and \inlinepath{Top_no_buffer.sdf}, if applicable, to your \inlinepath{example/} directory.
+        Edit the parameters \configvalue{sdfFileName}, and \configvalue{sdfFlipflopFileName} to these names in \inlinepath{zuma_config.py}.
     \end{itemize}
-    \item \label{enum:last_td_pnr_new_overlay_subflow} Run the ZUMA flow for a second time (\inlinepath{compile.sh} with dummy\,/\,any virtual circuit).
+    \item \label{enum:first_td_pnr_new_circuit_subflow} Set \configvalue{vprAnnotation} = True and \configvalue{sdf} = True in \inlinepath{zuma_config.py}.
+    \item Run the ZUMA flow for a second time (\inlinepath{compile.sh} with your actual virtual circuit) -- or multiple times thereafter for new virtual circuits.
+          This will invoke two different subflows which will be explained in the following.
+    \item Subflow 1:
     \begin{enumerate}
         \item \inlinepath{generate_buildfiles.py}
+        \begin{itemize}
+        	\item Generates \inlinepath{ARCH_vpr8.xml}, \inlinepath{abccommands.vpr8}, \inlinepath{vpr8.sh}, and \inlinepath{vpr8_timing.sh} in the \inlinepath{build} directory.
+        	\item Within \inlinepath{ARCH_vpr8.xml}, every CLB and BLE are their own individual instance with zeroed timing.
+        \end{itemize}
         \item \command{VTR} (with timing analysis off)
         \item \inlinepath{zuma_build.py}
         \begin{enumerate}
@@ -725,18 +730,12 @@ For the steps that are already part of the details presented in Section~\ref{ssu
             \end{itemize}
             \item \inlinepath{TimingAnnotation.py} \command{annotateClusterTiming()}
             \begin{itemize}
-                \item Computes delays of all paths within the clusters which connect entities to each other that are known to VPR:
-                \begin{itemize}
-                    \item annotateBleOutToMuxOut
-                    \item annotateMuxOutToBleIn
-                    \item annotateBle
-                    \item annotateClbInToBleIn
-                \end{itemize}
+                \item Computes delays of all paths within the clusters which connect entities to each other that are known to VPR.
             \end{itemize}
             \item \inlinepath{TimingAnnotation.py} \command{annotateBack()} writes all computed delays from the augmented (original) ODG into the files \inlinepath{ARCH_vpr8_timing.xml} and \inlinepath{rr_graph_timing.xml}.
         \end{enumerate}
     \end{enumerate}
-    \item \label{enum:first_td_pnr_new_circuit_subflow} Run the ZUMA flow for a third time (\inlinepath{compile.sh} with your actual virtual circuit) -- or multiple times thereafter for new virtual circuits.
+    \item Subflow 2:
     \begin{enumerate}
         \item \inlinepath{generate_buildfiles.py}
         \item \command{VTR}
@@ -754,14 +753,11 @@ For the steps that are already part of the details presented in Section~\ref{ssu
         \end{enumerate}
     \end{enumerate}
     \item Set the clock for the virtual device to a frequency \(\leq f_{max}\).
-    \item \label{enum:last_td_pnr_new_circuit_subflow}Configure the ZUMA overlay with the bitstream.
+    \item \label{enum:last_td_pnr_new_circuit_subflow} Configure the ZUMA overlay with the bitstream.
 \end{enumerate}
 
 After performing these steps, you can run the ZUMA \inlinepath{compile.sh} script with any virtual circuit to get its critical path. The path and resulting frequency \(f_{max}\) will be printed on the command line.
 To create a new timing-augmented overlay, repeat steps \ref{enum:first_td_pnr_new_overlay_subflow} through \ref{enum:last_td_pnr_new_overlay_subflow}, to just map a new virtual circuit to an existing overlay, repeat steps \ref{enum:first_td_pnr_new_circuit_subflow} through \ref{enum:last_td_pnr_new_circuit_subflow}.
-
-
-
 
 \subsection{Generated Data Structures and Files}
 \label{sub:data_structures_and_files_visualization}
