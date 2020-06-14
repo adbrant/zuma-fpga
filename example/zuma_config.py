@@ -108,6 +108,8 @@ params.skipInnerRoutingTiming = False
 params.vprAnnotation = False
 params.setupTime = "4e-12"
 params.holdTime = "2.0e-9"
+params.extractSetupHold = False
+
 #to have a finder control of the timing annotation:
 params.annotateOuterRouting = False
 params.annotateInnerRouting = False
