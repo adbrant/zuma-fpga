@@ -2,6 +2,7 @@
 
 import sys
 import traceback
+import globs
 
 ## describe a node of the node graph
 class Node():
