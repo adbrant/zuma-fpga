@@ -84,6 +84,10 @@ params.timeFormat = "ps"
 #possible is "ise" or "vivado"
 params.sdfUsedTool = "vivado"
 
+#We only want to extract some specific cells of the sdf file add them to this list
+#This prevent the SDF parser to label wrong cells as lut or flipflops
+params.knownCellTypes = ['FDRE','FDCE','FDSE','RAMD64E','X_RAMD64_ADV','X_FF']
+
 #when you use vivado this is the celltype name where the interconnections
 #are located. We extract the interconnection delays and add them as port delays
 params.sdfInterconnectCellType = "zuma_wrapper"

@@ -19,7 +19,7 @@ if cmd_subfolder not in sys.path:
 def isDPCell(cell):
 
     #check if the last two characters are DP
-    if (cell.instanceName[-2:] == "DP") and (cell.instanceName.find('LUT' > -1)):
+    if (cell.instanceName[-2:] == "DP") and (cell.instanceName.find('LUT') > -1):
         return True
     else:
         return False

@@ -170,14 +170,19 @@ def isCell(line,sdfFile):
 
     if line.find("CELLTYPE") > -1:
 
+        #the interconnect cell is also a valid cell
+        if line.find("CELLTYPE \"" + globs.params.sdfInterconnectCellType + "\"") > -1:
+            return True
+
         #if the user has decide to only extract some cell types
+        #check if it is one of the given celltypes
         if len(globs.params.knownCellTypes) > 0:
 
             for name in globs.params.knownCellTypes:
                 if line.find(name) > -1:
                     return True
 
-        #know constraint was given. extract all cells
+        #no constraint was given. extract all cells
         else:
             return True
 
