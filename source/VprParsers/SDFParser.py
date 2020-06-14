@@ -17,9 +17,39 @@ if cmd_subfolder not in sys.path:
 import globs
 import Util
 
+
+#to speed things up we compile the setupandholds pattern here instead
+#in parseSetupHold
+
+SetupHoldRegex = r'''\s* \( SETUPHOLD \s*
+                         \(  (\s*posedge\s*|\s*negedge\s*) (?P<input>\S+) \s* \) \s*
+                         \(  (\s*posedge\s*|\s*negedge\s*) (?P<clock>\S+) \s* \)
+                         (?P<rest>.*)'''
+
+SetupHoldPattern = re.compile(SetupHoldRegex,re.VERBOSE)
+
+#to speed things up we compile the iopath pattern here instead
+#in parseIoPath
+
+#we assure in the output regex to not have a '(' included
+IOPathRegex = r'''\s* \( IOPATH \s*
+                       (?P<input>\S+) \s*
+                       (?P<output>[^ \t\n\r\f\v\(]+) \s*
+                       (?P<rest>.*)'''
+
+IOPathPattern = re.compile(IOPathRegex,re.VERBOSE)
+
+
+InterconnectRegex = r'''\s* \( INTERCONNECT \s*
+                              (?P<source>\S+) \s*
+                              (?P<sink>[^ \t\n\r\f\v\(]+) \s*
+                              (?P<rest>.*)'''
+
+InterconnectPattern = re.compile(InterconnectRegex,re.VERBOSE)
+
 class Cell:
 
-    def __init__(self, instanceName,ports,ioPaths):
+    def __init__(self, instanceName,ports,ioPaths,setupHolds):
         ##the name of the instance
         self.instanceName = instanceName
 
@@ -27,6 +57,9 @@ class Cell:
         self.ports = ports
         ##dictonary of IOPath objects
         self.ioPaths = ioPaths
+
+        ##dictonary fot the setup and hold objects
+        self.setupHolds = setupHolds
 
 class Port:
 
@@ -55,6 +88,17 @@ class IOPath:
 
         self.risingDelay = risingDelay
         self.fallingDelay = fallingDelay
+
+class SetupHold:
+
+    def __init__(self, input, clock ,setupDelay,holdDelay):
+
+        ##the input port name
+        self.input = input
+        self.clock = clock
+
+        self.setupDelay = setupDelay
+        self.holdDelay = holdDelay
 
 class Interconnect:
 
@@ -88,14 +132,17 @@ def ParseSdf(fileName):
     # Parse the file until the end
     while len(line) > 0:
 
-        boolIsLutCell = isLutCell(line,sdfFile)
-        boolIsFlipflopCell = isFlipflopCell(line,sdfFile)
-        boolInterconnectCell = isInterconnectCell(line,sdfFile)
+        #read until a cell declaration. skip this line
+        if not isCell(line,sdfFile):
+            line = sdfFile.readline()
+            continue
 
-        #skip the celltype declaration, or the stuff around cells
-        line = sdfFile.readline()
+        #we have a cell check if it is a real cell or a interconnection cell
+        if not isInterconnectCell(line,sdfFile):
 
-        if boolIsLutCell or boolIsFlipflopCell:
+            #get the next line after the celltype declaration
+            line = sdfFile.readline()
+
             cell = parseCell(line,sdfFile)
 
             #append the cell to the dict
@@ -104,39 +151,27 @@ def ParseSdf(fileName):
             else:
                 print "parse cell error in line: " + line + "\n"
 
-            #read the next line
-            line = sdfFile.readline()
 
         #if its a interconnect cell read out the delays and add them
         #as a port delay. The interconnect cell is at the end of the file
         #so we can provide the current parsed cells as an argument
-        if boolInterconnectCell:
+        else:
+
+            #get the next line after the celltype declaration
+            line = sdfFile.readline()
+
             parseInterconnectCell(line,sdfFile,cells)
 
     return cells
 
-## check if the current line has a cell declaration.
+##check if the current line has a cell declaration.
 # return true or false.
-def isLutCell(line,sdfFile):
+def isCell(line,sdfFile):
 
-    if globs.params.sdfUsedTool == "ise" and line.find("CELLTYPE \"X_RAMD64_ADV\"") > -1:
+    if line.find("CELLTYPE") > -1:
         return True
-    elif globs.params.sdfUsedTool == "vivado" and line.find("CELLTYPE \"RAMD64E\"") > -1:
-        return True
-
-    return False
-
-
-## check if the current line has a cell declaration.
-# return true or false.
-def isFlipflopCell(line,sdfFile):
-
-    if  globs.params.sdfUsedTool == "ise" and line.find("CELLTYPE \"X_FF\"") > -1:
-        return True
-    elif globs.params.sdfUsedTool == "vivado" and line.find("CELLTYPE \"FDCE\"") > -1:
-        return True
-
-    return False
+    else:
+        return False
 
 ## check if the current line is a interconnection cell listing
 ## all the interconnection delays
@@ -160,15 +195,24 @@ def hasInstanceName(line):
 #return true or false and the current line.
 def hasAbsolutDelayField(line,sdfFile):
     if line.find("DELAY") > -1:
-        #skip the absolut declaration
+
+        #skip the delay declaration
         line = sdfFile.readline()
 
-        if line.find("ABSOLUTE") > -1:
-            #skip to the next line
+        #read until the block ends
+        while (line.strip() is not ')'):
+
+            if line.find("ABSOLUTE") > -1:
+                #skip to the next line
+                line = sdfFile.readline()
+
+                return True,line
+
+            #go to the next line
             line = sdfFile.readline()
 
-            return True,line
 
+    #delay block has ended or the was no delay block at all
     return False,line
 
 ##get the instance name.
@@ -179,6 +223,29 @@ def getName(line,sdfFile):
     line = sdfFile.readline()
 
     return name,line
+
+##check if the cell has a timingcheck field.
+#skip to the next line if it has a timingcheck field.
+#return true or false and the current line.
+def hasTimingcheckField(line,sdfFile):
+
+    #because the delay field were read before there can be on or two closing
+    #) before the timing check field
+
+    #check line has only a single )
+    if line.strip() == ')':
+        line = sdfFile.readline()
+
+    if line.strip() == ')':
+        line = sdfFile.readline()
+
+    if line.find("TIMINGCHECK") > -1:
+        #skip to the next line
+        line = sdfFile.readline()
+        return True,line
+
+    return False,line
+
 
 ##parse the cell declaration (lut or flipflop).
 #return a cell object or None.
@@ -206,7 +273,14 @@ def parseCell(line,sdfFile):
     ports,line = getPorts(line,sdfFile)
     ioPaths,line = getIOPaths(line,sdfFile)
 
-    cell = Cell(name,ports,ioPaths)
+    #now try to search for the timingcheck field
+    setupHolds = None
+    boolHasTimingcheckField,line = hasTimingcheckField(line,sdfFile)
+
+    if boolHasTimingcheckField:
+        setupHolds,line = getSetupHolds(line,sdfFile)
+
+    cell = Cell(name,ports,ioPaths,setupHolds)
 
     return cell
 
@@ -225,6 +299,29 @@ def hasInterconnect(line):
     if line.find("INTERCONNECT") > -1:
         return True
     return False
+
+def hasSetupHold(line):
+    if line.find("SETUPHOLD") > -1:
+        return True
+    return False
+
+##parse a list of Setup and Hold declarations.
+#return a dictonary of SetupHold objects and the current line.
+def getSetupHolds(line,sdfFile):
+
+    setupholds = {}
+
+    #parse to the end of the block
+    while (line.strip() is not ')'):
+
+        if hasSetupHold(line):
+            setuphold = parseSetupHold(line)
+            setupholds[(setuphold.input,setuphold.clock)] = setuphold
+
+        #go to the next line
+        line = sdfFile.readline()
+
+    return setupholds,line
 
 ##parse a list of ports declarations.
 #return a dictonary of Port objects and the current line.
@@ -347,58 +444,95 @@ def parsePort(line):
 ##parse the iopath line and return a iopath object
 def parseIOPath(line):
 
-    ioPathName = Util.find_substring( line, "IOPATH ", " O" )
+    #is now done in the module header, to speed things up
+    # IOPathRegex = r'''\s* \( IOPATH \s*
+    #                        (?P<input>\S+) \s*
+    #                        (?P<output>\S+) \s*
+    #                        (?P<rest>.*)'''
+    #
+    # IOPathPattern = re.compile(IOPathRegex,re.VERBOSE)
 
-    #if vivado is used the ff ports have the output Q and not O
-    if ioPathName is None and globs.params.sdfUsedTool == "vivado":
-        ioPathName = Util.find_substring( line, "IOPATH ", " Q" )
+    res = IOPathPattern.search(line)
 
-    # if its still empty print an error message
-    if ioPathName is None:
+    if res is None:
+
         print "error cant find a iopath name in line: " + line + "\n"
         sys.exit(1)
 
-    #for the next search start after the path name
-    ioPathPos = line.find(ioPathName)
-    startSearchPos = ioPathPos+len(ioPathName) -1
 
-    risingDelay,fallingDelay = parseDelays(startSearchPos,line)
+    ioPathName = res.group('input')
+    restString = res.group('rest')
+    risingDelay,fallingDelay = parseDelays(0,restString)
 
     ioPath = IOPath(ioPathName.strip(),risingDelay,fallingDelay)
 
     return ioPath
 
+##parse the setup and hold line and return a setupHold object
+def parseSetupHold(line):
+
+    #is now done in the module header, to speed things up
+    # SetupHoldRegex = r'''\s* \( SETUPHOLD \s*
+    #                          \(  (\s*posedge\s*|\s*negedge\s*) (?P<input>\S+) \s* \) \s*
+    #                          \(  (\s*posedge\s*|\s*negedge\s*) (?P<clock>\S+) \s* \)
+    #                          (?P<rest>.*)'''
+    #
+    # SetupHoldPattern = re.compile(SetupHoldRegex,re.VERBOSE)
+
+
+    res = SetupHoldPattern.search(line)
+
+    if res is None:
+
+        print "error cant apply regex pattern for parsing setup an hold times: " + line + "\n"
+        sys.exit(1)
+
+
+    clock = res.group('clock')
+    input = res.group('input')
+    restString = res.group('rest')
+    setupDelay, holdDelay = parseDelays(0,restString)
+
+    setupHold = SetupHold(input, clock ,setupDelay,holdDelay)
+
+    return setupHold
+
+
 ##parse the interconnect line and return a interconnect object
 def parseInterconnect(line):
 
-    #get the source and sink instance name string
-    names = Util.find_substring( line, "INTERCONNECT ", " (" )
 
-    if names is None:
+    #is now done in the module header, to speed things up
+    # InterconnectRegex = r'''\s* \( INTERCONNECT \s*
+    #                              (?P<source>\S+) \s*
+    #                              (?P<sink>[^ \t\n\r\f\v\)]+ ) \s*
+    #                              (?P<rest>.*)'''
+    #
+    # InterconnectPattern = re.compile(InterconnectRegex,re.VERBOSE)
+
+
+    res = InterconnectPattern.search(line)
+
+    if res is None:
+
         print "error cant find interconnect instance names in line: " + line + "\n"
         sys.exit(1)
 
-    #seperate the source and sink instance name. they got still a port name at the end
-    sourceAndSink = names.strip().split()
 
-    if len(sourceAndSink) != 2:
-        print "error not enough interconnect names in line" + line + "\n"
-        sys.exit(1)
+    sourceString = res.group('source')
+    sinkString = res.group('sink')
+    restString = res.group('rest')
 
     #remove the port name at the end. also extract the port name of the sink
-    sourceString = sourceAndSink[0]
     indexDelimiter = sourceString.rfind('/')
     source = sourceString[:indexDelimiter]
 
-    sinkString = sourceAndSink[1]
     indexDelimiter = sinkString.rfind('/')
     sink = sinkString[:indexDelimiter]
     port = sinkString[indexDelimiter+1:]
 
     #now get the delays
-    delayPos = line.find(names)
-    startSearchPos = delayPos+len(names) -1
-    risingDelay,fallingDelay = parseDelays(startSearchPos,line)
+    risingDelay, fallingDelay = parseDelays(0,restString)
 
     #finally create the interconnect object
     interconnect = Interconnect(source,sink,port,risingDelay,fallingDelay)
