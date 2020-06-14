@@ -169,9 +169,20 @@ def ParseSdf(fileName):
 def isCell(line,sdfFile):
 
     if line.find("CELLTYPE") > -1:
-        return True
-    else:
-        return False
+
+        #if the user has decide to only extract some cell types
+        if len(globs.params.knownCellTypes) > 0:
+
+            for name in globs.params.knownCellTypes:
+                if line.find(name) > -1:
+                    return True
+
+        #know constraint was given. extract all cells
+        else:
+            return True
+
+
+    return False
 
 ## check if the current line is a interconnection cell listing
 ## all the interconnection delays
@@ -624,6 +635,12 @@ def TestParser():
             print "new iopath: " + str(ioPath.name)
             print "risingDelay: "  + str(ioPath.risingDelay)
             print "fallingDelay: "  + str(ioPath.fallingDelay)
+
+        for (input,clock),setupHold in cell.setupHolds.items():
+
+            print "new setuphold: " + str(setupHold.input) + ',' + str(setupHold.clock)
+            print "setupDelay: "  + str(setupHold.setupDelay)
+            print "holdDelay: "  + str(setupHold.holdDelay)
 
         print "\n"
 
