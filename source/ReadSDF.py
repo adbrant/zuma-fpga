@@ -145,6 +145,36 @@ def addFlipflopCellDelayToMappedNode(name,cell):
     mappedNode.ffReadPortDelay = ffReadPortDelay
     mappedNode.ffIODelay = ffIODelay
 
+    #now read the setup and hold delay
+
+    if cell.setupHolds is None:
+        print "ERROR no setup and hold delay in node: " + name
+        sys.exit(1)
+
+    if globs.params.sdfUsedTool == "ise":
+
+        clockName = 'CLK'
+        inputName = 'I'
+
+    elif globs.params.sdfUsedTool == "vivado":
+
+        clockName = 'C'
+        inputName = 'D'
+
+    setupDelay = cell.setupHolds[(inputName,clockName)].setupDelay
+    holdDelay = cell.setupHolds[(inputName,clockName)].holdDelay
+
+    if all(delay == '0.0' for delay in setupDelay):
+        print "ERROR empty setup delay in node: " + name
+        sys.exit(1)
+
+    if all(delay == '0.0' for delay in holdDelay):
+        print "ERROR empty hold delay in node: " + name
+        sys.exit(1)
+
+    #now assign them to the mapped node
+    mappedNode.ffSetupDelay = setupDelay
+    mappedNode.ffHoldDelay = holdDelay
 
 ## Add the lut delay information of the cell to a mapped node.
 # @param name name of the mapped node

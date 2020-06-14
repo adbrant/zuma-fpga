@@ -92,9 +92,12 @@ class Node():
         self.ioPathDelay = None
         self.readPortDelay = None
 
-        #elut have the ff timing as well
+        #elut have the ff timing as well and setup and hold times
         self.ffIODelay = None
         self.ffReadPortDelay = None
+
+        self.ffSetupDelay = [0.0,0.0,0.0]
+        self.ffHoldDelay = [0.0,0.0,0.0]
 
         #indicate that this node have only a mapped passtrough node as a child
         self.passTrough = False
@@ -156,6 +159,8 @@ class TechnologyMappedNode():
         self.ffReadPortDelay = [0.0,0.0,0.0]
         self.ffIODelay = [0.0,0.0,0.0]
 
+        self.ffSetupDelay = [0.0,0.0,0.0]
+        self.ffHoldDelay = [0.0,0.0,0.0]
 
         ##append the node to the parents mapped node list
         parentNode.mappedNodes.append(name)
