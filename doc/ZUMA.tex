@@ -1167,20 +1167,20 @@ Hence, the bitstream is also made up of blocks of \(2^{k_{host}}\) lines of \(32
     \multicolumn{3}{c}{\emph{Parameters for hierarchical builds}} \\
     \hline
 
-    \multicolumn{2}{l}{\emph{Module Separation}} & \vcenterothercols{Whether the resources of that type should be implemented hierarchically in the overlay fabric (\inlinepath{ZUMA_custom_generated.v}).} \\
+    \multicolumn{2}{l}{\emph{Module Separation}} & \vcenterothercols{Whether the resources of that type should be implemented hierarchically in the additional overlay fabric (\inlinepath{packedOverlay.v}). All combinations of turned on flags are possible.} \\
     \cline{1-2}
     \configvalue{hierarchyNode} & Boolean & One module per ODG node. \\
-    \configvalue{hierarchyInterConnect} & Boolean & One module per ???. \\
+    \configvalue{hierarchyInterConnect} & Boolean & One module per cluster interconnect block (IIB). \\
     \configvalue{hierarchyBle} & Boolean & One module per BLE. \\
     \configvalue{hierarchyCluster} & Boolean & One module per cluster\,/\,CLB. \\
 
     \cline{1-2}
-    \multicolumn{2}{l}{\emph{Black box replacement}} & \vcenterothercols{Whether the resources of that type should be replaced by black boxes in the overlay fabric (\inlinepath{ZUMA_custom_generated.v}) -- useful later reorganization with tools such as RapidWright.} \\
+    \multicolumn{2}{l}{\emph{Black box replacement}} & \vcenterothercols{Whether the resources of that type should be replaced by black boxes in the additional overlay fabric (\inlinepath{packedOverlayBlackBox.v}) -- useful later reorganization with tools such as RapidWright. Not all combinations are possible, because the highest layer will win, e.g. having the cluster replaced with a blackbox and a ODG node, the cluster will win over the node.} \\
     \cline{1-2}
     \configvalue{blackBox} & Boolean & Enable black box replacement in general. \\
     \configvalue{blackBoxBle} & Boolean & Replace BLEs with black boxes. \\
     \configvalue{blackBoxCluster} & Boolean & Replace clusters\,/\,CLBs with black boxes. \\
-    \configvalue{blackBoxInterconnect} & Boolean & Replace ??? with black boxes. \\
+    \configvalue{blackBoxInterconnect} & Boolean & Replace the cluster interconnect blocks (IIB) with black boxes. \\
 
 
     \hline
@@ -1203,8 +1203,9 @@ Hence, the bitstream is also made up of blocks of \(2^{k_{host}}\) lines of \(32
     \multicolumn{2}{l}{\emph{Timing-driven placement \& routing}} & \vcenterothercols{} \\
     \cline{1-2}
     \configvalue{vprAnnotation} & Boolean & Whether VPR 8 should be used in timing-driven P\&R mode in a second run with the timing from the SDF file(s). Requires VPR 8 (cp.~Section~\ref{sec:installation}). \\
-    \configvalue{setupTime} & Numberstring & Currently, setup times are not read from the SDF file, but have to be manually entered here. Example: ``4e-12''. \\
-    \configvalue{holdTime}  & Numberstring & Currently, hold times are not read from the SDF file, but have to be manually entered here. Example: ``2.0e-9''. \\
+    \configvalue{extractSetupHold} & Boolean & Whether the setup and hold times should be extracted from the SDF file. \\
+    \configvalue{setupTime} & Numberstring & If setup times are not read from the SDF file, they can be manually entered here. Example: ``4e-12''. \\
+    \configvalue{holdTime}  & Numberstring & If hold times are not read from the SDF file, they can be manually entered here. Example: ``2.0e-9''. \\
 %to have a finder control of the timing annotation:
     \configvalue{annotateOuterRouting} & Boolean & Whether the outer, global routing resources between CLBs should be annotated with their timing. \\
     \configvalue{annotateInnerRouting} & Boolean & Whether the inner, local routing resources inside CLBs should be  nnotated with their timing. \\
