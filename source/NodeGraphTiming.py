@@ -123,6 +123,8 @@ def AnnotateTiming():
             node.ffIODelay = mappedNode.ffIODelay
             node.ffReadPortDelay = mappedNode.ffReadPortDelay
 
+            node.ffSetupDelay = mappedNode.ffSetupDelay
+            node.ffHoldDelay = mappedNode.ffHoldDelay
 
         #TODO:works also for elut but we should handle the inputs in the section above
 

@@ -19,7 +19,7 @@ if cmd_subfolder not in sys.path:
 def isDPCell(cell):
 
     #check if the last two characters are DP
-    if cell.instanceName[-2:] == "DP":
+    if (cell.instanceName[-2:] == "DP") and (cell.instanceName.find('LUT') > -1):
         return True
     else:
         return False
@@ -70,7 +70,7 @@ def getLutName(cell):
         #only extract the id and reassign it to lutname
         #maybe we change the cluster and mode node modifier )? with a group
         #if the flags turn on to have a more strict parsing
-        regexp = r"(cluster_\d+_\d+/)?(mod_node_\d+/)?(MUX_|LUT_)(?P<id>\w*)"
+        regexp = r"(cluster_\d+_\d+/)?(mod_ble_\d+_\d+_\d+/)?(mod_interconn_\d+_\d+/)?(mod_node_\d+/)?(MUX_|LUT_)(?P<id>\w*)"
         pattern =re.compile(regexp)
         res = pattern.search(lutName)
         extractedName = ''
@@ -145,6 +145,36 @@ def addFlipflopCellDelayToMappedNode(name,cell):
     mappedNode.ffReadPortDelay = ffReadPortDelay
     mappedNode.ffIODelay = ffIODelay
 
+    #now read the setup and hold delay
+
+    if cell.setupHolds is None:
+        print "ERROR no setup and hold delay in node: " + name
+        sys.exit(1)
+
+    if globs.params.sdfUsedTool == "ise":
+
+        clockName = 'CLK'
+        inputName = 'I'
+
+    elif globs.params.sdfUsedTool == "vivado":
+
+        clockName = 'C'
+        inputName = 'D'
+
+    setupDelay = cell.setupHolds[(inputName,clockName)].setupDelay
+    holdDelay = cell.setupHolds[(inputName,clockName)].holdDelay
+
+    if all(delay == '0.0' for delay in setupDelay):
+        print "ERROR empty setup delay in node: " + name
+        sys.exit(1)
+
+    if all(delay == '0.0' for delay in holdDelay):
+        print "ERROR empty hold delay in node: " + name
+        sys.exit(1)
+
+    #now assign them to the mapped node
+    mappedNode.ffSetupDelay = setupDelay
+    mappedNode.ffHoldDelay = holdDelay
 
 ## Add the lut delay information of the cell to a mapped node.
 # @param name name of the mapped node

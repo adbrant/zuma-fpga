@@ -84,6 +84,10 @@ params.timeFormat = "ps"
 #possible is "ise" or "vivado"
 params.sdfUsedTool = "vivado"
 
+#We only want to extract some specific cells of the sdf file add them to this list
+#This prevent the SDF parser to label wrong cells as lut or flipflops
+params.knownCellTypes = ['FDRE','FDCE','FDSE','RAMD64E','X_RAMD64_ADV','X_FF']
+
 #when you use vivado this is the celltype name where the interconnections
 #are located. We extract the interconnection delays and add them as port delays
 params.sdfInterconnectCellType = "zuma_wrapper"
@@ -103,6 +107,10 @@ params.skipInnerRoutingTiming = False
 #use vpr8 in a second run to place and route in vpr8 with the timing from the sdf file
 #back annotated to the vpr files
 params.vprAnnotation = False
+params.setupTime = "0e-12"
+params.holdTime = "0e-12"
+params.extractSetupHold = False
+
 #to have a finder control of the timing annotation:
 params.annotateOuterRouting = False
 params.annotateInnerRouting = False

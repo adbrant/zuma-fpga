@@ -98,16 +98,29 @@ def annotateInnerTiming(cmplxBlockElement):
         latcheslutToFF = clusterElement.findall(".//delay_constant[@in_port='soft_logic.out[0:0]']")
         latchesClockToQ = clusterElement.findall(".//T_clock_to_Q")
 
+        if globs.params.extractSetupHold:
+            latchesSetup = clusterElement.findall(".//T_setup")
+            latchesHold  = clusterElement.findall(".//T_hold")
+        else:
+            latchesSetup = []
+            latchesHold = []
+            
         ffmuxDelayElementsLut = clusterElement.findall(".//mux/delay_constant[@in_port='soft_logic.out']")
         ffmuxDelayElementsFF =  clusterElement.findall(".//mux/delay_constant[@in_port='ff.Q']")
 
-        completeDelayElementsClb = clusterElement.findall(".//delay_matrix[@in_port='clb"+ strlocation +".I']")
+        if not globs.params.UseClos:
+            completeDelayElementsClb = clusterElement.findall(".//delay_matrix[@in_port='clb"+ strlocation +".I']")
+        else:
+            completeDelayElementsClb = []
 
         bleOutputs = 'ble0.out'
         for bleIndex in range(1,globs.params.N):
             bleOutputs += " ble" + str(bleIndex) + '.out'
 
-        completeDelayElementsBle = clusterElement.findall(".//delay_matrix[@in_port='"+ bleOutputs + "']")
+        if not globs.params.UseClos:
+            completeDelayElementsBle = clusterElement.findall(".//delay_matrix[@in_port='"+ bleOutputs + "']")
+        else:
+            completeDelayElementsBle = []
         #directDelayElements =  clusterElement.findall('.//direct/delay_constant')
 
         for bleIndex,lutDelayElement in enumerate(lutDelayElements):
@@ -170,6 +183,24 @@ def annotateInnerTiming(cmplxBlockElement):
             (lutToFF,clockToQ) = clb.delayLatch[bleIndex]
             newTime = str(clockToQ[2]) + "e-12"
             latch.set('max', newTime)
+
+        #----------------------
+        for bleIndex,latch in enumerate(latchesSetup):
+
+            (setupDelay,holdDelay) = clb.setupHoldDelay[bleIndex]
+            #negative values are not used in vpr
+            setupTime = abs(setupDelay[2])
+            newTime = str(setupTime) + "e-12"
+            latch.set('value', newTime)
+        #----------------------
+        for bleIndex,latch in enumerate(latchesHold):
+
+            (setupDelay,holdDelay) = clb.setupHoldDelay[bleIndex]
+            #negative values are not used in vpr
+            holdTime = abs(holdDelay[2])
+            newTime = str(holdTime) + "e-12"
+            latch.set('value', newTime)
+
 
 
 def annotateBack():
@@ -297,6 +328,7 @@ def annotateBle(clb):
 
     delay = {}
     latchDelay = {}
+    setupHoldDelay = {}
 
     for bleIndex in range(globs.params.N):
 
@@ -321,13 +353,18 @@ def annotateBle(clb):
         clockToQ = elutNode.ffIODelay
         #lutToFF = [0.0,0.0,0.0]
         #clockToQ = [0.0,0.0,0.0]
+        setupDelay = elutNode.ffSetupDelay
+        holdDelay = elutNode.ffHoldDelay
+
 
         latchDelay[bleIndex] = (lutToFF,clockToQ)
+        setupHoldDelay[bleIndex] = (setupDelay,holdDelay)
 
 
     #append the delay to the cluster
     clb.delayBle = delay
     clb.delayLatch = latchDelay
+    clb.setupHoldDelay = setupHoldDelay
 
 ##annotate each cluster with a couple of delay dictionaries to represent the internal delays.
 # we used the same method as for the global routing graph
@@ -342,8 +379,13 @@ def annotateClusterTiming():
 
     for clb in globs.clusters.values():
         annotateBleOutToMuxOut(clb)
-        annotateMuxOutToBleIn(clb)
-        annotateClbInToBleIn(clb)
+
+        #we cant annotate the interconnect when the close network is used.
+        #vpr use only complete interconnect networks
+        if not globs.params.UseClos:
+            annotateMuxOutToBleIn(clb)
+            annotateClbInToBleIn(clb)
+
         annotateBle(clb)
 
 if __name__ == "__main__":
