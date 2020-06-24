@@ -140,408 +140,485 @@ module sv_chip3_hierarchy_no_mem (tm3_clk_v0, tm3_clk_v2, tm3_vidin_llc, tm3_vid
 
    always @(posedge tm3_clk_v2)
    begin
-         iic_stop <= 1'b0 ; 
-         case (iic_state)
+	// A: Worked around scope issue by moving iic_stop into every case. 
+       case (iic_state)
             7'b0000000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0000001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0000010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0000011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0000100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0000101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0000110 :
                      begin
-                       tm3_vidin_sda_xhdl0 <= 1'b1 ; 
+			iic_stop <= 1'b0 ; 
+                      	tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0000111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0001000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0001001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0001010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0001011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0001100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0001101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0001110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0001111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0010000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b1 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0010001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0010010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0010011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
-
                      end
             7'b0010101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0010110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0010111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0011000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0011001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0011010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[7] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0011011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[7] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0011100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[7] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0011101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[6] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0011110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[6] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0011111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[6] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0100000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[5] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0100001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[5] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0100010 :
                      begin
-
-                       tm3_vidin_sda_xhdl0 <= iicaddr[5] ; 
+			iic_stop <= 1'b0 ; 
+                        tm3_vidin_sda_xhdl0 <= iicaddr[5] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0100011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[4] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0100100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[4] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0100101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[4] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0100110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[3] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0100111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[3] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0101000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[3] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0101001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[2] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0101010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[2] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0101011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[2] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0101100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[1] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0101101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[1] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0101110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[1] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0101111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[0] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0110000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[0] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0110001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicaddr[0] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0110010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0110011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0110100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0110101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[7] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0110110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[7] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0110111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[7] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0111000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[6] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0111001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[6] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b0111010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[6] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0111011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[5] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0111100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[5] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
              7'b0111101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[5] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0111110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[4] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b0111111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[4] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b1000000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[4] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1000001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[3] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1000010 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[3] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b1000011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[3] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1000100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[2] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1000101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[2] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b1000110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[2] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1000111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[1] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1001000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[1] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b1001001 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[1] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1001010 :
                      begin
-
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[0] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1001011 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[0] ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b1001100 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= iicdata[0] ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1001101 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1001110 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end
             7'b1001111 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b0 ; 
                      end
             7'b1010000 :
                      begin
+			iic_stop <= 1'b0 ; 
                         tm3_vidin_sda_xhdl0 <= 1'b0 ; 
                         tm3_vidin_scl <= 1'b1 ; 
                      end

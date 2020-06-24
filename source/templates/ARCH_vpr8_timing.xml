@@ -1,0 +1,94 @@
+  <architecture>
+
+  <!-- ODIN II specific config -->
+  <models>
+
+  </models>
+  <!-- ODIN II specific config ends -->
+
+  <!-- Physical descriptions begin (area optimized for N8-K6-L4 -->
+  <tiles>
+    <tile name="io">
+      <sub_tile name="IO_TILE" capacity="2">
+        <equivalent_sites>
+          <site pb_type="io"/>
+        </equivalent_sites>
+        <input name="outpad" num_pins="1"/>
+        <output name="inpad" num_pins="1"/>
+        <clock name="ZUMA_CLOCK_NAME" num_pins="1"/>
+        <fc in_type="ZUMA_FCIN_TYPE" in_val="ZUMA_FCIN_VAL" out_type="ZUMA_FCOUT_TYPE" out_val="ZUMA_FCOUT_VAL" />
+        <pinlocations pattern="custom">
+          <loc side="left">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+          <loc side="top">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+          <loc side="right">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+          <loc side="bottom">IO_TILE.outpad IO_TILE.inpad IO_TILE.ZUMA_CLOCK_NAME</loc>
+        </pinlocations>
+      </sub_tile>
+    </tile>
+    CLBTILES
+  </tiles>
+  <layout>
+    <fixed_layout name="dev1" width= "ZUMA_ARRAY_WIDTH" height= "ZUMA_ARRAY_HEIGHT">
+      <perimeter type="io" priority="10"/>
+      CLBLAYOUT
+      <corners type="EMPTY" priority="20"/>
+    </fixed_layout>
+  </layout>
+		<device>
+			<sizing R_minW_nmos="4220.930176" R_minW_pmos="11207.599609"/>
+      <!-- changed sizing  ipin_mux_trans_size="1.299940" -->
+			<!-- timing C_ipin_cblock="0.000000e+00" T_ipin_cblock="8.582000e-11" -->
+			<area grid_logic_tile_area="0.0"/>
+			<chan_width_distr>
+				<!-- io width="1.000000"/ -->
+				<x distr="uniform" peak="1.000000"/>
+				<y distr="uniform" peak="1.000000"/>
+			</chan_width_distr>
+			<switch_block type="wilton" fs="3"/>
+      <connection_block input_switch_name="0"/>
+		</device>
+		<switchlist>
+      <!-- should we add the delay of the buffer here? -->
+			<switch type="mux" name="0" R="0" Cin="0" Cout="0" Cinternal="0" Tdel="0.1e-15" mux_trans_size="0" buf_size="0"/>
+    </switchlist>
+		<segmentlist>
+			<segment freq="1.000000" length="4" type="unidir" Rmetal="0.000000" Cmetal="0.000000e+00">
+			<mux name="0"/>
+			<sb type="pattern">1 1 1 1 1</sb>
+			<cb type="pattern">1 1 1 1</cb>
+			</segment>
+		</segmentlist>
+		<complexblocklist>
+
+      <pb_type name="io">
+
+        <input name="outpad" num_pins="1"/> <!--equivalent="false" -->
+        <output name="inpad" num_pins="1"/>
+        <clock name="ZUMA_CLOCK_NAME" num_pins="1"/>
+
+        <!-- IOs can operate as either inputs or outputs -->
+        <mode name="inpad">
+          <pb_type name="inpad" blif_model=".input" num_pb="1">
+            <output name="inpad" num_pins="1"/>
+          </pb_type>
+          <interconnect>
+            <direct name="inpad" input="inpad.inpad" output="io.inpad"/>
+          </interconnect>
+
+        </mode>
+        <mode name="outpad">
+          <pb_type name="outpad" blif_model=".output" num_pb="1">
+            <input name="outpad" num_pins="1"/>
+          </pb_type>
+          <interconnect>
+            <direct name="outpad" input="io.outpad" output="outpad.outpad"/>
+          </interconnect>
+        </mode>
+
+      </pb_type>
+
+    CLBPBTYPES
+
+
+    </complexblocklist>
+  </architecture>

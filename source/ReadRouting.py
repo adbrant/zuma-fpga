@@ -1,172 +1,29 @@
-from structs import *
+# use this if you want to include modules from a subforder
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+
 import globs
+import RoutingParser
 #import pdb
-
-def splitnums(string):
-    string = string.replace('(','')
-    string = string.replace(')','')
-    return string.split(',')
-
-## get the track number in the routing file in a CHANX/Y line
-def getchan(line):
-
-    about = line.split()
-    return int(about[-1])
-
 
 ## Parse the routing file.
 # The routing file contains the global routing of the fpga,
 # so we apply this routing by setting the right input id
 # to the source attribute of the muxes of the global routing.
 def read_routing(filename ):
-    fh = open(filename,"r")
-    igot = fh.readlines()
 
-    #size of the array
-    x = int(igot[0].split(' ')[2])+1
-    y = int(igot[0].split(' ')[4])+1
-    width = x
-    #maximum track number
-    channels = 0
-    opins = 0
-    ipins = 0
+    #parse the routing net file to get a list of used nets
+    nets = RoutingParser.parseRouting(filename)
 
-    #find the maximum track number
-    for i,line in enumerate(igot):
+    #assign the nets to the global net dictionary
+    for net in nets:
+        globs.nets[net.name] = net
 
-        if line.find("CHAN") > -1:
-            about = line.split()
-            #get the track number
-            c1 = getchan(line)
-            #get the max tack number
-            if c1 + 1 > channels:
-                channels = c1 + 1
-
-    in_net = False
-    chanx = [[[[] for i in range(channels)] for col in range(width)] for row in range(width)]
-    chany = [[[[] for i in range(channels)] for col in range(width)] for row in range(width)]
-    #TODO: opin/ipin is still 0?
-    opin = [[[[] for i in range(opins)] for col in range(width)] for row in range(width)]
-    ipin = [[[[] for i in range(ipins)] for col in range(width)] for row in range(width)]
-
-
-    lastchan = [-1, -1,-1,-1]
-    thischan = [-1, -1,-1,-1]
-    intrace = False
-    signal = ''
-
-    #we will build a net for each traced signal
-    #global nets
-    routing_net = 0
-    #in vpr7 there are two items: node and node number at the start of every line
-    if globs.params.vpr7:
-        offset = 2
-    else:
-        offset = 0
-
-    #now let us parse the routing file and add the read nets
-    #to the global net dictionary.
-    #NOTE: we skip the sources and sink nodes 
-    #and use the opins and ipin nodes instead as a start and a endpoint of the net
-    for i,line in enumerate(igot):
-        if line.find("Net") > -1:
-            #get the name of the net. same name as in the netlist file
-            signal = line.split('(')[1].split(')')[0]
-
-            #init the net and append it to the global net dict.
-            routing_net = Net()
-            globs.nets[signal] = routing_net
-            routing_net.name = signal
-        if line.find("OPIN") > -1:
-
-            about = line.split()
-            #get the location in brackets
-            nums = splitnums(about[1+offset])
-            #assign the location
-            x1 = int(nums[0])
-            y1 = int(nums[1])
-
-            #get the pad number
-            nums = splitnums(about[3+offset])
-            pin = int(nums[0])
-            #pad number not assigned yet
-            if len(routing_net.source) is 0:
-                routing_net.source = [x1,y1,pin]
-            #append it to the trace list
-            routing_net.add_source(x1,y1,pin)
-
-        if line.find("IPIN") > -1:
-
-            about = line.split()
-            #get the location in brackets
-            nums = splitnums(about[1+offset])
-            #assign the location
-            x1 = int(nums[0])
-            y1 = int(nums[1])
-
-            #get the pad number
-            nums = splitnums(about[3+offset])
-            pin = int(nums[0])
-
-            #assign the location and pad number
-            routing_net.sinks = [x1,y1,pin] # TODO:TW: Test if this is relevant
-            #append it to the trace list
-            routing_net.add_sink(x1,y1,pin)
-
-
-
-        if line.find("CHANX") > -1:
-            about = line.split()
-            #get the location in brackets
-            nums = splitnums(about[1+offset])
-            #assign the location
-            x1 = int(nums[0])
-            y1 = int(nums[1])
-            x2 = -1
-            y2 = -1
-            #There are two possible descriptions:
-            # 1) CHANX (2,0)  Track: 11
-            # 2) CHANY (2,1) to (2,3)  Track: 21
-            # check if its the second option
-            if len(about) >= 6+offset:
-                nums = splitnums(about[3+offset])
-                x2 = int(nums[0])
-                y2 = int(nums[1])
-
-            #get the track number
-            c1 = getchan(line)
-            #append it to the trace list
-            routing_net.add_section('X', x1,y1,x2,y2, c1)
-
-
-        if line.find("CHANY") > -1:
-            about = line.split()
-
-            ##get the location in brackets
-            nums = splitnums(about[1+offset])
-            #assign the location
-            x1 = int(nums[0])
-            y1 = int(nums[1])
-
-            x2 = -1
-            y2 = -1
-            #There are two possible descriptions:
-            # 1) CHANX (2,0)  Track: 11
-            # 2) CHANY (2,1) to (2,3)  Track: 21
-            # check if its the second option
-            if len(about) >= 6+offset:
-                nums = splitnums(about[3+offset])
-                x2 = int(nums[0])
-                y2 = int(nums[1])
-
-            #get the track number
-            c1 = getchan(line)
-            #append it to the trace list
-            routing_net.add_section('Y', x1,y1,x2,y2, c1)
-
-    #now the parsing is over.
     #we now should have all routed signals in nets
-
 
     #For each net, we will step through the traces,
     #defining the path for this route.
@@ -243,7 +100,7 @@ def read_routing(filename ):
             #check if its a pin on I/O or on a cluster and get the driver.
             #Then change the source attribute of the corrresponding node.
             elif trace.type == 'SINK':
-                
+
                 #just some debugging
                 #pdb.set_trace()
 
@@ -256,7 +113,7 @@ def read_routing(filename ):
 
                     #try to find the driver of the IO pin in the IO output list.
                     found = False
-                    
+
                     #got a IO sink. increase the counter
                     ioSinkCounter = ioSinkCounter +1
 
@@ -274,18 +131,18 @@ def read_routing(filename ):
                             output.source = last_node
                             output.net = n.name
                             globs.nodes[output.id].source = last_node
-                            
+
                             #If this is a net between a fpga input and a fpga output:
                             #Try to use the lastnetmapping in this case
-                            #to get the blif name of the corresponding SINK node 
+                            #to get the blif name of the corresponding SINK node
                             #for the current IPIN ouput node,
                             #by searching the net name in this mapping.
                             #This blif name is than used to get the instance of the sink node
                             #via the orederedOuputs list.
 
-                            # In detail the lastnetmapping 
+                            # In detail the lastnetmapping
                             # save the mapping (fpga input name, list of fpga output names).
-                            
+
                             # This mapping deliver us the intended result
                             # because the net name is same as the blif fpga input name.
 
@@ -293,7 +150,7 @@ def read_routing(filename ):
                             if n.name in globs.lastnetmapping:
                                 outputNameList = globs.lastnetmapping[n.name]
                                 name = outputNameList[ioSinkCounter]
-                            
+
                             #else we use the regular net name
                             else:
                                 name = n.name
@@ -370,11 +227,11 @@ def read_routing(filename ):
                             #set the the source attribute of the frist opin to the
                             #right iomux when orderIO is activate
 
-                            #TODO: i dont see why this is only valid 
-                            #for ordered id. The list orderedInputs also 
+                            #TODO: i dont see why this is only valid
+                            #for ordered id. The list orderedInputs also
                             #contains all sources when the option is disabled
 
-                            #but it seems to produce some errors 
+                            #but it seems to produce some errors
                             #in the outputBlif routine when this is done always
 
                             #if globs.params.orderedIO:
@@ -384,14 +241,14 @@ def read_routing(filename ):
                                     if globs.params.orderedIO:
                                         globs.nodes[last_node].source = orderedinput_id
                                     else:
-                                        #WORKAROUND: use a flag to indicate 
+                                        #WORKAROUND: use a flag to indicate
                                         #primary io pin
-                                        #fixes like looking for the name 
+                                        #fixes like looking for the name
                                         #of the source dont work.
 
                                         #note: the opin has no edges to the found source
                                         #because the names are not set to the right sources
-                                        #its only important that there is a source 
+                                        #its only important that there is a source
                                         #with that netname. then the viewed node
                                         #(lastnode) is the right opin.
 

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+#This script accepts the specification.blif file as input and performs Synthesis and Technology Mapping. The final implemented(Synthesized and mapped) output is written into a .blif file.
+
+read_blif default_out.blif
+strash          #Structural Hashing
+dc2             #Standard Synthesis Script
+if -K 6         #FPGA Mapping to K number of LUTs
+print_stats
+strash
+dch             #Script to improve area and delay mapping before FPGA mapping
+if -K 6         #FPGA Mapping to K number of LUTs
+print_stats
+write_blif abc_out.blif

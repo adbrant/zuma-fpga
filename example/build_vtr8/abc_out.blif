@@ -1,0 +1,15 @@
+# Benchmark "popcount" written by ABC on Tue Nov  5 22:44:17 2019
+.model popcount
+.inputs top^in~0 top^in~1 top^in~2 top^in~3 top^in~4 top^in~5 top^in~6 \
+ top^in~7 top^in~8 top^in~9 top^in~10 top^in~11 top^in~12 top^in~13 \
+ top^in~14 top^in~15
+.outputs top^out~0 top^out~1
+.names top^in~0 top^in~1 top^in~2 top^in~3 n20 top^out~0
+11111 1
+.names top^in~4 top^in~5 top^in~6 top^in~7 n20
+1111 1
+.names top^in~4 top^in~5 top^in~6 top^in~7 n22
+0000 1
+.names top^in~0 top^in~1 top^in~2 top^in~3 n22 top^out~1
+00001 0
+.end

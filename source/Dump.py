@@ -1,21 +1,63 @@
 from structs import *
 import globs
 
+
+def dumpUnconfiguredNodesToFile(filename):
+
+    fh = open(filename,"w")
+
+    for node in globs.technologyMappedNodes.getNodes():
+
+        #only dump the unconfigrued
+        if node.source == -1:
+
+            #luts sources are always unconfigured check the content of the lut
+            if node.eLUT:
+
+                #get the parent node in the nodegraph of this mapped node
+                parentNode = node.parentNode
+
+                #is it used, i.e is there a config availible?
+                #When it is skip that node
+                if parentNode.LUT:
+                    continue
+
+            #if its unuesd lut or still an unconfigured node -> dump it.
+            dumpVerilogNameToFile(fh,node)
+
+    fh.close()
+
+def dumpVerilogNameToFile(fh,node):
+
+    if node.eLUT:
+        prefix = 'LUT_'
+    else:
+        prefix = 'MUX_'
+
+    if node.isOnCluster:
+        (x,y) = node.location
+        fh.write(  globs.params.instancePrefix + 'cluster_'+ str(x) + '_' + str(y) +'/' + prefix +  str(node.name) + '\n')
+
+    else:
+        fh.write( globs.params.instancePrefix + prefix + str(node.name) + '\n')
+
+
+
 #dump the node graph in a file and plot it when globs.params.graphviz is enabled
 #param filename the file name where we dump the node graph in
 def dumpGraph(filename):
 
     f = open(filename, 'w')
-    
+
     #init stuff for graphviz plotting.
-    
-    #we tried to group the nodes by clusters and tried to highlight 
+
+    #we tried to group the nodes by clusters and tried to highlight
     #the used wires by setting the rest transparent, but in the end it works
     #not so well ... It seems that graphviz is not the right tool for this task
     #but it's ok for now.
 
     if globs.params.graphviz:
-        
+
         #to prevent to many dependencies, we just load it when we must
         import graphviz as gv
         graph= gv.Digraph(format='svg')
@@ -40,7 +82,7 @@ def dumpGraph(filename):
                 pos += 1
 
                 clusterxList.append(cluster)
-            
+
             clusters.append(clusterxList)
 
         #graph.attr('node', style='filled')
@@ -49,6 +91,10 @@ def dumpGraph(filename):
     #now we dump and plot the graph
     for node in globs.nodes:
         typeString= ''
+
+        #node got removed
+        if node.type == 0:
+            continue
 
         if node.type == 1:
             typeString= 'SINK'
@@ -63,7 +109,7 @@ def dumpGraph(filename):
         elif node.type == 6:
             typeString= 'CHANY'
         elif node.type == 7:
-            typeString= 'MUX'
+            typeString= 'IMUX'
         elif node.type == 8:
             typeString= 'ELUT'
         elif node.type == 9:
@@ -82,14 +128,33 @@ def dumpGraph(filename):
         f.write( 'ffmux: '    + str( node.ffmux)+ '\n')
         f.write( 'name: '     + str( node.name)+ '\n')
 
+        f.write( 'ioPathDelay: '     + str( node.ioPathDelay)+ '\n')
+        f.write( 'readPortDelay: '     + str( node.readPortDelay)+ '\n')
 
+
+
+        #dump the corresponding lut
+        if  (node.type == 8 and node.LUT != 0):
+            f.write( 'content of this lut: \n')
+            f.write(str(node.LUT.contents))
+            f.write( '\ninput names: \n')
+            for name in node.LUT.inputs:
+                f.write( str(name) + ",\n")
+            f.write( '\noutput name: \n')
+            f.write( str(node.LUT.output) + ",\n")
+
+        if (node.type == 8) and globs.params.vprAnnotation:
+            if node.ffReadPortDelay is not None:
+                f.write( 'ffReadPortDelay: '     + str( node.ffReadPortDelay)+ '\n')
+            if node.ffIODelay is not None:
+                f.write( 'ffIODelay: '     + str( node.ffIODelay)+ '\n')
 
         if globs.params.graphviz:
 
 
             #skip these nodes
-            if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
-                continue
+            #if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
+            #    continue
 
 
             currentGraph = None
@@ -138,7 +203,7 @@ def dumpGraph(filename):
 def dumpTechnologyGraph(filename):
 
     f = open(filename, 'w')
-    
+
     if globs.params.graphviz:
 
         #to prevent to many dependencies, we just load it when we must
@@ -166,10 +231,15 @@ def dumpTechnologyGraph(filename):
                 pos += 1
 
                 clusterxList.append(cluster)
-            
+
             clusters.append(clusterxList)
 
     for node in globs.technologyMappedNodes.getNodes():
+
+        #node got removed
+        if node.type == 0:
+            continue
+
         typeString= ''
 
         if node.type == 1:
@@ -185,7 +255,7 @@ def dumpTechnologyGraph(filename):
         elif node.type == 6:
             typeString= 'CHANY'
         elif node.type == 7:
-            typeString= 'MUX'
+            typeString= 'IMUX'
         elif node.type == 8:
             typeString= 'ELUT'
         elif node.type == 9:
@@ -215,8 +285,8 @@ def dumpTechnologyGraph(filename):
         if globs.params.graphviz:
 
             #skip these nodes
-            if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
-                continue
+            #if (typeString == 'SOURCE' or  typeString == 'SINK' or typeString == 'IOMUX'):
+            #    continue
 
             currentGraph = clusters[node.location[0]][node.location[1]]
             currentGraph.node(node.name,label= typeString + ': ' + node.name + ', Loc: '+ str(node.location) )
@@ -249,5 +319,4 @@ def dumpTechnologyGraph(filename):
 def dumpBitPattern(bitpattern):
     for (i,row) in enumerate(bitpattern):
         for (j,entry) in enumerate(row):
-            print( 'Pos: ' + str(i) +',' + str(j) + ' content: ' + str(entry))  
-  
+            print( 'Pos: ' + str(i) +',' + str(j) + ' content: ' + str(entry))

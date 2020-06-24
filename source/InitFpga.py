@@ -1,14 +1,110 @@
-from structs import *
+# use this if you want to include modules from a subforder
+import os, sys, inspect
+cmd_subfolder = os.path.realpath(os.path.abspath( os.path.join(os.path.split \
+(inspect.getfile( inspect.currentframe() ))[0],"VprParsers")))
+if cmd_subfolder not in sys.path:
+    sys.path.insert(0, cmd_subfolder)
+
+import structs
 import globs
 import time
-import re
-import const
 import closNetwork
+import Dump
+import RRGraphParser
+import copy
 
-## build the simple network.
+#clean the graph
+#vpr7 and especially vpr8 produces sinks/source with only one ipin/opin
+#connected and this opins/ipins are undriven. Also there exists undriven ipin/opin
+#with a connection to an active sink/source.
+#These nodes are completly useless and will be removed from the graph.
+def removeUndrivenNodes():
+
+    #in a first round kill undriven ipins.
+    #then we could kill the now undriven sources and sinks in a second run
+
+    #find the undriven nodes and kill them
+    for n in globs.nodes:
+
+        if n.type is 3: #OPIN.
+
+            #check if he's undriven
+            if len(n.edges) == 0:
+
+                #dismount him from his source. there should be only one source edge
+
+                #sanity check. only one sink edge
+                if len(n.inputs) != 1:
+                    print 'error multiply edges for an input'
+                    sys.exit(0)
+
+                #dismount him
+                sourceId = n.inputs[0]
+                source = globs.nodes[sourceId]
+                source.edges.remove(n.id)
+
+                #now kill the node
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+
+        if n.type is 4: #IPIN
+            #check if he's undriven
+            if len(n.inputs) == 0:
+
+                #dismount him from his sink. there should be only one sink edge
+
+                #sanity check. only one sink edge
+                if len(n.edges) != 1:
+                    print 'error multiply edges for an input'
+                    sys.exit(0)
+
+                #dismount him
+                sinkId = n.edges[0]
+                sink = globs.nodes[sinkId]
+                sink.inputs.remove(n.id)
+
+                #now kill the node
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+
+    #now kill the undriven sources and sinks
+
+    for n in globs.nodes:
+
+        if n.type is 1: #SINK
+            #test if the sink node is undriven or has only one
+            #undriven child
+
+            #if it is undriven remove it from the graph
+            if len(n.inputs) == 0:
+                #type null signals an removed nodes
+                #TODO: change the node graph to a dictionary
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+        elif n.type is 2: #SOURCE
+
+            #test if the source node is undriven or has only one
+            #undriven child
+
+            #if it is undriven remove it from the graph
+            if len(n.edges) == 0:
+                #type null signals an removed nodes
+                #TODO: change the node graph to a dictionary
+                n.inputs = []
+                n.edges = []
+                n.type = 0
+
+
+## build nodes for the simple interconnect network (IIB).
 # In the simple network, every pin of a ble get
-# its own inode, which can route from every input
-# of the IIB. This can be a cluster input or a lut feedback.
+# its own interconnect node (inode), which can route from every input
+# of the IIB. The input can be a cluster input or a lut feedback.
 def buildSimpleNetwork(cluster,key):
 
     # make inodes for internal cluster connection
@@ -16,27 +112,74 @@ def buildSimpleNetwork(cluster,key):
         cluster.LUT_input_nodes.append([])
         for pin in range(globs.params.K):#input nodes
 
-            inode = Node()
+            inode = structs.Node()
             inode.type = 7
-
-            # append all cluster inputs as an input
-            for clusterInput in cluster.inputs:
-                inode.inputs.append(clusterInput.id)
-            #apend all ffmuxes as an input
-            for ffmux in cluster.LUT_FFMUX_nodes:
-                inode.inputs.append(ffmux)
-
             inode.location = key
-            # append the node dict
+
+            # append it to the nodegraph. now it got a proper id
             globs.addNode(inode)
-            #append the input node to the cluster.
+
+            #append the input node to the cluster interconnect list.
             cluster.LUT_input_nodes[lut].append(inode.id)
+
             #connect the inode with the elut node
             elut = globs.nodes[cluster.LUT_nodes[lut]]
             elut.inputs.append(inode.id)
+            inode.edges.append(elut.id)
 
+            # append all cluster input node as an input.
+            # The interconnect is after thes ipin nodes.
+            # Therfore iterate through the drivers and grep the ipin nodes.
+            for ipinDriver in cluster.inputs:
 
+                #get the ipin node.
+                ipin = globs.nodes[ipinDriver.id]
 
+                #set the input and edge attribute
+                ipin.edges.append(inode.id)
+                inode.inputs.append(ipin.id)
+
+            #apend all ffmuxes of the cluster as an input
+            for ffmuxId in cluster.LUT_FFMUX_nodes:
+
+                #get the ffmux node
+                ffmux = globs.nodes[ffmuxId]
+
+                #set the input and edge attributes
+                ffmux.edges.append(inode.id)
+                inode.inputs.append(ffmux.id)
+
+##check if the opins and ipins list are ordered as their pin position number (index attribute)
+##This pin position is read from the rr_graph file.
+def checkOpinIpinOrder(cluster,location):
+
+    #sanity check if the opins are on the right pin position
+    for (pinPoistion,driver) in enumerate(cluster.outputs):
+        #get the opin
+        opinId = driver.id
+        opin = globs.nodes[opinId]
+
+        #check the ptc number(index attribute) of the rr_graph file
+        #and pin position. should be the same
+        if opin.index != pinPoistion:
+            print 'Error: opin' + str(opinId) + \
+                  ' is on the wrong position on the ouputs list of cluster: ' + \
+                  str(location)
+            sys.exit(1)
+
+    #sanity check if the ipins are on the right pin position
+    for (pinPoistion,driver) in enumerate(cluster.inputs):
+        #get the opin
+        ipinId = driver.id
+        ipin = globs.nodes[ipinId]
+
+        #check the ptc number(index attribute) of the rr_graph file
+        #and pin position. should be the same
+        if ipin.index != pinPoistion:
+            print 'Error: opin' + str(ipinId) + \
+                  ' is on the wrong position on the ouputs list of cluster: ' + \
+                  str(location)
+            sys.exit(1)
 
 ##builds for each cluster the inner structure (ble's+ IIB).
 #The interconnection block can be implemented
@@ -51,21 +194,32 @@ def build_inner_structure():
         #node graph
 
         for lut in range(globs.params.N):
-            #actual eLUT
-            elut = Node()
+
+            #build an eLUT node
+            #NOTE: inputs of the elut are set in buildSimpleNetwork
+            elut = structs.Node()
             elut.type = 8
             elut.location = key
             elut.eLUT = True
-            # append to the node dict
+
+            # append to the node dict. now it got a proper id.
             globs.addNode(elut)
+
             # write its id to the LUT_nodes list
             cluster.LUT_nodes.append(elut.id)
 
-            ffmux = Node()
+            #build the ffmux node
+            ffmux = structs.Node()
             ffmux.type = 9
             ffmux.ffmux = True
-            ffmux.inputs.append(elut.id)
             ffmux.location = key
+
+            #append the ffmux node to the node graph
+            globs.addNode(ffmux)
+
+            #set the input and edge attributes
+            ffmux.inputs.append(elut.id)
+            elut.edges.append(ffmux.id)
 
             #LUT node drives this node.
             #Because we used the registered and unregisterd output, the source
@@ -75,17 +229,27 @@ def build_inner_structure():
             #so therefore we can set the final routing always to the lut
             ffmux.source = elut.id
 
-            #append the ffmux node to the node graph
-            globs.addNode(ffmux)
             #append it to the cluster list
             cluster.LUT_FFMUX_nodes.append(ffmux.id)
 
             # Reconnect the corresponding cluster output opin in the node graph:
             # Disconnect it from the source node
             # Connect it to the ffmux
-            opin_id = cluster.outputs[lut].id
-            globs.nodes[opin_id].inputs = [ffmux.id]
-            globs.nodes[opin_id].source = ffmux.id
+            opinId = cluster.outputs[lut].id
+            opin = globs.nodes[opinId]
+
+            #save the sourceId and overwrite it
+            sourceId = opin.inputs[0]
+
+            opin.inputs = [ffmux.id]
+            ffmux.edges.append(opin.id)
+            opin.source = ffmux.id
+
+            #kill the now unused source node
+            source = globs.nodes[sourceId]
+            source.inputs = []
+            source.edges = []
+            source.type = 0
 
         # we can use the clos or simple network
         if globs.params.UseClos:
@@ -95,6 +259,9 @@ def build_inner_structure():
         else:
             print ' ----------- build simple network --------------'
             buildSimpleNetwork(cluster,key)
+
+        #check if the opins and ipins list are ordered as their pin position number
+        #checkOpinIpinOrder(cluster,key)
 
 
 ## This function builds up the virtual fpga.
@@ -106,103 +273,21 @@ def build_inner_structure():
 # @param filename the path to the graph.echo file
 def load_graph(filename):
 
-    #parse the lines of the following format:
+    #parse the routing ressource graph file
+    if globs.params.vprVersion == 8:
+        (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraphXml(filename)
+    elif globs.params.vprVersion < 8 :
+        (clusterx,clustery,nodeGraph) = RRGraphParser.parseGraph(filename)
+    else:
+        print "ERROR: Unsupported Vpr Version: " + str(globs.params.vprVersion)
+        sys.exit(1)
 
-    #      id  type   location   index       direction        driver
-    #Node: 0   SINK   (0, 1)     Ptc_num: 0  Direction: OPEN  Drivers: OPEN
-
-    #open the graph.echo file
-    fh = open(filename,"r")
-
-    #counter for tracking the current id node.
-    id = 0
-
-    #parse the file and build up the node graph
-    while 1:
-        line = fh.readline() # read node type, location, ...
-        if not line:
-            break
-        str = line.split()
-        #print id, int(str[1])
-        #assert(id is int(str[1]))
-        n = Node()
-        #set the id.
-        n.id = int(str[1])
-        if (str[2] == 'SINK'):
-            n.type = 1
-        elif (str[2] == 'SOURCE'):
-            n.type = 2
-        elif (str[2] == 'OPIN'):
-            n.type = 3
-        elif (str[2] == 'IPIN'):
-            n.type = 4
-        elif (str[2] == 'CHANX'):
-            n.type = 5
-        elif (str[2] == 'CHANY'):
-            n.type = 6
-        else:
-            assert(0)
-
-
-        nums = re.findall(r'\d+', line)
-        nums = [int(i) for i in nums ]
-
-        #get the location and the index.
-        #The index is the pad position, pin position or track number
-        #depending its a pin on an I/O block, cluster or a channel.
-        #Depending on this node type the values are on different positions
-        #in the file.
-        if n.type < 5 or len(nums) < 5:
-            n.location = (nums[1],nums[2])
-            n.index = nums[3]
-        else:
-            n.location = (nums[1],nums[2],nums[3],nums[4])
-            n.index = nums[5]
-
-        #set the direction of the node.
-        if n.type > 4:
-            dir = line.split(' ')[-3]
-            if dir == 'INC_DIRECTION':
-                #north or east
-                if n.type is 5:
-                    n.dir = const.E
-                else:
-                    n.dir = const.N
-            else:
-                if n.type is 5:
-                    n.dir = const.W
-                else:
-                    n.dir = const.S
-
-        #read the edge ids and append them to
-        #the edge list of the  node
-        line = fh.readline() # read edges
-        nums = re.findall(r'\d+', line)
-        #assign the ids
-        n.edges = [int(i) for i in nums[1:]]
-
-        #skip the rest of the information
-        line = fh.readline() # skip switch types
-        line = fh.readline() # skip (occupancy?) and capacity
-        line = fh.readline() # skip R and C
-        line = fh.readline() # skip cost index
-        line = fh.readline() # skip newline dividing records
-
-        #clusterx,clustery are the maximal value of location coords.
-        #find these maximal location coords
-        globs.clusterx = max(globs.clusterx,n.location[0])
-        globs.clustery = max(globs.clustery,n.location[1])
-
-        #append the node to the global node graph
-        globs.nodes.append(n)
-
-        #check if the node was append in a previous loop.
-        #current node should be the last node in the list.
-        if globs.nodes[n.id] is not n:
-            print 'graph error', len(globs.nodes), n.id
-
-        #increase the current node id
-        id = id + 1
+    #TODO: WORKAROUND for now we copy the nodes node by node. later we will
+    #use also a global NodeGraph instance
+    #TODO: replace clusterx with params
+    globs.nodes = copy.deepcopy(nodeGraph.nodes)
+    globs.clusterx = clusterx
+    globs.clustery = clustery
 
     #end up parsing.
     #now build the outer structure.
@@ -213,28 +298,28 @@ def load_graph(filename):
     #clusters are on all locations except (0,x) , (y,0) which are IOs
     for x in range(1, globs.clusterx):
         for y in range(1, globs.clustery):
-            globs.clusters[(x,y)] = Cluster()
+            globs.clusters[(x,y)] = structs.Cluster()
 
     #every location get a switch box
     for x in range(0, globs.clusterx):
         for y in range(0, globs.clustery):
-            globs.switchbox[(x,y)] = SBox()
+            globs.switchbox[(x,y)] = structs.SBox()
 
     #build the I/O blocks
 
-    #build blocks from (0,1) - (0,clustery-1), 
+    #build blocks from (0,1) - (0,clustery-1),
     #and (clusterx,1) - (clusterx,clusterx-1)
     for x in [0, globs.clusterx]:
         #TODO: TW: Removed unnecessary range extension
         for y in range(1, globs.clustery):
-            globs.IOs[(x,y)] = IO()
+            globs.IOs[(x,y)] = structs.IO()
 
-    #build blocks from (1,0) - (clusterx-1,0), 
+    #build blocks from (1,0) - (clusterx-1,0),
     #and (1,clustery) - (clusterx-1,clustery)
     for y in [0, globs.clustery]:
         #TODO: TW: Removed unnecessary range douplication
         for x in range(1, globs.clusterx):
-            globs.IOs[(x,y)] = IO()
+            globs.IOs[(x,y)] = structs.IO()
 
 
     # set the input ids for every node in the graph
@@ -246,6 +331,14 @@ def load_graph(filename):
     global_outputs = 0
     global_inputs  = 0
 
+    #dump the loaded graph, allows to compare it with later versions
+    if globs.params.dumpNodeGraph:
+        Dump.dumpGraph('loadedGraph')
+
+    #remove undriven sources and sinks as well as their ipins/opins
+    #these are not used nodes generate by vpr for some reasons i dont know
+    removeUndrivenNodes()
+
     #append the source and sink nodes to the orderedInput
     #and orderedOutput list
     #init the drivers for the I/O blocks and switchboxes.
@@ -253,14 +346,14 @@ def load_graph(filename):
 
         # reuse SINKs and SOURCEs for ordered global IO
         if n.type is 1: #SINK
-            pass
+            continue
         elif n.type is 2: #SOURCE
-            pass
+            continue
 
         # for OPINs and IPINs a notable assumption was made
         # that they are listed in increasing order in the file,
         # while the SOURCEs and SINKs can be spread over
-        # this file. 
+        # this file.
         # TODO: Is that always true?
 
         # This is important because the orderedInput and orderedOutput lists
@@ -274,13 +367,13 @@ def load_graph(filename):
         #node is an OPIN
         elif n.type is 3:
             # OPIN of a global IO pad is an FPGA input
-            
+
             # check if this is a input pin on a I/O block,
             # by checking if the location is on the edge of the fpga
             if n.location[0] in [0, globs.clusterx] \
             or n.location[1] in [0, globs.clustery]:
                 #init a corresponding driver for this node.
-                globs.IOs[n.location].inputs.append(Driver(n.id, n.index))
+                globs.IOs[n.location].inputs.append(structs.Driver(n.id, n.index))
 
                 # add the SOURCE node id to the orderedInputs list
                 # The SOURCE node id is only inputs[0],
@@ -292,7 +385,7 @@ def load_graph(filename):
             #this is a clusters output pin
             #append it to the ouput list
             else:
-                globs.clusters[n.location].outputs.append(Driver(n.id,n.index))
+                globs.clusters[n.location].outputs.append(structs.Driver(n.id,n.index))
                 #print 'clust output', n.location, n.id
 
         #node is an IPIN
@@ -300,9 +393,12 @@ def load_graph(filename):
             # IPIN of a global IO pad is an FPGA output
 
             # global output without predecessor can be ignored
+
+            #TODO: THIS should be DEPRECATED because of the function call
+            #removeUndrivenNodes()
             if len(n.inputs) == 0: #dont get input from dangling node
                 print 'dropping node', n.id, 'from', n.location
-            
+
             else:
                 # check if this is a ouput pin on a I/O block,
                 # by checking if the location is on the edge of the fpga
@@ -310,8 +406,8 @@ def load_graph(filename):
                 or n.location[1] in [0, globs.clustery]:
 
                     #init a corresponding driver for this node.
-                    globs.IOs[n.location].outputs.append(Driver(n.id,n.index))
-                    
+                    globs.IOs[n.location].outputs.append(structs.Driver(n.id,n.index))
+
                     #TODO: why only edge[0]. okay there can be only one.
                     #when not you have multiple drivers for that output pin
                     #or this pin have them as an input?
@@ -319,12 +415,12 @@ def load_graph(filename):
                     #add the SINK node id to the orderedOutputs list
                     globs.orderedOutputs.append(n.edges[0])
                     global_outputs += 1
-                
+
                 #this is a clusters output pin
                 #append it to the ouput list
                 else:
-                    globs.clusters[n.location].inputs.append(Driver(n.id, n.index))
-        
+                    globs.clusters[n.location].inputs.append(structs.Driver(n.id, n.index))
+
         #node is a CHANNEL
         elif n.type is 5 or n.type is 6:
             #get the corresponding switchbox for that node
@@ -332,9 +428,9 @@ def load_graph(filename):
             sbox = globs.switchbox[source]
             #append the driver to this node to the switchbox
             if n.type is 5:
-                sbox.driversx.append(Driver(n.id, n.index, n.dir))
+                sbox.driversx.append(structs.Driver(n.id, n.index, n.dir))
             else:
-                sbox.driversy.append(Driver(n.id, n.index, n.dir))
+                sbox.driversy.append(structs.Driver(n.id, n.index, n.dir))
 
     print "Global IO: out", global_outputs, "and in", global_inputs
 

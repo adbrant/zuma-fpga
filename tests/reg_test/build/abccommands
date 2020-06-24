@@ -1,1 +1,0 @@
-read default_out.blif; time;  if -K 5 -a; time; scleanup; time; scleanup; time; scleanup; time; scleanup; time; scleanup; time; scleanup; time; scleanup; time; scleanup; time; scleanup; time; write_hie default_out.blif abc_out.blif; print_stats; q
