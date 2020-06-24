@@ -13,7 +13,6 @@ import OutputBlif
 import Dump
 import TimingAnalysisSDF
 import ReadSDF
-import buildVerificationOverlay
 import buildPackedOverlay
 import NodeGraphTiming
 import TimingAnnotation
