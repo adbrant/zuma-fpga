@@ -1,11 +1,8 @@
-#	ZUMA Open FPGA Overlay
-#	Alex Brant
-#	Email: alex.d.brant@gmail.com
-#	2012
 #	CAD Data Structure Definitions
 
 import sys
 import traceback
+import globs
 
 ## describe a node of the node graph
 class Node():
@@ -15,7 +12,7 @@ class Node():
     #then remove the attribute elut,ffmux, etc.
 
     def __init__(self):
-        
+
         ##the id of the node.
         self.id = -1
 
@@ -26,6 +23,7 @@ class Node():
         #TODO: change the name ffmux to blemux
 
         ## A node can have one of the following types (attribute type):
+        ##  0 - empty node (for removed nodes)
         ##  1 - 'SINK'
         ##  2 - 'SOURCE'
         ##  3 - 'OPIN'
@@ -71,9 +69,9 @@ class Node():
         self.index = -1
 
         #TODO: missing attributes: dir
-        
+
         ##The blif name of the global input/output, e.g. top^out~0
-        ##This attribute is only set for SINK/SOURCE nodes 
+        ##This attribute is only set for SINK/SOURCE nodes
         ##which represent the global permutation muxes.
         ##assigned in read_blif
         ##TODO: is that true? wasn't it for the opin and ipin nodes?
@@ -87,11 +85,28 @@ class Node():
         ##WORKAROUND: use this flag to indicate a used primary opin (fpga input)
         self.primaryOpin = False
 
+        ##TODO: document the bits attribute which is the lut content
+        #set in ReadNetlist.copyLut
+
+        #Delay dictonaries for the vpr timing back annotation
+        self.ioPathDelay = None
+        self.readPortDelay = None
+
+        #elut have the ff timing as well and setup and hold times
+        self.ffIODelay = None
+        self.ffReadPortDelay = None
+
+        self.ffSetupDelay = [0.0,0.0,0.0]
+        self.ffHoldDelay = [0.0,0.0,0.0]
+
+        #indicate that this node have only a mapped passtrough node as a child
+        self.passTrough = False
+
 ## describe a node of the technology mapped node graph
 class TechnologyMappedNode():
 
     def __init__(self,parentNode,name,inputs):
-        
+
         ##the name of the node in the verilog file
         self.name = name
 
@@ -106,13 +121,13 @@ class TechnologyMappedNode():
 
         ## index in the clusters array
         self.location =  parentNode.location
-        ## list of parent node names, which
+        ## list of parent node names in the TechnologyNodeGraph, which
         ## this node get its inputs from.
         self.inputs = inputs
 
-        ##list of node names which have this node as input. 
+        ##list of node names which have this node as input.
         self.edges = []
-        
+
         ## this is the final node id, where
         ## to get its input from.
         ## This set the final routing.
@@ -131,6 +146,10 @@ class TechnologyMappedNode():
         ##delay information for this node
         ##list of list(min, average, max).
         ##for every input port one tuple.
+
+        #the inputs in verilog are written downto, e.g [5:0], so readPortDelay[0]
+        #is the delay of inputs[5]
+        #TODO: change this to a dictionary with the input names to prevent errors
         self.readPortDelay = []
         self.writePortDelay = []
         self.ioPathDelay = []
@@ -140,10 +159,22 @@ class TechnologyMappedNode():
         self.ffReadPortDelay = [0.0,0.0,0.0]
         self.ffIODelay = [0.0,0.0,0.0]
 
+        self.ffSetupDelay = [0.0,0.0,0.0]
+        self.ffHoldDelay = [0.0,0.0,0.0]
 
         ##append the node to the parents mapped node list
         parentNode.mappedNodes.append(name)
 
+        #the configuration of this node.
+        #an array where each bit is an element
+        self.bits = None
+
+        #its config stage number and offset
+        self.stageNumber = -1
+        self.stageOffset = -1
+
+        #signal the node was set on a clister by the packed overlay routine
+        self.isOnCluster = False
 
     ##check if the mapped node is a mux on a ble
     #return True of False
@@ -205,7 +236,7 @@ class latch:
         self.output = ''
         ##blif names of the input.
         ##usually this is the output name of the corresponding lut
-        ##but this lut can be on another ble than the flipflop before 
+        ##but this lut can be on another ble than the flipflop before
         ##the call of ReadNetlist
         ##After the call ReadNetlist.unifyNames it is always the name of the lut
         ##on the same ble
@@ -233,6 +264,9 @@ class LUT:
         ##reference to the node in the graph it belongs to
         ##isnt set for empty luts
         self.node = None
+        ##Pin position dictonary. for every blif name of inputs as a key,
+        ##get the used pin position.
+        self.pinPositions = {}
 
 ##a logic cluster element which consists of an interconnection block,
 ## implemented with routing muxes, and ble's,
@@ -240,7 +274,10 @@ class LUT:
 class Cluster:
     def __init__(self):
         self.size = 8
-        ## list of driver classes
+        ## list of driver objects. Assumed to be ordered in the same way as the opins
+        ##appear in the graph_rr file. See InitFpgay.py.
+        ##TODO:not only check the ptc number there, but add them in this order !!!
+        ##also every ith opin is connected with the output of every ith ble ffmux (bleIndex)
         self.outputs = []
         ## list of driver classes
         self.inputs = []
@@ -270,14 +307,14 @@ class Cluster:
         ## first dimension M: ble index.
         ## second dimension: K, pin position on this ble.
         ## input tuples have the structure : (mode, number)
-        ## mode can be: 
+        ## mode can be:
         ## 1) input, for a input of the cluster.
         ## number then describe the input pin number
         ## 2) ble, for the input of a other ble of this cluster
         ## number than describe the instance number of the ble.
         ## 3) open if its open. number is -1
         ##
-        ## tuples have the same structure as 
+        ## tuples have the same structure as
         ## NetlistParser.NetlistBle.inputs .
         ## see read_netlist and NetlistParser
         self.LUT_input_nets = []
@@ -301,6 +338,18 @@ class Cluster:
         ##see build_global_routing_verilog
         ##also used in output_blif
         self.LUT_nodes = []
+
+        ##timing back annotation for various tracks
+
+        ## delay dict for the path from the lut output to the mux output.
+        ## key is the (bleIndex, 'registered'/'unregistered')
+        self.delayBleOutToMuxOut = None
+
+
+        self.delayMuxOutToBleIn = None
+        self.delayClbInToBleIn = None
+        self.delayBle = None
+
 
     def do_local_interconnect(self):
         global LUTs
@@ -336,7 +385,7 @@ class Cluster:
             traceback.print_stack(file=sys.stdout)
             sys.exit(0)
         return bleIndex
-    
+
 
     def getBleIndexOnId(self,nodeId):
         try:
@@ -402,6 +451,38 @@ class Cluster:
             traceback.print_stack(file=sys.stdout)
             sys.exit(0)
         return id
+
+    ##get the updated pin position for an old pin position
+    def getNewPinPosition(self,bleIndex,oldPinPosition):
+
+        #when we use a clos network the routing algo
+        #may switched the pin positions
+        #therefore the list newPinPositions of the format:
+        #[ble Index] [list of (old pin position, new pin position)]
+        #points to the actual pin positions
+        if globs.params.UseClos:
+
+            #search the old pin position in the
+            #newPinPosition list
+            for newPinPositionTuple in self.newPinPositions[bleIndex]:
+                #found the pin position. update the pin position
+                if newPinPositionTuple[0] == oldPinPosition:
+
+                    #this value indicates a match
+                    newPosition = newPinPositionTuple[1]
+                    #return it
+                    return newPosition
+
+            #pin was not found. throw an error
+            print 'error in build_lut_contents: pin ', \
+                       oldPinPosition , \
+                       ' was not found in newPinPosition list ', \
+                       cluster.newPinPositions[bleIndex]
+            sys.exit(1)
+
+        else:
+            print 'Unsuported interconnect network type for this operation'
+            sys.exit(1)
 
 ##An I/O block
 class IO:
@@ -487,13 +568,27 @@ class SBox:
 
 ## a node graph class. currently not used.
 # TODO:implement and use this in the whole zuma program
+# currently only used by the RRGraphParsers
 class NodeGraph:
     def __init__(self):
-        nodes = []
+        self.nodes = []
 
-    def add(self,node):
-        node.id = len(nodes)
-        nodes.append(node)
+    ##add a node
+    def add(self,node, id = -1):
+
+        #in the current version we use nodes[id] for referencing.
+        # therefore we have to check if the add id is the current
+        # length of the list
+
+        #when the node id was not given skip this check:
+        if id == -1:
+            self.nodes.append(node)
+        else:
+            if node.id == len(self.nodes):
+                self.nodes.append(node)
+            else:
+                print 'NodeGraph: skipped a node id by adding it to the nodegraph' + \
+                      len(self.nodes) + ',' + node.id
 
     def getNodeById(self,id):
         try:
@@ -555,7 +650,7 @@ class TechnologyNodeGraph:
     ## Get the first mapped input node of a node.
     # All mapped nodes implement a node in the node graph.
     # This node get its input from other nodes.
-    # search backward to get the first mapped 
+    # search backward to get the first mapped
     # node the connect to an outer mapped node.
     # Therefore it uses the source attribute.
     # WARNING: only useful after the sources are set.
@@ -594,7 +689,7 @@ class TechnologyNodeGraph:
 
 
     ##get the first lvl nodes
-    #take the nodes which connect to the outer world 
+    #take the nodes which connect to the outer world
     #(mapped nodes of another node in the graph)
     #return a list of mapped node references
     def searchFirstLvl(self,mappedNode,parentId):

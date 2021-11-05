@@ -1,4 +1,4 @@
-from structs import *
+import structs
 import zuma_config
 
 ## init the global variables.
@@ -50,9 +50,9 @@ def init():
 
     ## these params will be overwritten in zuma_config.py.
     global params
-    
+
     #init the architecture
-    params = Arch()
+    params = structs.Arch()
     #Cluster inputs
     params.I = 16
     #LUTs per cluster
@@ -66,7 +66,7 @@ def init():
     ##a dictionary of IO instances. key is the location (x,y). see load_graph
     IOs = dict()
     ##ascending list of input node ids.
-    ##contain SOURCE node ids. 
+    ##contain SOURCE node ids.
     ##set in load_graph
     orderedInputs = []
     ##ascending list of output node ids.
@@ -84,7 +84,7 @@ def init():
     ## content will also be saved in config_pattern.txt
     config_pattern = []
 
-    global host_size,lut_contents,placement,clusterx,clustery,debug
+    global host_size,lut_contents,placement,clusterx,clustery
     ##the lut size of a host lut,
     ##which is the physical input size of a lut on the board
     host_size = 6
@@ -93,7 +93,6 @@ def init():
     #the maximal location coord.
     clusterx = 0
     clustery = 0
-    debug = False
 
     global connectionMatrix
     ##adjacency matrix filled with delay information used for timing analysis
@@ -101,7 +100,7 @@ def init():
 
     ##technology mapped node graph
     global technologyMappedNodes
-    technologyMappedNodes = TechnologyNodeGraph()
+    technologyMappedNodes = structs.TechnologyNodeGraph()
 
 
 ##TODO:build a graph class

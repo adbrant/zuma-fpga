@@ -41,18 +41,21 @@ module fixed_config (
 	clock,
 	q);
 
+  parameter LUT_SIZE = 6;
+  parameter NUM_STAGES = 78;
+
   input   [31:0]  address_in;
 	input	          clock;
 	output	[31:0]  q;
 
-  // (2^lut_inputs times Num_config_stages)
-  reg [31:0] ram[0:(2**6)*60];
+  // (2^lut_inputs times Num_Config_stages)
+  reg [31:0] ram[0:(2**LUT_SIZE)*NUM_STAGES];
   reg [31:0] q;
 
   // Initializing BlockRAM from external datafile
   initial
   begin
-    //$readmemh("output.hex.mif",ram,0,(2**6)*80);
+    //$readmemh("output.hex.mif",ram,0,(2**LUT_SIZE)*NUM_STAGES);
     $readmemh("output.hex.mif",ram);
   end
   
